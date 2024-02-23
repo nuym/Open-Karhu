@@ -14,7 +14,11 @@ public class BlockPlacePending implements Cloneable {
          return (BlockPlacePending)super.clone();
       } catch (Throwable var2) {
          Throwable $ex = var2;
-         throw $ex;
+          try {
+              throw $ex;
+          } catch (Throwable e) {
+              throw new RuntimeException(e);
+          }
       }
    }
 

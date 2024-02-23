@@ -117,7 +117,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                cloned = e.clone();
                WrapperPlayClientPlayerFlying packet = new WrapperPlayClientPlayerFlying(e);
                Location location = packet.getLocation();
-               if (Math.abs(location.getX()) > 3.0E7 || Math.abs(location.getY()) > 3.0E7 || Math.abs(location.getZ()) > 3.0E7 || (double)Math.abs(location.getPitch()) >= 1000.0 || Math.abs(location.getYaw()) >= Float.MAX_VALUE) {
+               if (Karhu.getInstance().getConfigManager().isAnticrash() && Karhu.getInstance().getConfigManager().isLargeMove() && (Math.abs(location.getX()) > 3.0E7 || Math.abs(location.getY()) > 3.0E7 || Math.abs(location.getZ()) > 3.0E7 || (double)Math.abs(location.getPitch()) >= 1000.0 || Math.abs(location.getYaw()) >= Float.MAX_VALUE)) {
                   e.setCancelled(true);
                   data.handleKickAlert("Invalid position");
                   handleOthers = false;
@@ -227,10 +227,11 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                      WrapperPlayServerEntityEffect packet = new WrapperPlayServerEntityEffect(e);
                      boolean via = Karhu.getInstance().isViaVersion();
                      PotionType type = packet.getPotionType();
-                     if (data.getClientVersion().getProtocolVersion() <= 47 && via && type.getId() > 23) {
+                     int typeId = type.getId(data.getClientVersion());
+                     if (data.getClientVersion().getProtocolVersion() <= 47 && via && typeId > 23) {
                         e.setCancelled(true);
                         handleAsync = false;
-                     } else if (!data.isNewerThan12() && via && type.getId() == 30) {
+                     } else if (!data.isNewerThan12() && via && typeId == 30) {
                         e.setCancelled(true);
                         handleAsync = false;
                      }
@@ -318,16 +319,26 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
 
       data.setAttacks(0);
       if (!data.isDidFlagMovement()) {
+         boolean mathGround = MathUtil.onGround(Math.abs(data.getLocation().y));
          double distance = data.getLastLocation().distance(packet.getLocation());
-         boolean ground = data.isOnGroundServer() && packet.isOnGround() && (MathUtil.onGround(data.getLocation().y) || data.getMoveTicks() <= 1);
+         boolean ground = data.isOnGroundServer() && packet.isOnGround() && (mathGround || data.getMoveTicks() <= 1);
          boolean inside = data.isInsideBlock();
          boolean teleport = data.isPossiblyTeleporting() || data.getTeleportManager().teleportsPending > 0;
          if (ground && !inside && !teleport && distance <= 10.0 && now - data.getLastLocationUpdate() > 40L) {
             if (++data.invalidMovementTicks > 5) {
                CustomLocation groundSet = data.getLocation().clone();
                CustomLocation safeSet = data.getLocation().clone();
-               groundSet.setY(groundSet.getY() + 0.1);
-               safeSet.setY(groundSet.getY() + 0.1);
+               if (mathGround) {
+                  groundSet.setY(groundSet.getY() + 0.1);
+                  safeSet.setY(safeSet.getY() + 0.1);
+               }
+
+               if (data.invalidMovementTicks > 100) {
+                  groundSet.setY(groundSet.getY() - 0.1);
+                  safeSet.setY(groundSet.getY() - 0.1);
+                  data.invalidMovementTicks = 0;
+               }
+
                data.setSafeGroundSetback(groundSet);
                data.setSafeSetback(safeSet);
             }
@@ -960,7 +971,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                double x = pos.getX();
                double y = !checkBB ? pos.getY() : pos.getY() - 1.6200000047683716;
                double z = pos.getZ();
-               Teleport teleport = new Teleport(new TeleportPosition(x, y + 0.1, z));
+               Teleport teleport = new Teleport(new TeleportPosition(x, y, z));
                ++data.getTeleportManager().teleportAmount;
                ++data.getTeleportManager().teleportsPending;
                data.setSafeGroundSetback(teleport.position.toCLocation());

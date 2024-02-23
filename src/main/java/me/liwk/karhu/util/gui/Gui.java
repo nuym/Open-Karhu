@@ -240,7 +240,6 @@ public class Gui implements Listener {
 
    public void addItem(int page, ItemStack item, int pos) {
       if (this.getPages() != null && !this.getPages().isEmpty()) {
-         HashMap items;
          if (!this.items.containsKey(page)) {
             items = new HashMap();
             HashMap items = new HashMap();

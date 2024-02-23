@@ -87,8 +87,9 @@ public final class VelocityA extends PacketCheck {
                ++this.tick;
                double minPtc = this.data.getBukkitPlayer().getMaximumNoDamageTicks() < 5 ? 90.0 : 99.9915;
                double maxPtc = this.data.getBukkitPlayer().getMaximumNoDamageTicks() < 10 ? 600.0 : 101.0;
+               double addition = 1.0 + Math.min(2.0, Math.abs((dKb - dClientKb) * 1.5));
                if ((ptc < minPtc || ptc > maxPtc) && diff >= allowance) {
-                  if ((this.violations += 1.0 + Math.abs((dKb - dClientKb) * 1.5)) > 3.0) {
+                  if ((this.violations += addition) > 3.5) {
                      this.fail("* Vertical Modification\n §f* approx pct: §b" + this.format(2, ptc) + "\n §f* client: §b" + dClientKb + "\n §f* server: §b" + dKb + "\n §f* tick: §b" + this.tick, this.getBanVL(), 300L);
                   }
 

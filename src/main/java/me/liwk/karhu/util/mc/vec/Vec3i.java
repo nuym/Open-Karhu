@@ -1,6 +1,7 @@
 package me.liwk.karhu.util.mc.vec;
 
 import me.liwk.karhu.util.mc.MathHelper;
+import org.jetbrains.annotations.NotNull;
 
 public class Vec3i implements Comparable {
    public static final Vec3i NULL_VECTOR = new Vec3i(0, 0, 0);
@@ -70,4 +71,5 @@ public class Vec3i implements Comparable {
    public double distanceSq(Vec3i to) {
       return this.distanceSq((double)to.getX(), (double)to.getY(), (double)to.getZ());
    }
+
 }

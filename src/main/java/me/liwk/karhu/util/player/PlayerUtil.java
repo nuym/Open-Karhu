@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.data.KarhuPlayer;
-import me.liwk.karhu.util.player.PlayerUtil.1;
+import me.liwk.karhu.util.player.PlayerUtil;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 
@@ -55,7 +55,6 @@ public final class PlayerUtil {
       double moveSpeed = base;
 
       Iterator var5;
-      WrapperPlayServerUpdateAttributes.PropertyModifier modifier;
       for(var5 = getModifiers(PlayerUtil.Operation.MULTIPLY_BASE, collection).iterator(); var5.hasNext(); moveSpeed += base * modifier.getAmount()) {
          modifier = (WrapperPlayServerUpdateAttributes.PropertyModifier)var5.next();
       }

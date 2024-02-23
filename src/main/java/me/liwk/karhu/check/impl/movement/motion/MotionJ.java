@@ -93,7 +93,7 @@ public final class MotionJ extends PositionCheck {
 
          double offsetPlace = Math.abs(lastMotionY - 0.404444914);
          double offsetPlacePrediction = Math.abs(predictionDifference - 0.01524);
-         if (to.ground && motionY < 0.0 && prediction < motionY && MathUtil.onGround(to.getY())) {
+         if (to.ground && motionY < 0.0 && prediction < motionY && MathUtil.onGround(Math.abs(to.getY()))) {
             canFlag = false;
          }
 
@@ -122,7 +122,7 @@ public final class MotionJ extends PositionCheck {
             threshold += 0.8;
          }
 
-         if (Math.abs(predictionOffset) > threshold + min && Math.abs(prediction) >= threshold + min && canFlag && this.data.elapsed(this.data.getLastGlide()) >= 30 && this.data.elapsed(this.data.getLastRiptide()) >= 30 && !this.data.isUnderGhostBlock() && !this.data.isSpectating() && !this.data.isInsideBlock() && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
+         if (Math.abs(predictionOffset) > threshold + min && Math.abs(prediction) >= threshold + min && canFlag && this.data.elapsed(this.data.getLastGlide()) >= 30 && this.data.elapsed(this.data.getLastRiptide()) >= 30 && !this.data.isUnderGhostBlock() && !this.data.isOnLiquid() && !this.data.isSpectating() && !this.data.isInsideBlock() && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
             if (!underBlock && !climbable && !slime && !web && !piston && !this.data.isUnderWeb()) {
                if (!e.to.ground && !e.from.ground && this.data.getAirTicks() > 0 && ++this.violations > maxVL) {
                   String info = String.format("predict: %.3f, motionY: %.3f\nthreshold: %f, ct/st: %d/%d\nteleport: %d\nvelocity: %.4f\nmove: %d\ndeltaX/deltaZ: %.3f/%.3f", prediction, motionY, threshold, this.data.getClientAirTicks(), this.data.getAirTicks(), this.data.getTeleportManager().teleportTicks, tickVel != null ? tickVel.getY() : 0.0, this.data.getMoveTicks(), this.data.deltas.deltaX, this.data.deltas.deltaZ);

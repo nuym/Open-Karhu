@@ -31,6 +31,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Metrics {
    private final Plugin plugin;
@@ -61,11 +62,11 @@ public class Metrics {
       boolean logSentData = config.getBoolean("logSentData", false);
       boolean logResponseStatusText = config.getBoolean("logResponseStatusText", false);
       this.metricsBase = new MetricsBase("bukkit", serverUUID, serviceId, enabled, this::appendPlatformData, this::appendServiceData, (submitDataTask) -> {
-         Bukkit.getScheduler().runTask(plugin, submitDataTask);
-      }, plugin::isEnabled, (message, error) -> {
-         this.plugin.getLogger().log(Level.WARNING, message, error);
+         Bukkit.getScheduler().runTask(plugin, (BukkitRunnable) submitDataTask);
+      }, plugin::isEnabled, ( message, error) -> {
+         this.plugin.getLogger().log(Level.WARNING, (String) message, error);
       }, (message) -> {
-         this.plugin.getLogger().log(Level.INFO, message);
+         this.plugin.getLogger().log(Level.INFO, (String) message);
       }, logErrors, logSentData, logResponseStatusText);
    }
 
@@ -185,7 +186,7 @@ public class Metrics {
          if (this.builder == null) {
             throw new IllegalStateException("JSON has already been built");
          } else {
-            JsonObject object = new JsonObject(this.builder.append("}").toString(), (1)null);
+            JsonObject object = new JsonObject(this.builder.append("}").toString());
             this.builder = null;
             return object;
          }
@@ -221,11 +222,6 @@ public class Metrics {
 
          public String toString() {
             return this.value;
-         }
-
-         // $FF: synthetic method
-         JsonObject(String x0, 1 x1) {
-            this(x0);
          }
       }
    }
@@ -389,8 +385,8 @@ public class Metrics {
                if (var6 != null) {
                   try {
                      outputStream.close();
-                  } catch (Throwable var27) {
-                     var6.addSuppressed(var27);
+                  } catch (Throwable var28) {
+                     var6.addSuppressed(var28);
                   }
                } else {
                   outputStream.close();
@@ -418,8 +414,8 @@ public class Metrics {
                if (var7 != null) {
                   try {
                      bufferedReader.close();
-                  } catch (Throwable var28) {
-                     var7.addSuppressed(var28);
+                  } catch (Throwable var27) {
+                     var7.addSuppressed(var27);
                   }
                } else {
                   bufferedReader.close();

@@ -46,7 +46,7 @@ public class DesyncedBlockHandler {
          this.setbackEnabled = Karhu.getInstance().getConfigManager().isGbLagback();
          boolean serverAir = this.data.getAirTicks() >= 3 + Math.min(10, MathUtil.getPingInTicks((this.data.getTransactionPing() + this.data.getLastTransactionPing()) / 2L));
          boolean serverCollideHuge = this.data.isGroundNearBox();
-         boolean mathCollide = MathUtil.onGround(this.data.getLocation().y) || this.data.getMoveTicks() <= 1;
+         boolean mathCollide = MathUtil.onGround(Math.abs(this.data.getLocation().y)) || this.data.getMoveTicks() <= 1;
          boolean unloadedChunk = this.data.elapsed(this.data.getLastInUnloadedChunk()) <= 3;
          boolean clientBlockCollide = this.collidesWithClientBlock(true) || this.checkClientSideBlock(this.data.getLocation().toVector(), 2.0);
          this.data.setOnGhostBlock(clientCollide && mathCollide && clientBlockCollide && serverAir);

@@ -64,7 +64,7 @@ public final class SpeedB extends PositionCheck {
          }
 
          double threshold = this.data.getMoveTicks() <= 3 ? 0.0325 : 0.0105;
-         if (this.data.deltas.deltaXZ < 0.25 && this.data.getMoveTicks() <= 3 && e.from.ground) {
+         if (this.data.deltas.deltaXZ < 0.25 && this.data.getMoveTicks() <= 2 && e.from.ground) {
             threshold += 0.2;
          }
 
@@ -72,7 +72,7 @@ public final class SpeedB extends PositionCheck {
             threshold += 0.1;
          }
 
-         if (this.data.elapsed(this.data.getLastInBerry()) <= 1) {
+         if (this.data.elapsed(this.data.getLastInBerry()) <= 2) {
             threshold += 0.1;
          }
 

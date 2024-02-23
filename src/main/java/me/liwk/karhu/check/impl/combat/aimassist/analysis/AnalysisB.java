@@ -26,6 +26,10 @@ public class AnalysisB extends RotationCheck {
       super(data, karhu);
    }
 
+
+
+
+   @Override
    public void handle(MovementUpdate update) {
       if (this.data.getLastAttackTick() <= 60 && this.data.getLastTarget() != null) {
          if (this.data.getLastAttackTick() <= 40) {

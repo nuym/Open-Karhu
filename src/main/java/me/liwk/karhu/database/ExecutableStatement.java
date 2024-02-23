@@ -8,8 +8,6 @@ import java.sql.ResultSet;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.UUID;
-import me.liwk.karhu.util.NetUtil;
-
 public class ExecutableStatement {
    private PreparedStatement statement;
    private int pos = 1;
@@ -24,7 +22,6 @@ public class ExecutableStatement {
          try {
             var7 = this.statement.executeUpdate();
          } finally {
-            NetUtil.close(this.statement);
          }
 
          return var7;
@@ -34,7 +31,7 @@ public class ExecutableStatement {
       }
    }
 
-   public void execute(ResultSetIterator iterator) {
+   public void execute(ResultSetIterator iterator) throws Throwable {
       try {
          ResultSet rs = null;
 
@@ -54,7 +51,7 @@ public class ExecutableStatement {
       }
    }
 
-   public void executeSingle(ResultSetIterator iterator) {
+   public void executeSingle(ResultSetIterator iterator) throws Throwable {
       try {
          ResultSet rs = null;
 
@@ -75,7 +72,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ResultSet executeQuery() {
+   public ResultSet executeQuery() throws Throwable {
       try {
          return this.statement.executeQuery();
       } catch (Throwable var2) {
@@ -84,7 +81,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Object obj) {
+   public ExecutableStatement append(Object obj) throws Throwable {
       try {
          this.statement.setObject(this.pos++, obj);
          return this;
@@ -94,7 +91,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(String obj) {
+   public ExecutableStatement append(String obj) throws Throwable {
       try {
          this.statement.setString(this.pos++, obj);
          return this;
@@ -104,7 +101,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(UUID uuid) {
+   public ExecutableStatement append(UUID uuid) throws Throwable {
       try {
          if (uuid != null) {
             this.statement.setString(this.pos++, uuid.toString().replace("-", ""));
@@ -119,7 +116,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Array obj) {
+   public ExecutableStatement append(Array obj) throws Throwable {
       try {
          this.statement.setArray(this.pos++, obj);
          return this;
@@ -129,7 +126,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Integer obj) {
+   public ExecutableStatement append(Integer obj) throws Throwable {
       try {
          this.statement.setInt(this.pos++, obj);
          return this;
@@ -139,7 +136,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Short obj) {
+   public ExecutableStatement append(Short obj) throws Throwable {
       try {
          this.statement.setShort(this.pos++, obj);
          return this;
@@ -149,7 +146,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Long obj) {
+   public ExecutableStatement append(Long obj) throws Throwable {
       try {
          this.statement.setLong(this.pos++, obj);
          return this;
@@ -159,7 +156,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Float obj) {
+   public ExecutableStatement append(Float obj) throws Throwable {
       try {
          this.statement.setFloat(this.pos++, obj);
          return this;
@@ -169,7 +166,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Double obj) {
+   public ExecutableStatement append(Double obj) throws Throwable {
       try {
          this.statement.setDouble(this.pos++, obj);
          return this;
@@ -179,7 +176,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Date obj) {
+   public ExecutableStatement append(Date obj) throws Throwable {
       try {
          this.statement.setDate(this.pos++, obj);
          return this;
@@ -189,7 +186,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Timestamp obj) {
+   public ExecutableStatement append(Timestamp obj) throws Throwable {
       try {
          this.statement.setTimestamp(this.pos++, obj);
          return this;
@@ -199,7 +196,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Time obj) {
+   public ExecutableStatement append(Time obj) throws Throwable {
       try {
          this.statement.setTime(this.pos++, obj);
          return this;
@@ -209,7 +206,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(Blob obj) {
+   public ExecutableStatement append(Blob obj) throws Throwable {
       try {
          this.statement.setBlob(this.pos++, obj);
          return this;
@@ -219,7 +216,7 @@ public class ExecutableStatement {
       }
    }
 
-   public ExecutableStatement append(byte[] obj) {
+   public ExecutableStatement append(byte[] obj) throws Throwable {
       try {
          this.statement.setBytes(this.pos++, obj);
          return this;

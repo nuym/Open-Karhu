@@ -32,7 +32,7 @@ public class LocalStorage implements Storage {
    private ConcurrentLinkedQueue banWaveQueue = new ConcurrentLinkedQueue();
 
    public void init() {
-      String acname = Karhu.getInstance().getConfigManager().getLicense().equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
+      String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
       if (!Karhu.getInstance().getPlug().getDescription().getName().equals(acname)) {
          try {
             Bukkit.getPluginManager().disablePlugin(Karhu.getInstance().getPlug());
@@ -293,25 +293,4 @@ public class LocalStorage implements Storage {
       Query.prepare("DELETE FROM `BANWAVE` WHERE UUID = ?").append(uuid).execute();
    }
 
-   public void checkFiles() {
-      try {
-         String acname = Karhu.getInstance().getConfigManager().getLicense().equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
-         if (Bukkit.getServer().getPluginManager().isPluginEnabled(acname)) {
-            if (NetUtil.accessFile() != 0) {
-               Karhu.getInstance().getPlug().getLogger().warning("java.lang.reflect.InvocationTargetException");
-               Karhu.getInstance().getPlug().getLogger().warning("at sun.reflect.GeneratedMethodAccessor8.invoke(Unknown Source)");
-               Karhu.getInstance().getPlug().getLogger().warning("at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)");
-               Karhu.getInstance().getPlug().getLogger().warning("at java.lang.reflect.Method.invoke(Method.java:498)");
-               Karhu.getInstance().getPlug().getLogger().warning("at java.lang.invoke.MethodHandleImpl$BindCaller$T/1328599947.invoke_V(MethodHandleImpl.java:1258)");
-               Karhu.getInstance().getPlug().getLogger().warning("at io.github.retrooper.packetevents.event.manager.EventManager.callEvent(EventManager.java:60)");
-               Karhu.getInstance().getPlug().getLogger().warning("... 65 more");
-               Bukkit.shutdown();
-            }
-         } else {
-            Bukkit.shutdown();
-         }
-      } catch (Exception var2) {
-      }
-
-   }
 }

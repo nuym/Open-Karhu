@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import me.liwk.karhu.util.mc.MathHelper;
-import me.liwk.karhu.util.mc.facing.EnumFacing.EnumFacing.1;
+import me.liwk.karhu.util.mc.facing.EnumFacing.EnumFacing;
 import me.liwk.karhu.util.mc.string.IStringSerializable;
 import me.liwk.karhu.util.mc.vec.Vec3i;
 

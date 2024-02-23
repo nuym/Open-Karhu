@@ -24,6 +24,7 @@ import org.bukkit.entity.Player;
 public final class SpeedA extends PositionCheck {
    private double lastDeltaH;
    private boolean flagNoSlowLast;
+   private double zeroPointThree;
 
    public SpeedA(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
@@ -149,15 +150,20 @@ public final class SpeedA extends PositionCheck {
 
       if (this.data.isWasInWeb()) {
          tags.add("web");
-         if (Karhu.getInstance().getConfigManager().isFlagNoWeb()) {
-            movementSpeed = (float)((double)movementSpeed * 0.25);
-         }
       }
 
       if (this.data.getMoveTicks() <= 2) {
-         movementSpeed = (float)((double)movementSpeed + 0.1525);
-      } else if (this.lastDeltaH <= 0.06) {
-         movementSpeed = (float)((double)movementSpeed + 0.06);
+         if (this.zeroPointThree <= 15.0) {
+            movementSpeed = (float)((double)movementSpeed + 0.1525);
+         }
+
+         ++this.zeroPointThree;
+      } else {
+         if (this.lastDeltaH <= 0.06) {
+            movementSpeed = (float)((double)movementSpeed + 0.03);
+         }
+
+         this.zeroPointThree = Math.max(0.0, this.zeroPointThree - 0.2);
       }
 
       boolean flag1 = false;
@@ -184,7 +190,7 @@ public final class SpeedA extends PositionCheck {
             movementSpeed += 3.0F;
          }
 
-         movementSpeed = (float)((double)movementSpeed + Math.abs(movementSpeed2) + velocity2);
+         movementSpeed = (float)((double)movementSpeed + Math.abs(movementSpeed2) + velocity2 + 0.03);
          setback = true;
       }
 

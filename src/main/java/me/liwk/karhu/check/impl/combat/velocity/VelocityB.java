@@ -65,7 +65,7 @@ public final class VelocityB extends PacketCheck {
 
             this.kbX = Math.abs(this.kbX) < this.data.clamp() ? 0.0 : this.kbX;
             this.kbZ = Math.abs(this.kbZ) < this.data.clamp() ? 0.0 : this.kbZ;
-            if (!this.data.isInWeb() && !this.data.isGliding() && !this.data.isRiding() && this.data.elapsed(this.data.getLastSneakEdge()) > 5 && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getLastOnClimbable()) > 5 && this.data.elapsed(this.data.getLastCollidedWithEntity()) > 8 && this.data.elapsed(this.data.getLastInLiquid()) > 5 && this.data.elapsed(this.data.getLastOnBoat()) > 1 && this.data.elapsed(this.data.getLastCollided()) > 1 && this.data.elapsed(this.data.getLastCollidedGhost()) > 1) {
+            if (!this.data.isInWeb() && !this.data.isWasInWeb() && !this.data.isGliding() && !this.data.isRiding() && this.data.elapsed(this.data.getLastSneakEdge()) > 5 && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getLastOnClimbable()) > 5 && this.data.elapsed(this.data.getLastCollidedWithEntity()) > 8 && this.data.elapsed(this.data.getLastInLiquid()) > 5 && this.data.elapsed(this.data.getLastOnBoat()) > 1 && this.data.elapsed(this.data.getLastCollided()) > 1 && this.data.elapsed(this.data.getLastCollidedGhost()) > 1) {
                VelocityData5 data = this.computeKeys(this.kbX, this.kbZ);
                if (data == null) {
                   this.resetState();
@@ -91,7 +91,7 @@ public final class VelocityB extends PacketCheck {
                   double minPtc = 99.99;
                   minPtc -= this.data.getBukkitPlayer().getMaximumNoDamageTicks() < 10 ? 20.0 : 0.0;
                   minPtc -= this.data.isNewerThan8() ? 20.0 : 0.0;
-                  double maxVL = this.data.isNewerThan8() ? 7.0 : 4.0;
+                  double maxVL = this.data.isNewerThan8() ? 8.0 : 5.0;
                   boolean reversed = dKbZ < -0.05 || dKbX < -0.05;
                   if (thinkJump) {
                      float radians = this.data.getLocation().getYaw() * 0.017453292F;

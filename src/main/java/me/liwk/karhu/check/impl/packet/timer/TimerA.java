@@ -43,12 +43,13 @@ public final class TimerA extends PacketCheck {
          long capLenght = Karhu.getInstance().getConfigManager().getTimerACapLenght() + MathUtil.toNanos(2000L);
          long now = ((FlyingEvent)packet).getNanoTime();
          long delay = 50000000L - (now - this.lastFlyingPacket);
+         long diff = Math.max(50000000L, now - this.lastFlyingPacket);
          this.balance = Math.max(-capLenght, this.balance + delay);
          if (this.balance > 50000000L + MathUtil.toNanos(5L)) {
             if (this.ready()) {
                if (++this.violations > 1.0) {
                   if (!this.capped) {
-                     this.fail("* Timer\n§f* BL §b" + this.balance / 1000000L + "\n§f* RATE §b" + Math.min(50000000L / (now - this.lastFlyingPacket), 10L) + "\n§f* EXISTED §b" + this.data.getTotalTicks(), this.getBanVL(), 120L);
+                     this.fail("* Timer\n§f* BL §b" + this.balance / 1000000L + "\n§f* RATE §b" + Math.min(50000000L / diff, 10L) + "\n§f* EXISTED §b" + this.data.getTotalTicks(), this.getBanVL(), 120L);
                   } else {
                      this.kickTimer();
                   }

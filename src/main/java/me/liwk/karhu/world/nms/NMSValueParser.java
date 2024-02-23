@@ -283,7 +283,7 @@ public final class NMSValueParser {
       }
 
       return (Pair)dataAssessments.get(dataAssessments.keySet().stream().mapToDouble((d) -> {
-         return d;
+         return (double) d;
       }).min().orElse(3865386.0));
    }
 
@@ -302,7 +302,7 @@ public final class NMSValueParser {
          ++j;
          if (j > data.getAttacks()) {
             Pair pair = (Pair)diffs.get(diffs.keySet().stream().mapToDouble((d) -> {
-               return d;
+               return (double) d;
             }).min().orElse(0.0));
             diffs.clear();
             return pair;

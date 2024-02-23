@@ -385,7 +385,7 @@ public class TransactionHandler {
                   return;
                }
 
-               effectId = wrapper.getPotionType().getId();
+               effectId = wrapper.getPotionType().getId(data.getClientVersion());
                int amplifier = wrapper.getEffectAmplifier();
                data.queueToPrePing((uid) -> {
                   data.getEffectManager().addPotionEffect(effectId, amplifier);
@@ -398,7 +398,7 @@ public class TransactionHandler {
                }
 
                data.queueToPrePing((uid) -> {
-                  data.getEffectManager().removePotionEffect(wrapper.getPotionType().getId());
+                  data.getEffectManager().removePotionEffect(wrapper.getPotionType().getId(data.getClientVersion()));
                });
                break;
             case UPDATE_ATTRIBUTES:
@@ -585,7 +585,7 @@ public class TransactionHandler {
 
       int absT = Math.abs(data.getCurrentServerTransaction());
       int absTL = Math.abs(number);
-      if (absT - absTL > 1 && absT - absTL < 50) {
+      if (absT - absTL > 1 && absT - absTL < 50 && Karhu.getInstance().getConfigManager().isNethandler() && (Karhu.getInstance().getConfigManager().isDelay() || Karhu.getInstance().getConfigManager().isSpoof())) {
          Karhu.getInstance().printCool("&b> &fTransactions have been skipped, proxy issue? " + absT + " | " + absTL);
       }
 
