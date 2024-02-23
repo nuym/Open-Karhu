@@ -6,4 +6,3 @@ Some thing is missing,still in compiling and replenishment,wait for my friend se
 ## Special Thanks
 - [Karhu](https://www.karhu.ac/)
 - [NaerQAQ](https://github.com/NaerQAQ)
-- [Sakuratao](https://github.com/SakuraTao2007)
