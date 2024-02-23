@@ -21,8 +21,8 @@ public class MySQL {
             Query.prepare("USE `" + config.getString("mysql.database") + "`").execute();
             Karhu.getInstance().printCool("&b> &aConnection to SQLite has been established.");
          }
-      } catch (Exception var1) {
-         Exception e = var1;
+      } catch (Throwable var1) {
+         Exception e = (Exception) var1;
          Karhu.getInstance().printCool("&b> &cConnection to SQLite has failed.");
          e.printStackTrace();
       }

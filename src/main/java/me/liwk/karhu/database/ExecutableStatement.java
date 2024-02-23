@@ -16,7 +16,7 @@ public class ExecutableStatement {
       this.statement = statement;
    }
 
-   public Integer execute() {
+   public Integer execute() throws Throwable {
       try {
          Integer var7;
          try {
@@ -42,7 +42,7 @@ public class ExecutableStatement {
                iterator.next(rs);
             }
          } finally {
-            NetUtil.close(this.statement, rs);
+
          }
 
       } catch (Throwable var7) {
@@ -63,7 +63,6 @@ public class ExecutableStatement {
                iterator.next((ResultSet)null);
             }
          } finally {
-            NetUtil.close(this.statement, rs);
          }
 
       } catch (Throwable var7) {

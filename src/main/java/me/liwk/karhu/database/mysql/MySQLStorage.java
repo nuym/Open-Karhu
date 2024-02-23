@@ -27,7 +27,7 @@ public class MySQLStorage implements Storage {
    private ConcurrentLinkedQueue bans = new ConcurrentLinkedQueue();
    private ConcurrentLinkedQueue banWaveQueue = new ConcurrentLinkedQueue();
 
-   public void init() {
+   public void init() throws Throwable {
       MySQL.init();
       Query.prepare("CREATE TABLE IF NOT EXISTS `ALERTS` (`UUID` TEXT NOT NULL,`MODULE` TEXT NOT NULL,`VL` SMALLINT NOT NULL,`TIME` LONG NOT NULL,`EXTRA` TEXT,`COORDS` TEXT,`WORLD` TEXT,`PING` LONG NOT NULL,`TPS` DOUBLE NOT NULL)").execute();
       Query.prepare("CREATE TABLE IF NOT EXISTS `ALERTSTATUS` (`UUID` VARCHAR(36) NOT NULL,`STATUS` TINYINT(1) NOT NULL,PRIMARY KEY (UUID))").execute();
@@ -54,6 +54,8 @@ public class MySQLStorage implements Storage {
                         } catch (Exception var6) {
                            ex = var6;
                            ex.printStackTrace();
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
                         }
                      }
 
@@ -69,8 +71,8 @@ public class MySQLStorage implements Storage {
                         try {
                            MySQL.use();
                            Query.prepare("INSERT INTO `BANS` (`UUID`, `MODULE`, `TIME`, `EXTRA`, `PING`, `TPS`) VALUES (?,?,?,?,?,?)").append(ban.player).append(ban.type).append(ban.time).append(ban.data).append(ban.ping).append(ban.TPS).execute();
-                        } catch (Exception var5) {
-                           ex = var5;
+                        } catch (Throwable var5) {
+                           ex = (Exception) var5;
                            ex.printStackTrace();
                         }
                      }
@@ -87,8 +89,8 @@ public class MySQLStorage implements Storage {
                         try {
                            MySQL.use();
                            Query.prepare("INSERT INTO `BANWAVE` (`UUID`, `MODULE`, `TIME`, `TOTALLOGS`) VALUES (?,?,?,?)").append(wave.player).append(wave.type).append(wave.time).append(wave.totalLogs).execute();
-                        } catch (Exception var4) {
-                           ex = var4;
+                        } catch (Throwable var4) {
+                           ex = (Exception) var4;
                            ex.printStackTrace();
                         }
                      }
@@ -171,7 +173,7 @@ public class MySQLStorage implements Storage {
 
    }
 
-   public List getViolations(String uuid, Check type, int page, int limit, long from, long to) {
+   public List getViolations(String uuid, Check type, int page, int limit, long from, long to) throws Throwable {
       MySQL.use();
       List violations = new ArrayList();
       Query.prepare("SELECT `MODULE`, `VL`, `TIME`, `EXTRA`, `COORDS`, `WORLD`, `PING`, `TPS` FROM `ALERTS` WHERE `UUID` = ? ORDER BY `TIME` DESC LIMIT ?,?").append(uuid).append(page * limit).append(limit).execute((rs) -> {
@@ -180,7 +182,7 @@ public class MySQLStorage implements Storage {
       return violations;
    }
 
-   public int getViolationAmount(String uuid) {
+   public int getViolationAmount(String uuid) throws Throwable {
       MySQL.use();
       AtomicInteger violations = new AtomicInteger();
       Query.prepare("SELECT `MODULE`, `VL`, `TIME`, `EXTRA`, `COORDS`, `WORLD`, `PING`, `TPS` FROM `ALERTS` WHERE `UUID` = ? ORDER BY `TIME`").append(uuid).execute((rs) -> {
@@ -189,7 +191,7 @@ public class MySQLStorage implements Storage {
       return violations.get();
    }
 
-   public List getAllViolations(String uuid) {
+   public List getAllViolations(String uuid) throws Throwable {
       MySQL.use();
       List violations = new ArrayList();
       Query.prepare("SELECT `MODULE`, `VL`, `TIME`, `EXTRA`, `COORDS`, `WORLD`, `PING`, `TPS` FROM `ALERTS` WHERE `UUID` = ? ORDER BY `TIME`").append(uuid).execute((rs) -> {
@@ -198,7 +200,7 @@ public class MySQLStorage implements Storage {
       return violations;
    }
 
-   public int getAllViolationsInStorage() {
+   public int getAllViolationsInStorage() throws Throwable {
       List violations = new ArrayList();
       Query.prepare("SELECT `MODULE`, `VL`, `TIME`, `EXTRA`, `COORDS`, `WORLD`, `PING`, `TPS` FROM `ALERTS` ORDER BY `TIME`").execute((rs) -> {
          violations.add(new ViolationX("s", rs.getString(1), rs.getInt(2), rs.getLong(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getLong(7), rs.getDouble(8)));
@@ -206,7 +208,7 @@ public class MySQLStorage implements Storage {
       return violations.size();
    }
 
-   public List getRecentBans() {
+   public List getRecentBans() throws Throwable {
       List bans = new ArrayList();
       Query.prepare("SELECT `UUID`, `MODULE`, `TIME`, `EXTRA`, `COORDS`, `PING`, `TPS` FROM `BANS` ORDER BY `TIME`").execute((rs) -> {
          bans.add(new BanX(rs.getString(1), rs.getString(2), rs.getLong(3), rs.getString(4), rs.getLong(5), rs.getDouble(6)));
@@ -215,12 +217,12 @@ public class MySQLStorage implements Storage {
       return bans.subList(0, Math.min(bans.size(), 10));
    }
 
-   public void purge(String uuid, boolean all) {
+   public void purge(String uuid, boolean all) throws Throwable {
       Query.prepare("DELETE FROM `ALERTS` WHERE UUID = ?").append(uuid).execute();
       Query.prepare("DELETE FROM `BANS` WHERE UUID = ?").append(uuid).execute();
    }
 
-   public List getBanwaveList() {
+   public List getBanwaveList() throws Throwable {
       MySQL.use();
       List players = new ArrayList();
       Query.prepare("SELECT `UUID` FROM `BANWAVE` ORDER BY `TIME`").execute((rs) -> {
@@ -233,7 +235,7 @@ public class MySQLStorage implements Storage {
       try {
          ResultSet rs = Query.prepare("SELECT `MODULE`, `TIME`, `TOTALLOGS` FROM `BANWAVE` WHERE `UUID` = ? ORDER BY `TIME` DESC LIMIT ?,?").append(uuid).executeQuery();
          return rs.first();
-      } catch (Exception var3) {
+      } catch (Throwable var3) {
          return false;
       }
    }
@@ -245,7 +247,7 @@ public class MySQLStorage implements Storage {
 
    }
 
-   public void removeFromBanWave(String uuid) {
+   public void removeFromBanWave(String uuid) throws Throwable {
       Optional bwx = this.banWaveQueue.stream().filter((bw) -> {
          return bw.player.equals(uuid);
       }).findFirst();
