@@ -23,16 +23,17 @@ import me.liwk.karhu.util.update.MovementUpdate;
    experimental = true
 )
 public class AnalysisE extends RotationCheck {
-   private final Deque pitchMatchList = new LinkedList();
-   private final Deque yawMatchList = new LinkedList();
+   private final Deque<Float> pitchMatchList = new LinkedList<>();
+   private final Deque<Float> yawMatchList = new LinkedList<>();
 
    public AnalysisE(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       if (this.data.getLastAttackTick() <= 1 && this.data.getLastTarget() != null && this.data.deltas.deltaXZ > 0.1) {
-         EntityData edata = (EntityData)this.data.getEntityData().get(this.data.getLastTarget().getEntityId());
+         EntityData edata = this.data.getEntityData().get(this.data.getLastTarget().getEntityId());
          if (edata != null) {
             AxisAlignedBB entityBB = edata.getEntityBoundingBox();
             AxisAlignedBB entityBBLast = edata.getEntityBoundingBoxLast();
@@ -40,30 +41,24 @@ public class AnalysisE extends RotationCheck {
                float deltaYaw = this.data.deltas.deltaYaw;
                float deltaPitch = this.data.deltas.deltaPitch;
                float[] rotationBasic = this.getRotations(update.from, entityBB, entityBBLast);
-               float delta;
                if (deltaYaw > 0.0F) {
-                  delta = MathUtil.getAngleDistance(rotationBasic[0], update.to.yaw);
+                  float delta = MathUtil.getAngleDistance(rotationBasic[0], update.to.yaw);
                   this.yawMatchList.add(delta);
                }
 
                if (deltaPitch > 0.0F) {
-                  delta = MathUtil.getAngleDistance(rotationBasic[1], update.to.pitch);
+                  float delta = MathUtil.getAngleDistance(rotationBasic[1], update.to.pitch);
                   this.pitchMatchList.add(delta);
                }
             }
          }
       }
 
-      Deque closes;
-      int matches;
-      double average;
       if (this.yawMatchList.size() == 100) {
-         closes = (Deque)this.yawMatchList.stream().filter((deltax) -> {
-            return deltax <= 1.5F;
-         }).collect(Collectors.toCollection(LinkedList::new));
-         matches = closes.size();
+         Deque<Float> closes = this.yawMatchList.stream().filter(deltax -> deltax <= 1.5F).collect(Collectors.toCollection(LinkedList::new));
+         int matches = closes.size();
          if (matches >= 75) {
-            average = MathUtil.getAverage(closes);
+            double average = MathUtil.getAverage(closes);
             this.fail("* Rotation analysis (generic, yaw)\n §f* avg: §b" + average + "\n §f* rate: §b" + matches, this.getBanVL(), 300L);
          }
 
@@ -71,18 +66,15 @@ public class AnalysisE extends RotationCheck {
       }
 
       if (this.pitchMatchList.size() == 100) {
-         closes = (Deque)this.pitchMatchList.stream().filter((deltax) -> {
-            return deltax <= 1.0F;
-         }).collect(Collectors.toCollection(LinkedList::new));
-         matches = closes.size();
+         Deque<Float> closes = this.pitchMatchList.stream().filter(deltax -> deltax <= 1.0F).collect(Collectors.toCollection(LinkedList::new));
+         int matches = closes.size();
          if (matches >= 75) {
-            average = MathUtil.getAverage(closes);
+            double average = MathUtil.getAverage(closes);
             this.fail("* Rotation analysis (generic, pitch)\n §f* avg: §b" + average + "\n §f* rate: §b" + matches, this.getBanVL(), 300L);
          }
 
          this.pitchMatchList.clear();
       }
-
    }
 
    private float[] getRotations(CustomLocation playerLocation, AxisAlignedBB aabb, AxisAlignedBB aabbLast) {

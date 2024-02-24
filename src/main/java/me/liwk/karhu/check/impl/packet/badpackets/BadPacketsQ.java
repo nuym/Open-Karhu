@@ -21,6 +21,7 @@ public final class BadPacketsQ extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent && Karhu.SERVER_VERSION.isOlderThanOrEquals(ServerVersion.V_1_8_8)) {
          int face = ((BlockPlaceEvent)packet).getFace();
@@ -34,6 +35,5 @@ public final class BadPacketsQ extends PacketCheck {
             this.fail("* Invalid blockplace\n §f* FACE: §b" + face + "\n §f* SUM2: §b" + (blockX + blockY + blockZ), this.getBanVL(), 310L);
          }
       }
-
    }
 }

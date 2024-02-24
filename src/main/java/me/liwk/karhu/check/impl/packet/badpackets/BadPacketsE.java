@@ -22,6 +22,7 @@ public final class BadPacketsE extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof HeldItemSlotEvent) {
          int slot = ((HeldItemSlotEvent)packet).getSlot();
@@ -31,6 +32,5 @@ public final class BadPacketsE extends PacketCheck {
 
          this.lastSlot = ((HeldItemSlotEvent)packet).getSlot();
       }
-
    }
 }

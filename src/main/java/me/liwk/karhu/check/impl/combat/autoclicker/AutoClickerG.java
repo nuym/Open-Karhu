@@ -20,7 +20,7 @@ import me.liwk.karhu.event.SwingEvent;
    credits = "§c§lCREDITS: §aMexican §7made this check."
 )
 public final class AutoClickerG extends PacketCheck {
-   private final Deque delays = new ArrayDeque();
+   private final Deque<Integer> delays = new ArrayDeque<>();
    private int delay;
    private int vl;
 
@@ -28,6 +28,7 @@ public final class AutoClickerG extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          boolean valid = !this.data.isPlacing() && !this.data.isHasDig() && !this.data.isUsingItem();
@@ -40,11 +41,7 @@ public final class AutoClickerG extends PacketCheck {
          }
 
          if (this.delays.size() == 27) {
-            int delta = this.delays.stream().mapToInt((i) -> {
-               return i;
-            }).max().orElse(0) - this.delays.stream().mapToInt((i) -> {
-               return i;
-            }).min().orElse(0);
+            int delta = this.delays.stream().mapToInt(i -> i).max().orElse(0) - this.delays.stream().mapToInt(i -> i).min().orElse(0);
             if (delta == 1) {
                if (++this.vl > 22) {
                   this.fail("* Impossible large-sample sequence", this.getBanVL(), 10000L);
@@ -62,6 +59,5 @@ public final class AutoClickerG extends PacketCheck {
       } else if (packet instanceof FlyingEvent) {
          ++this.delay;
       }
-
    }
 }

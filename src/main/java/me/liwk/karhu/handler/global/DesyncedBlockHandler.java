@@ -3,12 +3,11 @@ package me.liwk.karhu.handler.global;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.setback.Setbacks;
-import me.liwk.karhu.data.Deltas;
 import me.liwk.karhu.data.KarhuPlayer;
 import me.liwk.karhu.handler.collision.type.MaterialChecks;
 import me.liwk.karhu.manager.alert.MiscellaneousAlertPoster;
@@ -20,8 +19,8 @@ import me.liwk.karhu.util.player.BlockUtil;
 import me.liwk.karhu.util.player.PlayerUtil;
 import me.liwk.karhu.util.task.Tasker;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
@@ -38,13 +37,14 @@ public class DesyncedBlockHandler {
    private int lastCollidesClientBlock;
    private boolean setbacked;
    private boolean setbackEnabled;
-   private final Set clientSideBlocks = ConcurrentHashMap.newKeySet();
+   private final Set<BlockPlacePending> clientSideBlocks = ConcurrentHashMap.newKeySet();
    public int invalidPlaces;
 
    public void handleFlying(boolean moved, boolean clientCollide, boolean moveEvent) {
       if (Karhu.getInstance().getConfigManager().isGhostBlock()) {
          this.setbackEnabled = Karhu.getInstance().getConfigManager().isGbLagback();
-         boolean serverAir = this.data.getAirTicks() >= 3 + Math.min(10, MathUtil.getPingInTicks((this.data.getTransactionPing() + this.data.getLastTransactionPing()) / 2L));
+         boolean serverAir = this.data.getAirTicks()
+            >= 3 + Math.min(10, MathUtil.getPingInTicks((this.data.getTransactionPing() + this.data.getLastTransactionPing()) / 2L));
          boolean serverCollideHuge = this.data.isGroundNearBox();
          boolean mathCollide = MathUtil.onGround(Math.abs(this.data.getLocation().y)) || this.data.getMoveTicks() <= 1;
          boolean unloadedChunk = this.data.elapsed(this.data.getLastInUnloadedChunk()) <= 3;
@@ -60,16 +60,14 @@ public class DesyncedBlockHandler {
             this.desyncTicksUncertain = Math.max(this.desyncTicksUncertain - 0.0075, 0.0);
          }
 
-         CustomLocation location;
          if (clientCollide && serverAir && !mathCollide) {
             if (++this.uncertainTicks >= 2.0 && this.setbackEnabled && this.data.getMoveTicks() > 1) {
-               location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
+               CustomLocation location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
                if (!this.data.isPossiblyTeleporting() && !this.data.couldBeUnloadedClient() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
                   Tasker.run(() -> {
                      if (!this.data.isPossiblyTeleporting() && !this.data.couldBeUnloadedClient() && this.data.getTotalTicks() > 20) {
                         this.data.teleport(location);
                      }
-
                   });
                   this.data.setDidFlagMovement(true);
                   this.data.setCancelHitsTick(this.data.getTotalTicks());
@@ -84,13 +82,12 @@ public class DesyncedBlockHandler {
          }
 
          if (clientCollide && serverAir && this.invalidPlaces > 3 && this.setbackEnabled) {
-            location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
+            CustomLocation location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
             if (!this.data.isPossiblyTeleporting() && !this.data.couldBeUnloadedClient() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
                Tasker.run(() -> {
                   if (!this.data.isPossiblyTeleporting() && !this.data.couldBeUnloadedClient() && this.data.getTotalTicks() > 20) {
                      this.data.teleport(location);
                   }
-
                });
                this.data.setDidFlagMovement(true);
                this.data.setLastMovementFlag(this.data.getTotalTicks());
@@ -123,10 +120,13 @@ public class DesyncedBlockHandler {
    }
 
    private void handleBelowDesync(boolean serverCollideHuge, boolean moveEvent) {
-      CustomLocation location;
       if (!serverCollideHuge) {
-         if (this.setbackEnabled && !this.data.isPossiblyTeleporting() && !this.data.isOnClimbable() && !this.data.couldBeUnloadedClient() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
-            location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
+         if (this.setbackEnabled
+            && !this.data.isPossiblyTeleporting()
+            && !this.data.isOnClimbable()
+            && !this.data.couldBeUnloadedClient()
+            && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
+            CustomLocation location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
             double deltaY = this.data.deltas.motionY;
             double horizontal = this.data.getLocation().horizontal(location);
             double vertical = this.data.getLocation().vertical(location);
@@ -136,7 +136,6 @@ public class DesyncedBlockHandler {
                if (deltaY < -0.1) {
                   this.data.getBukkitPlayer().damage(1.0);
                }
-
             });
             this.data.setDidFlagMovement(true);
             this.data.setLastMovementFlag(this.data.getTotalTicks());
@@ -148,12 +147,10 @@ public class DesyncedBlockHandler {
          this.updateBlocksServerside();
       } else if (!moveEvent && ++this.desyncTicksUncertain > 15.0) {
          if (this.setbackEnabled) {
-            location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
+            CustomLocation location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
             if (!this.data.isPossiblyTeleporting() && !this.data.couldBeUnloadedClient() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
                this.setbacked = true;
-               Tasker.run(() -> {
-                  this.data.teleport(location);
-               });
+               Tasker.run(() -> this.data.teleport(location));
             }
 
             this.data.setDidFlagMovement(true);
@@ -164,7 +161,6 @@ public class DesyncedBlockHandler {
          this.desyncTicksUncertain = 0.0;
          this.updateBlocksServerside();
       }
-
    }
 
    private void handleHorizontal(boolean serverCollide) {
@@ -208,7 +204,6 @@ public class DesyncedBlockHandler {
       if (glitchWall && this.data.elapsed(this.data.getLastVelocityTaken()) >= 0 && this.data.elapsed(this.data.getLastVelocityTaken()) <= 5) {
          this.velocityAbuse = Math.max(this.velocityAbuse - 0.125, 0.0);
       }
-
    }
 
    private void handleAboveDesync() {
@@ -216,7 +211,7 @@ public class DesyncedBlockHandler {
          double motionY = this.data.deltas.motionY;
          double lMotionY = this.data.deltas.lastMotionY;
          double clamp = this.data.getClientVersion().getProtocolVersion() > 47 ? 0.003 : 0.005;
-         double prediction = (lMotionY - 0.08) * 0.9800000190734863;
+         double prediction = (lMotionY - 0.08) * 0.98F;
          if (prediction < clamp) {
             prediction = 0.0;
          }
@@ -229,7 +224,19 @@ public class DesyncedBlockHandler {
          double diff = Math.abs(motionY - prediction);
          boolean slabHit = Math.abs(diff - 0.05) <= clamp;
          boolean higher = this.data.getLocation().getY() > this.data.getLastLocation().getY();
-         boolean desyncedAbove = diff > 0.02 && (higher && motionY < 0.41999998688697815 || lMotionY >= 0.41999998688697815 && slabHit) && (this.data.elapsed(this.data.getLastCollidedV()) > 2 || !this.data.isUnderBlockStrict()) && this.data.getClientAirTicks() <= 4 && this.data.elapsed(this.data.getLastVelocityTaken()) > 2 && this.data.elapsed(this.data.getLastInBerry()) > 2 && !this.data.isOnClimbable() && !this.data.isOnSoulsand() && !this.data.isOnSlime() && !this.data.isWasOnClimbable() && this.data.elapsed(this.data.getLastInPowder()) > 3 && this.data.elapsed(this.data.getLastInLiquidOffset()) > 3 && this.data.elapsed(this.data.getLastInLiquid()) > 3;
+         boolean desyncedAbove = diff > 0.02
+            && (higher && motionY < 0.42F || lMotionY >= 0.42F && slabHit)
+            && (this.data.elapsed(this.data.getLastCollidedV()) > 2 || !this.data.isUnderBlockStrict())
+            && this.data.getClientAirTicks() <= 4
+            && this.data.elapsed(this.data.getLastVelocityTaken()) > 2
+            && this.data.elapsed(this.data.getLastInBerry()) > 2
+            && !this.data.isOnClimbable()
+            && !this.data.isOnSoulsand()
+            && !this.data.isOnSlime()
+            && !this.data.isWasOnClimbable()
+            && this.data.elapsed(this.data.getLastInPowder()) > 3
+            && this.data.elapsed(this.data.getLastInLiquidOffset()) > 3
+            && this.data.elapsed(this.data.getLastInLiquid()) > 3;
          if (desyncedAbove) {
             if (this.data.getTotalTicks() > 40 && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
                this.data.setUnderGhostBlock(true);
@@ -257,22 +264,13 @@ public class DesyncedBlockHandler {
          this.data.setUnderGhostBlock(false);
          this.aboveTicks = Math.max(0.0, this.aboveTicks - 0.2);
       }
-
    }
 
    private void handleLiquidDesync(boolean collided) {
       if (!collided && !this.data.isLastOnGroundPacket() && !this.data.isPossiblyTeleporting() && !this.data.isTakingVertical()) {
-         double var14;
-         if (this.data.deltas.lastMotionY > 0.0) {
-            Deltas var10000 = this.data.deltas;
-            var14 = var10000.lastLastMotionY += 0.03999999910593033;
-         } else {
-            var14 = this.data.deltas.lastLastMotionY;
-         }
-
-         double fixedLastMotion = var14;
-         double predictionLava = !this.data.isCollidedHorizontalClient() ? fixedLastMotion * 0.5 - 0.02 : 0.30000001192092896;
-         double predictionWater = !this.data.isCollidedHorizontalClient() ? fixedLastMotion * 0.800000011920929 - 0.02 : 0.30000001192092896;
+         double fixedLastMotion = this.data.deltas.lastMotionY > 0.0 ? (this.data.deltas.lastLastMotionY += 0.04F) : this.data.deltas.lastLastMotionY;
+         double predictionLava = !this.data.isCollidedHorizontalClient() ? fixedLastMotion * 0.5 - 0.02 : 0.3F;
+         double predictionWater = !this.data.isCollidedHorizontalClient() ? fixedLastMotion * 0.8F - 0.02 : 0.3F;
          double differenceLava = Math.abs(this.data.deltas.lastMotionY - predictionLava);
          double differenceWater = Math.abs(this.data.deltas.lastMotionY - predictionWater);
          if (differenceLava <= 1.0E-4 && this.data.elapsed(this.data.getLastInLiquid()) >= 3 && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
@@ -295,7 +293,11 @@ public class DesyncedBlockHandler {
             this.lavaDesyncTicks = Math.max(this.lavaDesyncTicks - 0.01, 0.0);
          }
 
-         if (differenceWater <= 1.0E-4 && this.data.elapsed(this.data.getLastInLiquid()) >= 3 && !this.data.isWasWasOnClimbable() && !this.data.isOnClimbable() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
+         if (differenceWater <= 1.0E-4
+            && this.data.elapsed(this.data.getLastInLiquid()) >= 3
+            && !this.data.isWasWasOnClimbable()
+            && !this.data.isOnClimbable()
+            && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
             if (Karhu.getInstance().getConfigManager().isGbLagback() && ++this.waterDesyncTicks >= 3.0 && this.noFakeWaterLocation != null) {
                CustomLocation location = Setbacks.forgeToRotatedLocation(this.data.getSafeGroundSetback(), this.data);
                this.setbacked = true;
@@ -333,52 +335,46 @@ public class DesyncedBlockHandler {
       if (!this.data.isOnWater() && !this.data.isOnLava() && this.data.elapsed(this.data.getLastInGhostLiquid()) > 3) {
          this.noFakeWaterLocation = this.data.getLocation().toLocation(this.data.getWorld());
       }
-
    }
 
    private void updateBlocksServerside() {
       if (Karhu.getInstance().getConfigManager().isGbUpdate() && !this.collidesWithClientBlock(false) && this.data.isInitialized()) {
-         BlockUtil.getTileEntitiesSync(this.data.getBoundingBox().clone().expand(1.0, 1.5, 1.0), (blocks) -> {
-            Iterator var2 = blocks.iterator();
-
-            while(var2.hasNext()) {
-               Block block = (Block)var2.next();
-               if (block != null) {
-                  Location blockLoc = block.getLocation();
-                  if (!this.checkClientSideBlock(blockLoc.toVector(), 2.0)) {
-                     Vector3i vector3i = new Vector3i(blockLoc.getBlockX(), blockLoc.getBlockY(), blockLoc.getBlockZ());
-                     PlayerUtil.sendPacket((Player)this.data.getBukkitPlayer(), new WrapperPlayServerBlockChange(vector3i, SpigotConversionUtil.fromBukkitMaterialData(new MaterialData(block.getType())).getGlobalId()));
+         BlockUtil.getTileEntitiesSync(
+            this.data.getBoundingBox().clone().expand(1.0, 1.5, 1.0),
+            blocks -> {
+               for(Block block : blocks) {
+                  if (block != null) {
+                     Location blockLoc = block.getLocation();
+                     if (!this.checkClientSideBlock(blockLoc.toVector(), 2.0)) {
+                        Vector3i vector3i = new Vector3i(blockLoc.getBlockX(), blockLoc.getBlockY(), blockLoc.getBlockZ());
+                        PlayerUtil.sendPacket(
+                           this.data.getBukkitPlayer(),
+                           new WrapperPlayServerBlockChange(
+                              vector3i, SpigotConversionUtil.fromBukkitMaterialData(new MaterialData(block.getType())).getGlobalId()
+                           )
+                        );
+                     }
                   }
                }
             }
-
-         });
+         );
       }
-
    }
 
    public boolean checkClientSideBlock(Vector vector, double radius) {
-      Iterator var4 = this.getClientSideBlocks().iterator();
-
-      double distance;
-      do {
-         if (!var4.hasNext()) {
-            return false;
-         }
-
-         BlockPlacePending block = (BlockPlacePending)var4.next();
+      for(BlockPlacePending block : this.getClientSideBlocks()) {
          Vector position = block.getBlockPosition();
-         distance = position.distance(vector);
-      } while(!(distance <= radius));
+         double distance = position.distance(vector);
+         if (distance <= radius) {
+            return true;
+         }
+      }
 
-      return true;
+      return false;
    }
 
-   public boolean checkClientSideBlock(double radius, Set checks) {
-      Iterator var4 = this.getClientSideBlocks().iterator();
-
-      while(var4.hasNext()) {
-         BlockPlacePending block = (BlockPlacePending)var4.next();
+   public boolean checkClientSideBlock(double radius, Set<Material> checks) {
+      for(BlockPlacePending block : this.getClientSideBlocks()) {
          if (checks.contains(block.getItem())) {
             Vector position = block.getBlockPosition();
             double distance = position.distance(this.data.getLocation().toVector());
@@ -393,33 +389,26 @@ public class DesyncedBlockHandler {
 
    public boolean collidesWithClientBlock(boolean lenient) {
       double expand = lenient ? 3.0 : 0.0;
-      Iterator var4 = this.getClientSideBlocks().iterator();
 
-      AxisAlignedBB blockAABB;
-      AxisAlignedBB playerAABB;
-      do {
-         if (!var4.hasNext()) {
-            return false;
-         }
-
-         BlockPlacePending block = (BlockPlacePending)var4.next();
+      for(BlockPlacePending block : this.getClientSideBlocks()) {
          Vector position = block.getBlockPosition();
-         blockAABB = (new AxisAlignedBB(position, position, true)).addCoord(1.0, 1.0, 1.0);
-         playerAABB = this.data.getBoundingBox().toBB().expand(expand, expand, expand);
-      } while(!playerAABB.intersectsWith(blockAABB));
+         AxisAlignedBB blockAABB = new AxisAlignedBB(position, position, true).addCoord(1.0, 1.0, 1.0);
+         AxisAlignedBB playerAABB = this.data.getBoundingBox().toBB().expand(expand, expand, expand);
+         if (playerAABB.intersectsWith(blockAABB)) {
+            return true;
+         }
+      }
 
-      return true;
+      return false;
    }
 
-   public boolean collidesWithClientBlock(boolean lenient, Set checks) {
+   public boolean collidesWithClientBlock(boolean lenient, Set<Material> checks) {
       double expand = lenient ? 2.0 : 0.0;
-      Iterator var5 = this.getClientSideBlocks().iterator();
 
-      while(var5.hasNext()) {
-         BlockPlacePending block = (BlockPlacePending)var5.next();
+      for(BlockPlacePending block : this.getClientSideBlocks()) {
          if (checks.contains(block.getItem())) {
             Vector position = block.getBlockPosition();
-            AxisAlignedBB blockAABB = (new AxisAlignedBB(position, position, true)).addCoord(1.0, 1.0, 1.0);
+            AxisAlignedBB blockAABB = new AxisAlignedBB(position, position, true).addCoord(1.0, 1.0, 1.0);
             AxisAlignedBB playerAABB = this.data.getBoundingBox().toBB().expand(expand, expand, expand);
             if (playerAABB.intersectsWith(blockAABB)) {
                return true;
@@ -442,7 +431,7 @@ public class DesyncedBlockHandler {
       this.noFakeWaterLocation = noFakeWaterLocation;
    }
 
-   public Set getClientSideBlocks() {
+   public Set<BlockPlacePending> getClientSideBlocks() {
       return this.clientSideBlocks;
    }
 }

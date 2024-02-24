@@ -4,13 +4,13 @@ import me.liwk.karhu.util.gui.Callback;
 
 public class KarhuTask {
    private int id;
-   private final Callback callback;
+   private final Callback<Integer> callback;
 
-   public KarhuTask(Callback callback) {
+   public KarhuTask(Callback<Integer> callback) {
       this.callback = callback;
    }
 
-   public KarhuTask(Callback callback, int id) {
+   public KarhuTask(Callback<Integer> callback, int id) {
       this.callback = callback;
       this.id = id;
    }
@@ -23,7 +23,7 @@ public class KarhuTask {
       return this.id;
    }
 
-   public Callback getCallback() {
+   public Callback<Integer> getCallback() {
       return this.callback;
    }
 

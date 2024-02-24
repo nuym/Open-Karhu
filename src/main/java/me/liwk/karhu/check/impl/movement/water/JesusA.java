@@ -19,16 +19,24 @@ public final class JesusA extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
-      if ((this.data.isOnLiquid() || this.data.isAboveButNotInWater()) && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getUnderPlaceTicks()) > this.data.getPingInTicks() + 5 && this.data.elapsed(this.data.getLastPistonPush()) > 3 && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
+      if ((this.data.isOnLiquid() || this.data.isAboveButNotInWater())
+         && !this.data.isPossiblyTeleporting()
+         && this.data.elapsed(this.data.getUnderPlaceTicks()) > this.data.getPingInTicks() + 5
+         && this.data.elapsed(this.data.getLastPistonPush()) > 3
+         && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
          if (this.data.getAirTicks() > 4 && update.isGround()) {
             if (++this.violations > 3.0) {
-               this.fail("* Wrong groundstate on liquid\n§f* Inside §b" + this.data.isOnLiquid() + "\n§f* Above §b" + this.data.isAboveButNotInWater(), this.getBanVL(), 300L);
+               this.fail(
+                  "* Wrong groundstate on liquid\n§f* Inside §b" + this.data.isOnLiquid() + "\n§f* Above §b" + this.data.isAboveButNotInWater(),
+                  this.getBanVL(),
+                  300L
+               );
             }
          } else {
             this.violations = Math.max(this.violations - 0.25, 0.0);
          }
       }
-
    }
 }

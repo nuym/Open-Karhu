@@ -2,10 +2,8 @@ package me.liwk.karhu.handler.global;
 
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
-import java.util.Iterator;
 import me.liwk.karhu.data.EntityData;
 import me.liwk.karhu.data.KarhuPlayer;
-import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
 public class EntityLocationHandler {
@@ -15,14 +13,14 @@ public class EntityLocationHandler {
    }
 
    public static void updateEntityLook(KarhuPlayer data, int id) {
-      EntityData edata = (EntityData)data.entityData.get(id);
+      EntityData edata = data.entityData.get(id);
       if (edata != null) {
          edata.posIncrements = 3;
       }
    }
 
    public static void updateEntityRelMove2(KarhuPlayer data, int id, double x, double y, double z) {
-      EntityData edata = (EntityData)data.entityData.get(id);
+      EntityData edata = data.entityData.get(id);
       if (edata != null) {
          edata.newX += x;
          edata.newY += y;
@@ -37,7 +35,7 @@ public class EntityLocationHandler {
    }
 
    public static void updateEntityTeleport2(KarhuPlayer data, int id, double x, double y, double z) {
-      EntityData edata = (EntityData)data.entityData.get(id);
+      EntityData edata = data.entityData.get(id);
       if (edata != null) {
          edata.newX = x;
          edata.newY = y;
@@ -69,20 +67,13 @@ public class EntityLocationHandler {
          data.attackerYaw = flying.getLocation().getYaw();
          data.attackerPitch = flying.getLocation().getPitch();
       }
-
    }
 
    public static void destroyEntity(KarhuPlayer data, int[] id) {
-      int[] var2 = id;
-      int var3 = id.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         int a = var2[var4];
+      for(int a : id) {
          data.entityData.remove(a);
-         Iterator var6 = data.entityData.values().iterator();
 
-         while(var6.hasNext()) {
-            EntityData edata = (EntityData)var6.next();
+         for(EntityData edata : data.entityData.values()) {
             if (edata.isRiding() && a == edata.getVehicleId()) {
                edata.setRiding(false);
                edata.setVehicleId(-1);
@@ -93,10 +84,9 @@ public class EntityLocationHandler {
             data.setRiding(false);
             data.setBrokenVehicle(true);
             data.setVehicleId(-1);
-            data.setVehicle((Entity)null);
+            data.setVehicle(null);
          }
       }
-
    }
 
    private static void lenientBox(double x, double y, double z, EntityData edata) {

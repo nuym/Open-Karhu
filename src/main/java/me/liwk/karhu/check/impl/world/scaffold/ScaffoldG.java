@@ -23,12 +23,19 @@ public final class ScaffoldG extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent && !((BlockPlaceEvent)packet).isUsableItem()) {
          boolean validY = MathUtil.isNearlySame(this.data.getLocation().y, (double)((BlockPlaceEvent)packet).getBlockPos().getBlockY(), 2.0);
-         if ((double)this.data.deltas.deltaPitch == this.lastDeltaPitch && this.data.deltas.deltaYaw == 0.0F && this.data.deltas.deltaXZ > 0.21 && this.data.deltas.deltaPitch > 1.0F && validY) {
+         if ((double)this.data.deltas.deltaPitch == this.lastDeltaPitch
+            && this.data.deltas.deltaYaw == 0.0F
+            && this.data.deltas.deltaXZ > 0.21
+            && this.data.deltas.deltaPitch > 1.0F
+            && validY) {
             if (++this.violations > 35.0) {
-               this.fail("* Weird stuff\n §f* deltaPitch: §b" + this.data.deltas.deltaPitch + "\n §f* deltaXZ: §b" + this.data.deltas.deltaXZ, this.getBanVL(), 120L);
+               this.fail(
+                  "* Weird stuff\n §f* deltaPitch: §b" + this.data.deltas.deltaPitch + "\n §f* deltaXZ: §b" + this.data.deltas.deltaXZ, this.getBanVL(), 120L
+               );
             }
          } else {
             this.decrease(0.35);
@@ -36,6 +43,5 @@ public final class ScaffoldG extends PacketCheck {
 
          this.lastDeltaPitch = (double)this.data.deltas.deltaPitch;
       }
-
    }
 }

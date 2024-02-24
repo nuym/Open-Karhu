@@ -18,10 +18,10 @@ import me.liwk.karhu.util.task.Tasker;
 
 public final class NetHandler {
    private final KarhuPlayer data;
-   public final LinkedList pings = new LinkedList();
-   private final Queue postPendingTask = new ConcurrentLinkedQueue();
-   public final Set pendingKeepalive = ConcurrentHashMap.newKeySet();
-   private final Set invalidKeepalive = ConcurrentHashMap.newKeySet();
+   public final LinkedList<TaskData> pings = new LinkedList<>();
+   private final Queue<KarhuTask> postPendingTask = new ConcurrentLinkedQueue<>();
+   public final Set<Long> pendingKeepalive = ConcurrentHashMap.newKeySet();
+   private final Set<Long> invalidKeepalive = ConcurrentHashMap.newKeySet();
    public int sentKeep;
    public int sentTransac;
    public int receivedT;
@@ -36,7 +36,6 @@ public final class NetHandler {
       if (this.pendingKeepalive.size() > 100) {
          this.kicklol(true, "(ka)");
       }
-
    }
 
    public void handleKeepAlive(long id) {
@@ -49,12 +48,11 @@ public final class NetHandler {
             this.kickxd();
          }
       }
-
    }
 
    public void handleClientTransaction(short number) {
       if (number < 0) {
-         TaskData received = (TaskData)this.pings.pollLast();
+         TaskData received = this.pings.pollLast();
          if (received == null) {
             if (this.canCheck && ++this.violations > 3.0) {
                this.kicklol(false, "(null)");
@@ -83,12 +81,11 @@ public final class NetHandler {
          ++this.receivedT;
          this.violations *= 0.985;
       }
-
    }
 
    public void handleServerTransaction(short id, long now) {
       if (id < 0) {
-         TaskData pendingTask = (TaskData)this.pings.peekLast();
+         TaskData pendingTask = this.pings.peekLast();
          if (pendingTask != null && now - pendingTask.getTimestamp() > MathUtil.toNanos(30000L)) {
             this.kicklol(false, "(30s)");
          }
@@ -99,7 +96,6 @@ public final class NetHandler {
          this.pings.push(taskData);
          ++this.sentTransac;
       }
-
    }
 
    public void handleServerKeepalive(long id) {
@@ -107,57 +103,81 @@ public final class NetHandler {
       ++this.sentKeep;
    }
 
-   public void queueToPrePing(Callback callback) {
-      TaskData mostRecent = (TaskData)this.pings.peek();
+   public void queueToPrePing(Callback<Integer> callback) {
+      TaskData mostRecent = this.pings.peek();
       if (mostRecent != null) {
          mostRecent.addTask(callback);
       } else {
          callback.call(this.data.getCurrentServerTransaction());
       }
-
    }
 
    public int mostRecentPing() {
-      TaskData mostRecent = (TaskData)this.pings.peek();
+      TaskData mostRecent = this.pings.peek();
       return mostRecent != null ? mostRecent.getId() : this.data.getCurrentServerTransaction();
    }
 
-   public void queueToPostPing(Callback callback) {
+   public void queueToPostPing(Callback<Integer> callback) {
       this.postPendingTask.add(new KarhuTask(callback));
    }
 
    private void kicklol(boolean keep, String reason) {
       if (!this.kicked && Karhu.getInstance().getConfigManager().isNethandler() && Karhu.getInstance().getConfigManager().isDelay()) {
          this.kicked = true;
-         String msg = !keep ? this.configManager.getCancelTransactions().replaceAll("%player%", this.data.getName()).replaceAll("%invalid%", String.valueOf(this.pings.size())).replaceAll("%total%", String.valueOf(this.sentTransac)) : this.configManager.getCancelKeepalives().replaceAll("%player%", this.data.getName()).replaceAll("%invalid%", String.valueOf(this.pendingKeepalive.size())).replaceAll("%total%", String.valueOf(this.sentKeep));
+         String msg = !keep
+            ? this.configManager
+               .getCancelTransactions()
+               .replaceAll("%player%", this.data.getName())
+               .replaceAll("%invalid%", String.valueOf(this.pings.size()))
+               .replaceAll("%total%", String.valueOf(this.sentTransac))
+            : this.configManager
+               .getCancelKeepalives()
+               .replaceAll("%player%", this.data.getName())
+               .replaceAll("%invalid%", String.valueOf(this.pendingKeepalive.size()))
+               .replaceAll("%total%", String.valueOf(this.sentKeep));
          Tasker.run(() -> {
             MiscellaneousAlertPoster.postMisc(msg, this.data, "Delay");
             this.data.getBukkitPlayer().kickPlayer("Timed out " + reason);
          });
       }
-
    }
 
    private void kickxd() {
       if (!this.kicked && Karhu.getInstance().getConfigManager().isNethandler() && Karhu.getInstance().getConfigManager().isSpoof()) {
          this.kicked = true;
-         MiscellaneousAlertPoster.postMisc(this.configManager.getOwnKeepalives().replaceAll("%player%", this.data.getName()).replaceAll("%invalid%", String.valueOf(this.invalidKeepalive.size())).replaceAll("%total%", String.valueOf(this.sentKeep)), this.data, "Spoof");
-         Tasker.run(() -> {
-            this.data.getBukkitPlayer().kickPlayer(this.configManager.getCancelOwnKick());
-         });
+         MiscellaneousAlertPoster.postMisc(
+            this.configManager
+               .getOwnKeepalives()
+               .replaceAll("%player%", this.data.getName())
+               .replaceAll("%invalid%", String.valueOf(this.invalidKeepalive.size()))
+               .replaceAll("%total%", String.valueOf(this.sentKeep)),
+            this.data,
+            "Spoof"
+         );
+         Tasker.run(() -> this.data.getBukkitPlayer().kickPlayer(this.configManager.getCancelOwnKick()));
       }
-
    }
 
    private void handleInvalidTransaction(short id, short first) {
       if (this.configManager.isNethandler() && this.configManager.isDelay() && !this.kicked) {
          this.kicked = true;
-         Tasker.run(() -> {
-            this.data.getBukkitPlayer().kickPlayer(this.configManager.getOrderKick().replaceAll("%first%", String.valueOf(first)).replaceAll("%received%", String.valueOf(id)));
-         });
-         MiscellaneousAlertPoster.postMisc(this.configManager.getTransactionOrder().replaceAll("%player%", this.data.getName()).replaceAll("%first%", String.valueOf(first)).replaceAll("%sent%", String.valueOf(id)), this.data, "Spoof");
+         Tasker.run(
+            () -> this.data
+                  .getBukkitPlayer()
+                  .kickPlayer(
+                     this.configManager.getOrderKick().replaceAll("%first%", String.valueOf((int)first)).replaceAll("%received%", String.valueOf((int)id))
+                  )
+         );
+         MiscellaneousAlertPoster.postMisc(
+            this.configManager
+               .getTransactionOrder()
+               .replaceAll("%player%", this.data.getName())
+               .replaceAll("%first%", String.valueOf((int)first))
+               .replaceAll("%sent%", String.valueOf((int)id)),
+            this.data,
+            "Spoof"
+         );
       }
-
    }
 
    public NetHandler(KarhuPlayer data) {

@@ -1,5 +1,6 @@
 package me.liwk.karhu.world.chunk;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.util.Map;
 import me.liwk.karhu.util.gui.Callback;
 import org.bukkit.Chunk;
@@ -8,7 +9,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 public interface IChunkManager {
-   void getChunk(Location var1, Callback var2);
+   void getChunk(Location var1, Callback<Chunk> var2);
 
    Block getChunkBlockAt(Location var1);
 
@@ -26,5 +27,5 @@ public interface IChunkManager {
 
    int getCacheSize(World var1);
 
-   Map getLoadedChunks();
+   Map<World, Long2ObjectMap<Chunk>> getLoadedChunks();
 }

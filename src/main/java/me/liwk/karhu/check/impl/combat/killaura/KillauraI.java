@@ -25,6 +25,7 @@ public final class KillauraI extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!(packet instanceof AttackEvent) && !(packet instanceof InteractEvent)) {
          if (packet instanceof DigEvent) {
@@ -42,14 +43,14 @@ public final class KillauraI extends PacketCheck {
          }
 
          long delay = (long)((double)(now - this.sentDig) / 1000000.0);
-         if (delay < 10L && this.data.elapsed(this.data.getLastPacketDrop()) > 5 && !this.getKarhu().isServerLagging(now) && this.getKarhu().getTPS() >= 19.95) {
-            if (++this.violations > 5.0) {
-               this.fail("* Illegal block order", this.getBanVL(), 60L);
-            }
-         } else {
+         if (delay >= 10L
+            || this.data.elapsed(this.data.getLastPacketDrop()) <= 5
+            || this.getKarhu().isServerLagging(now)
+            || !(this.getKarhu().getTPS() >= 19.95)) {
             this.violations = Math.max(this.violations - 0.35, 0.0);
+         } else if (++this.violations > 5.0) {
+            this.fail("* Illegal block order", this.getBanVL(), 60L);
          }
       }
-
    }
 }

@@ -25,13 +25,14 @@ public final class FastBreakA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (this.data.getClientVersion().getProtocolVersion() <= 47) {
          if (packet instanceof FlyingEvent) {
             this.tickStarted = false;
          } else if (packet instanceof DigEvent) {
             DiggingAction digType = ((DigEvent)packet).getDigType();
-            switch (digType) {
+            switch(digType) {
                case START_DIGGING:
                   this.tickStarted = true;
                   break;
@@ -43,7 +44,6 @@ public final class FastBreakA extends PacketCheck {
          } else if (packet instanceof RespawnEvent) {
             this.tickStarted = false;
          }
-
       }
    }
 }

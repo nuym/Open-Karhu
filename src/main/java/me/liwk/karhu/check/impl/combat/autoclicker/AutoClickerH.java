@@ -22,12 +22,13 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 )
 public final class AutoClickerH extends PacketCheck {
    int flying;
-   Deque samples = new ArrayDeque();
+   Deque<Integer> samples = new ArrayDeque<>();
 
    public AutoClickerH(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!(packet instanceof SwingEvent)) {
          if (packet instanceof FlyingEvent && !((FlyingEvent)packet).isTeleport()) {
@@ -50,7 +51,7 @@ public final class AutoClickerH extends PacketCheck {
                   return;
                }
 
-               double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.samples));
+               double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.samples));
                if (std >= 0.5) {
                   this.clearSamples();
                   return;
@@ -59,7 +60,12 @@ public final class AutoClickerH extends PacketCheck {
                double cps = 20.0 / MathUtil.average(this.samples);
                if (cps > 9.0 && entropy < 0.635 && std < 0.5 && cps != 20.0) {
                   if (++this.violations > 1.0) {
-                     this.fail("* Low randomization\n§f* §b" + String.format("std %.3f : entropy %.3f : o %s : cps %.1f", std, entropy, MathUtil.getOutliers(this.samples), cps), this.getBanVL(), 125L);
+                     this.fail(
+                        "* Low randomization\n§f* §b"
+                           + String.format("std %.3f : entropy %.3f : o %s : cps %.1f", std, entropy, MathUtil.getOutliers(this.samples), cps),
+                        this.getBanVL(),
+                        125L
+                     );
                   }
                } else {
                   this.violations = 0.0;
@@ -71,7 +77,6 @@ public final class AutoClickerH extends PacketCheck {
 
          this.flying = 0;
       }
-
    }
 
    private void clearSamples() {

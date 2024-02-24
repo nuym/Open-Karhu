@@ -6,20 +6,31 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+import me.liwk.karhu.util.map.IntObjectHashMap.2;
+import me.liwk.karhu.util.map.IntObjectHashMap.MapIterator;
+import me.liwk.karhu.util.map.IntObjectHashMap.PrimitiveIterator;
+import me.liwk.karhu.util.map.IntObjectHashMap.KeySet.1;
+import me.liwk.karhu.util.map.IntObjectMap.PrimitiveEntry;
 
-public class IntObjectHashMap implements IntObjectMap {
+public class IntObjectHashMap<V> implements IntObjectMap<V> {
    public static final int DEFAULT_CAPACITY = 8;
    public static final float DEFAULT_LOAD_FACTOR = 0.5F;
    private static final Object NULL_VALUE = new Object();
    private int maxSize;
    private final float loadFactor;
    private int[] keys;
-   private Object[] values;
+   private V[] values;
    private int size;
    private int mask;
-   private final Set keySet;
-   private final Set entrySet;
-   private final Iterable entries;
+   private final Set<Integer> keySet = new IntObjectHashMap.KeySet();
+   private final Set<Entry<Integer, V>> entrySet = new IntObjectHashMap.EntrySet();
+   private final Iterable<PrimitiveEntry<V>> entries = new Iterable<PrimitiveEntry<V>>() {
+      @Override
+      public Iterator<PrimitiveEntry<V>> iterator() {
+         return new PrimitiveIterator(IntObjectHashMap.this);
+      }
+   };
 
    public IntObjectHashMap() {
       this(8, 0.5F);
@@ -30,21 +41,12 @@ public class IntObjectHashMap implements IntObjectMap {
    }
 
    public IntObjectHashMap(int initialCapacity, float loadFactor) {
-      this.keySet = new KeySet();
-      this.entrySet = new EntrySet();
-      this.entries = new Iterable() {
-         public Iterator iterator() {
-            IntObjectHashMap var10002 = IntObjectHashMap.this;
-            var10002.getClass();
-            return new PrimitiveIterator(var10002);
-         }
-      };
       if (!(loadFactor <= 0.0F) && !(loadFactor > 1.0F)) {
          this.loadFactor = loadFactor;
          int capacity = MapMathUtil.safeFindNextPositivePowerOfTwo(initialCapacity);
          this.mask = capacity - 1;
          this.keys = new int[capacity];
-         Object[] temp = (Object[])(new Object[capacity]);
+         V[] temp = (V[])(new Object[capacity]);
          this.values = temp;
          this.maxSize = this.calcMaxSize(capacity);
       } else {
@@ -52,100 +54,102 @@ public class IntObjectHashMap implements IntObjectMap {
       }
    }
 
-   private static Object toExternal(Object value) {
+   private static <T> T toExternal(T value) {
       assert value != null : "null is not a legitimate internal value. Concurrent Modification?";
 
       return value == NULL_VALUE ? null : value;
    }
 
-   private static Object toInternal(Object value) {
-      return value == null ? NULL_VALUE : value;
+   private static <T> T toInternal(T value) {
+      return (T)(value == null ? NULL_VALUE : value);
    }
 
-   public Object get(int key) {
+   @Override
+   public V get(int key) {
       int index = this.indexOf(key);
       return index == -1 ? null : toExternal(this.values[index]);
    }
 
-   public Object put(int key, Object value) {
+   @Override
+   public V put(int key, V value) {
       int startIndex = this.hashIndex(key);
       int index = startIndex;
 
-      do {
-         if (this.values[index] == null) {
-            this.keys[index] = key;
-            this.values[index] = toInternal(value);
-            this.growSize();
-            return null;
-         }
-
+      while(this.values[index] != null) {
          if (this.keys[index] == key) {
-            Object previousValue = this.values[index];
+            V previousValue = this.values[index];
             this.values[index] = toInternal(value);
             return toExternal(previousValue);
          }
-      } while((index = this.probeNext(index)) != startIndex);
 
-      throw new IllegalStateException("Unable to insert");
+         if ((index = this.probeNext(index)) == startIndex) {
+            throw new IllegalStateException("Unable to insert");
+         }
+      }
+
+      this.keys[index] = key;
+      this.values[index] = toInternal(value);
+      this.growSize();
+      return null;
    }
 
-   public void putAll(Map sourceMap) {
+   @Override
+   public void putAll(Map<? extends Integer, ? extends V> sourceMap) {
       if (sourceMap instanceof IntObjectHashMap) {
-         IntObjectHashMap source = (IntObjectHashMap)sourceMap;
+         IntObjectHashMap<V> source = (IntObjectHashMap)sourceMap;
 
          for(int i = 0; i < source.values.length; ++i) {
-            Object sourceValue = source.values[i];
+            V sourceValue = source.values[i];
             if (sourceValue != null) {
                this.put(source.keys[i], sourceValue);
             }
          }
       } else {
-         Iterator var2 = sourceMap.entrySet().iterator();
-
-         while(var2.hasNext()) {
-            Map.Entry entry = (Map.Entry)var2.next();
-            this.put((Integer)entry.getKey(), entry.getValue());
+         for(Entry<? extends Integer, ? extends V> entry : sourceMap.entrySet()) {
+            this.put(entry.getKey(), entry.getValue());
          }
       }
-
    }
 
-   public Object remove(int key) {
+   @Override
+   public V remove(int key) {
       int index = this.indexOf(key);
       if (index == -1) {
          return null;
       } else {
-         Object prev = this.values[index];
+         V prev = this.values[index];
          this.removeAt(index);
          return toExternal(prev);
       }
    }
 
+   @Override
    public int size() {
       return this.size;
    }
 
+   @Override
    public boolean isEmpty() {
       return this.size == 0;
    }
 
+   @Override
    public void clear() {
       Arrays.fill(this.keys, 0);
-      Arrays.fill(this.values, (Object)null);
+      Arrays.fill(this.values, null);
       this.size = 0;
    }
 
+   @Override
    public boolean containsKey(int key) {
       return this.indexOf(key) >= 0;
    }
 
+   @Override
    public boolean containsValue(Object value) {
-      Object v1 = toInternal(value);
-      Object[] var3 = this.values;
-      int var4 = var3.length;
+      V v1 = toInternal((V)value);
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Object v2 = var3[var5];
+      for(V v2 : this.values) {
          if (v2 != null && v2.equals(v1)) {
             return true;
          }
@@ -154,27 +158,28 @@ public class IntObjectHashMap implements IntObjectMap {
       return false;
    }
 
-   public Iterable entries() {
+   @Override
+   public Iterable<PrimitiveEntry<V>> entries() {
       return this.entries;
    }
 
-   public Collection values() {
+   @Override
+   public Collection<V> values() {
       return new 2(this);
    }
 
+   @Override
    public int hashCode() {
       int hash = this.size;
-      int[] var2 = this.keys;
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         int key = var2[var4];
+      for(int key : this.keys) {
          hash ^= hashCode(key);
       }
 
       return hash;
    }
 
+   @Override
    public boolean equals(Object obj) {
       if (this == obj) {
          return true;
@@ -186,7 +191,7 @@ public class IntObjectHashMap implements IntObjectMap {
             return false;
          } else {
             for(int i = 0; i < this.values.length; ++i) {
-               Object value = this.values[i];
+               V value = this.values[i];
                if (value != null) {
                   int key = this.keys[i];
                   Object otherValue = other.get(key);
@@ -205,27 +210,32 @@ public class IntObjectHashMap implements IntObjectMap {
       }
    }
 
+   @Override
    public boolean containsKey(Object key) {
       return this.containsKey(this.objectToKey(key));
    }
 
-   public Object get(Object key) {
+   @Override
+   public V get(Object key) {
       return this.get(this.objectToKey(key));
    }
 
-   public Object put(Integer key, Object value) {
+   public V put(Integer key, V value) {
       return this.put(this.objectToKey(key), value);
    }
 
-   public Object remove(Object key) {
+   @Override
+   public V remove(Object key) {
       return this.remove(this.objectToKey(key));
    }
 
-   public Set keySet() {
+   @Override
+   public Set<Integer> keySet() {
       return this.keySet;
    }
 
-   public Set entrySet() {
+   @Override
+   public Set<Entry<Integer, V>> entrySet() {
       return this.entrySet;
    }
 
@@ -237,15 +247,15 @@ public class IntObjectHashMap implements IntObjectMap {
       int startIndex = this.hashIndex(key);
       int index = startIndex;
 
-      do {
-         if (this.values[index] == null) {
-            return -1;
-         }
-
+      while(this.values[index] != null) {
          if (key == this.keys[index]) {
             return index;
          }
-      } while((index = this.probeNext(index)) != startIndex);
+
+         if ((index = this.probeNext(index)) == startIndex) {
+            return -1;
+         }
+      }
 
       return -1;
    }
@@ -271,7 +281,6 @@ public class IntObjectHashMap implements IntObjectMap {
 
          this.rehash(this.keys.length << 1);
       }
-
    }
 
    private boolean removeAt(int index) {
@@ -281,7 +290,7 @@ public class IntObjectHashMap implements IntObjectMap {
       int nextFree = index;
       int i = this.probeNext(index);
 
-      for(Object value = this.values[i]; value != null; value = this.values[i = this.probeNext(i)]) {
+      for(V value = this.values[i]; value != null; value = this.values[i = this.probeNext(i)]) {
          int key = this.keys[i];
          int bucket = this.hashIndex(key);
          if (i < bucket && (bucket <= nextFree || nextFree <= i) || bucket <= nextFree && nextFree <= i) {
@@ -303,29 +312,30 @@ public class IntObjectHashMap implements IntObjectMap {
 
    private void rehash(int newCapacity) {
       int[] oldKeys = this.keys;
-      Object[] oldVals = this.values;
+      V[] oldVals = this.values;
       this.keys = new int[newCapacity];
-      Object[] temp = (Object[])(new Object[newCapacity]);
+      V[] temp = (V[])(new Object[newCapacity]);
       this.values = temp;
       this.maxSize = this.calcMaxSize(newCapacity);
       this.mask = newCapacity - 1;
 
       for(int i = 0; i < oldVals.length; ++i) {
-         Object oldVal = oldVals[i];
+         V oldVal = oldVals[i];
          if (oldVal != null) {
             int oldKey = oldKeys[i];
+            int index = this.hashIndex(oldKey);
 
-            int index;
-            for(index = this.hashIndex(oldKey); this.values[index] != null; index = this.probeNext(index)) {
+            while(this.values[index] != null) {
+               index = this.probeNext(index);
             }
 
             this.keys[index] = oldKey;
             this.values[index] = oldVal;
          }
       }
-
    }
 
+   @Override
    public String toString() {
       if (this.isEmpty()) {
          return "{}";
@@ -335,7 +345,7 @@ public class IntObjectHashMap implements IntObjectMap {
          boolean first = true;
 
          for(int i = 0; i < this.values.length; ++i) {
-            Object value = this.values[i];
+            V value = this.values[i];
             if (value != null) {
                if (!first) {
                   sb.append(", ");
@@ -354,83 +364,47 @@ public class IntObjectHashMap implements IntObjectMap {
       return Integer.toString(key);
    }
 
-   // $FF: synthetic method
-   static int access$300(IntObjectHashMap x0) {
-      return x0.size;
-   }
-
-   // $FF: synthetic method
-   static int[] access$400(IntObjectHashMap x0) {
-      return x0.keys;
-   }
-
-   // $FF: synthetic method
-   static Object[] access$500(IntObjectHashMap x0) {
-      return x0.values;
-   }
-
-   // $FF: synthetic method
-   static Object access$600(Object x0) {
-      return toExternal(x0);
-   }
-
-   // $FF: synthetic method
-   static Object access$700(Object x0) {
-      return toInternal(x0);
-   }
-
-   // $FF: synthetic method
-   static boolean access$900(IntObjectHashMap x0, int x1) {
-      return x0.removeAt(x1);
-   }
-
-   // $FF: synthetic method
-   static Set access$1000(IntObjectHashMap x0) {
-      return x0.entrySet;
-   }
-
-   private final class EntrySet extends AbstractSet {
+   private final class EntrySet extends AbstractSet<Entry<Integer, V>> {
       private EntrySet() {
       }
 
-      public Iterator iterator() {
-         IntObjectHashMap var10002 = IntObjectHashMap.this;
-         var10002.getClass();
-         return new MapIterator(var10002);
+      @Override
+      public Iterator<Entry<Integer, V>> iterator() {
+         return new MapIterator(IntObjectHashMap.this);
       }
 
+      @Override
       public int size() {
          return IntObjectHashMap.this.size();
-      }
-
-      // $FF: synthetic method
-      EntrySet(Object x1) {
-         this();
       }
    }
 
-   private final class KeySet extends AbstractSet {
+   private final class KeySet extends AbstractSet<Integer> {
       private KeySet() {
       }
 
+      @Override
       public int size() {
          return IntObjectHashMap.this.size();
       }
 
+      @Override
       public boolean contains(Object o) {
          return IntObjectHashMap.this.containsKey(o);
       }
 
+      @Override
       public boolean remove(Object o) {
          return IntObjectHashMap.this.remove(o) != null;
       }
 
-      public boolean retainAll(Collection retainedKeys) {
+      @Override
+      public boolean retainAll(Collection<?> retainedKeys) {
          boolean changed = false;
-         Iterator iter = IntObjectHashMap.this.entries().iterator();
+         Iterator<PrimitiveEntry<V>> iter = IntObjectHashMap.this.entries().iterator();
 
          while(iter.hasNext()) {
-            IntObjectMap.PrimitiveEntry entry = (IntObjectMap.PrimitiveEntry)iter.next();
+            PrimitiveEntry<V> entry = (PrimitiveEntry)iter.next();
             if (!retainedKeys.contains(entry.key())) {
                changed = true;
                iter.remove();
@@ -440,17 +414,14 @@ public class IntObjectHashMap implements IntObjectMap {
          return changed;
       }
 
+      @Override
       public void clear() {
          IntObjectHashMap.this.clear();
       }
 
-      public Iterator iterator() {
+      @Override
+      public Iterator<Integer> iterator() {
          return new 1(this);
-      }
-
-      // $FF: synthetic method
-      KeySet(Object x1) {
-         this();
       }
    }
 }

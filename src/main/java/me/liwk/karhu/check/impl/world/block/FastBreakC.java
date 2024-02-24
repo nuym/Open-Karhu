@@ -41,6 +41,7 @@ public final class FastBreakC extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_9)) {
          if (packet instanceof SwingEvent) {
@@ -53,23 +54,26 @@ public final class FastBreakC extends PacketCheck {
          } else if (packet instanceof DigEvent) {
             Player player = this.data.getBukkitPlayer();
             DiggingAction digType = ((DigEvent)packet).getDigType();
-            Location blockLocation = new Location(player.getWorld(), ((DigEvent)packet).getBlockPos().getX(), ((DigEvent)packet).getBlockPos().getY(), ((DigEvent)packet).getBlockPos().getZ());
+            Location blockLocation = new Location(
+               player.getWorld(), ((DigEvent)packet).getBlockPos().getX(), ((DigEvent)packet).getBlockPos().getY(), ((DigEvent)packet).getBlockPos().getZ()
+            );
             Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(blockLocation);
             if (block == null) {
                return;
             }
 
-            if (Karhu.SERVER_VERSION.getProtocolVersion() >= 47 && block.getType() == Material.BARRIER && this.data.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
+            if (Karhu.SERVER_VERSION.getProtocolVersion() >= 47
+               && block.getType() == Material.BARRIER
+               && this.data.getClientVersion().isOlderThanOrEquals(ClientVersion.V_1_7_10)) {
                return;
             }
 
-            boolean canBreak;
-            switch (digType) {
+            switch(digType) {
                case START_DIGGING:
                   this.digStarted = true;
                   this.curBlockDamage = 0.0F;
                   this.block = block;
-                  canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
+                  boolean canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
                   this.simulateDig(canBreak);
                   this.blockHardness = Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16) ? 0.05F : ReflectionUtil.getBlockDurability(block);
                   this.curBlockDamage += this.toolDigEfficiency / this.blockHardness / (!canBreak ? 100.0F : 30.0F);
@@ -78,7 +82,11 @@ public final class FastBreakC extends PacketCheck {
                   if (this.digStarted) {
                      if (this.curBlockDamage < 0.7F) {
                         double speed = (double)(1.0F / this.curBlockDamage);
-                        this.fail("* Fastbreak (speed edited)\n\n§f* speed: §b" + speed + "\n§f* item: §b" + this.data.getStackInHand().getType(), this.getBanVL(), 600L);
+                        this.fail(
+                           "* Fastbreak (speed edited)\n\n§f* speed: §b" + speed + "\n§f* item: §b" + this.data.getStackInHand().getType(),
+                           this.getBanVL(),
+                           600L
+                        );
                         this.data.setCancelBreak(true);
                      }
 
@@ -92,14 +100,14 @@ public final class FastBreakC extends PacketCheck {
                   break;
                case RELEASE_USE_ITEM:
                   if (this.digStarted) {
-                     canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
+                     boolean canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
                      this.simulateDig(canBreak);
                      this.curBlockDamage += Math.abs(this.toolDigEfficiency / this.blockHardness / (!canBreak ? 100.0F : 30.0F));
                   }
                   break;
                default:
                   if (this.digStarted) {
-                     canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
+                     boolean canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
                      this.simulateDig(canBreak);
                      this.curBlockDamage += Math.abs(this.toolDigEfficiency / this.blockHardness / (!canBreak ? 100.0F : 30.0F));
                   }
@@ -112,7 +120,6 @@ public final class FastBreakC extends PacketCheck {
             this.digStarted = false;
             this.block = null;
          }
-
       }
    }
 
@@ -164,7 +171,7 @@ public final class FastBreakC extends PacketCheck {
       if (this.data.getFatigue() != 0) {
          if (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_8)) {
             float f1;
-            switch (this.data.getFatigue()) {
+            switch(this.data.getFatigue()) {
                case 1:
                   f1 = 0.3F;
                   break;

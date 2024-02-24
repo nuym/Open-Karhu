@@ -1,6 +1,5 @@
 package me.liwk.karhu.check.impl.movement.speed;
 
-import java.util.Iterator;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.api.check.Category;
 import me.liwk.karhu.api.check.CheckInfo;
@@ -28,6 +27,7 @@ public final class SpeedB extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate e) {
       double deltaX = e.to.x - e.from.x;
       double deltaY = e.to.y - e.from.y;
@@ -53,7 +53,7 @@ public final class SpeedB extends PositionCheck {
          }
 
          if (e.from.ground && !e.to.ground && deltaY >= 0.0) {
-            float f = e.to.yaw * 0.017453292F;
+            float f = e.to.yaw * (float) (Math.PI / 180.0);
             compLastMove.add(new Vector((double)(-MathHelper.sin(f)) * 0.2, 0.0, (double)MathHelper.cos(f) * 0.2));
          }
 
@@ -120,17 +120,33 @@ public final class SpeedB extends PositionCheck {
                   double closest = Math.min(Math.min(bestNormal, bestNormal2), Math.min(bestBlocking, bestBlocking2));
                   double addition = Math.min(7.5, Math.max(1.0, closest * 50.0));
                   if (this.data.elapsed(this.data.getLastFlyTick()) <= 8) {
-                     if (this.data.isConfirmingFlying() && !this.data.getBukkitPlayer().getAllowFlight() && this.data.elapsed(this.data.getLastConfirmingState()) > 3) {
+                     if (this.data.isConfirmingFlying()
+                        && !this.data.getBukkitPlayer().getAllowFlight()
+                        && this.data.elapsed(this.data.getLastConfirmingState()) > 3) {
                      }
                   } else {
                      int required = bestNormal < 0.06 && this.data.elapsed(this.data.getLastSneakTick()) <= 3 ? 50 : 35;
                      if ((this.violations += addition) >= (double)required) {
-                        this.fail(String.format("* Invalid move vector:\n %.3f %.3f %.2f %.3f %.3f %b %b", bestNormal, bestNormal2, forceSprint, threshold, friction, e.from.ground, velocity), 300L);
+                        this.fail(
+                           String.format(
+                              "* Invalid move vector:\n %.3f %.3f %.2f %.3f %.3f %b %b",
+                              bestNormal,
+                              bestNormal2,
+                              forceSprint,
+                              threshold,
+                              friction,
+                              e.from.ground,
+                              velocity
+                           ),
+                           300L
+                        );
                      } else if (bestNormal > 0.2 && bestBlocking2 > 0.2 && !this.data.isConfirmingVelocity()) {
                         this.disallowMove(false);
                      }
 
-                     this.debug(String.format("%.3f %.3f %.2f %.3f %.3f %b %b", bestNormal, bestNormal2, forceSprint, threshold, friction, e.from.ground, velocity));
+                     this.debug(
+                        String.format("%.3f %.3f %.2f %.3f %.3f %b %b", bestNormal, bestNormal2, forceSprint, threshold, friction, e.from.ground, velocity)
+                     );
                   }
                } else {
                   this.decrease(0.1);
@@ -146,7 +162,6 @@ public final class SpeedB extends PositionCheck {
          if (this.data.getTickedVelocity() != null) {
             this.holdVelocity = this.data.getVelocityHorizontal();
          }
-
       } else {
          this.lastMove = new Vector(deltaX, 0.0, deltaZ);
       }
@@ -154,15 +169,9 @@ public final class SpeedB extends PositionCheck {
 
    private double getBest(Vector move, boolean blocking, float friction, boolean sprint) {
       double lowestMatch = Double.MAX_VALUE;
-      Iterator var7 = NMSValueParser.KEY_COMBOS.iterator();
 
-      while(var7.hasNext()) {
-         float[] floats = (float[])var7.next();
-         boolean[] var9 = BOOLEANS_REVERSED;
-         int var10 = var9.length;
-
-         for(int var11 = 0; var11 < var10; ++var11) {
-            boolean sneaking = var9[var11];
+      for(float[] floats : NMSValueParser.KEY_COMBOS) {
+         for(boolean sneaking : BOOLEANS_REVERSED) {
             float strafe = floats[0];
             float forward = floats[1];
             Vector moveFlying = this.moveFlying(strafe, forward, blocking, sneaking, friction);
@@ -199,8 +208,8 @@ public final class SpeedB extends PositionCheck {
          f = friction / f;
          strafe *= f;
          forward *= f;
-         float f1 = MathHelper.sin(this.data.getLocation().getYaw() * 3.1415927F / 180.0F);
-         float f2 = MathHelper.cos(this.data.getLocation().getYaw() * 3.1415927F / 180.0F);
+         float f1 = MathHelper.sin(this.data.getLocation().getYaw() * (float) Math.PI / 180.0F);
+         float f2 = MathHelper.cos(this.data.getLocation().getYaw() * (float) Math.PI / 180.0F);
          float xAdd = strafe * f2 - forward * f1;
          float zAdd = forward * f2 + strafe * f1;
          return new Vector(xAdd, 0.0F, zAdd);
@@ -210,6 +219,21 @@ public final class SpeedB extends PositionCheck {
    }
 
    private boolean checkValid(boolean velocity) {
-      return !velocity && !this.data.isSpectating() && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getLastCollided()) > 2 && this.data.elapsed(this.data.getLastCollidedGhost()) > 2 && this.data.elapsed(this.data.getLastGlide()) >= 30 && this.data.elapsed(this.data.getLastRiptide()) >= 30 && this.data.elapsed(this.data.getLastInLiquid()) > 2 && !this.data.isInBed() && !this.data.isLastInBed() && this.data.elapsed(this.data.getLastOnSlime()) > 3 && this.data.elapsed(this.data.getLastOnSoul()) > 3 && this.data.elapsed(this.data.getLastInWeb()) > 3 && !this.data.isOnScaffolding() && this.data.elapsed(this.data.getLastPistonPush()) > 3 && this.data.elapsed(this.data.getLastOnClimbable()) > 3;
+      return !velocity
+         && !this.data.isSpectating()
+         && !this.data.isPossiblyTeleporting()
+         && this.data.elapsed(this.data.getLastCollided()) > 2
+         && this.data.elapsed(this.data.getLastCollidedGhost()) > 2
+         && this.data.elapsed(this.data.getLastGlide()) >= 30
+         && this.data.elapsed(this.data.getLastRiptide()) >= 30
+         && this.data.elapsed(this.data.getLastInLiquid()) > 2
+         && !this.data.isInBed()
+         && !this.data.isLastInBed()
+         && this.data.elapsed(this.data.getLastOnSlime()) > 3
+         && this.data.elapsed(this.data.getLastOnSoul()) > 3
+         && this.data.elapsed(this.data.getLastInWeb()) > 3
+         && !this.data.isOnScaffolding()
+         && this.data.elapsed(this.data.getLastPistonPush()) > 3
+         && this.data.elapsed(this.data.getLastOnClimbable()) > 3;
    }
 }

@@ -23,20 +23,31 @@ public final class ScaffoldI extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent) {
          ItemStack stack = ((BlockPlaceEvent)packet).getItemStack();
          boolean validBlock = stack != null && stack.getType() != Material.AIR;
          if (validBlock && !((BlockPlaceEvent)packet).isUsableItem()) {
-            if (this.data.deltas.deltaYaw > 1.5F && this.data.deltas.deltaXZ > 0.12 && MathUtil.isNearlySame(this.data.deltas.accelXZ, this.data.deltas.lastAccelXZ, 1.0E-7)) {
+            if (this.data.deltas.deltaYaw > 1.5F
+               && this.data.deltas.deltaXZ > 0.12
+               && MathUtil.isNearlySame(this.data.deltas.accelXZ, this.data.deltas.lastAccelXZ, 1.0E-7)) {
                if (++this.violations > 3.0) {
-                  this.fail("* Not slowing down\n §f* deltaYaw: §b" + this.data.deltas.deltaYaw + "\n §f* deltaXZ: §b" + this.data.deltas.deltaXZ + "\n §f* ac: §b" + Math.abs(this.data.deltas.accelXZ - this.data.deltas.lastAccelXZ), this.getBanVL(), 150L);
+                  this.fail(
+                     "* Not slowing down\n §f* deltaYaw: §b"
+                        + this.data.deltas.deltaYaw
+                        + "\n §f* deltaXZ: §b"
+                        + this.data.deltas.deltaXZ
+                        + "\n §f* ac: §b"
+                        + Math.abs(this.data.deltas.accelXZ - this.data.deltas.lastAccelXZ),
+                     this.getBanVL(),
+                     150L
+                  );
                }
             } else {
                this.violations = Math.max(this.violations - 0.075, 0.0);
             }
          }
       }
-
    }
 }

@@ -24,12 +24,13 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 public final class AutoClickerD extends PacketCheck {
    int flying;
    double lastSTD;
-   Deque samples = new ArrayDeque();
+   Deque<Integer> samples = new ArrayDeque<>();
 
    public AutoClickerD(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (this.flying < 10 && !this.data.isHasDig() && !this.data.isPlacing() && !this.data.isUsingItem()) {
@@ -38,8 +39,8 @@ public final class AutoClickerD extends PacketCheck {
 
          if (this.samples.size() == 1000) {
             int outliers = MathUtil.getOutliers(this.samples);
-            double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.samples));
-            double kur = (new Kurtosis()).evaluate(MathUtil.dequeTranslator(this.samples));
+            double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.samples));
+            double kur = new Kurtosis().evaluate(MathUtil.dequeTranslator(this.samples));
             double sdd = Math.abs(std - this.lastSTD);
             double cps = 20.0 / MathUtil.average(this.samples);
             if (std < 0.8 && kur < 0.5 && sdd < 0.04 && outliers <= 6) {
@@ -58,6 +59,5 @@ public final class AutoClickerD extends PacketCheck {
       } else if (packet instanceof FlyingEvent && !((FlyingEvent)packet).isTeleport()) {
          ++this.flying;
       }
-
    }
 }

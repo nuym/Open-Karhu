@@ -1,8 +1,8 @@
 package me.liwk.karhu.util.mc.boundingbox;
 
+import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import me.liwk.karhu.Karhu;
@@ -35,7 +35,7 @@ public final class BoundingBox implements Cloneable {
    public double maxZ;
    private final long timestamp = System.currentTimeMillis();
    private final KarhuPlayer data;
-   private ConcurrentSet nearbyEntities = new ConcurrentSet();
+   private ConcurrentSet<Entity> nearbyEntities = new ConcurrentSet();
    public Chunk chunk;
 
    public BoundingBox(KarhuPlayer data, double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -49,7 +49,10 @@ public final class BoundingBox implements Cloneable {
    }
 
    public double distance(Location location) {
-      return Math.sqrt(Math.min(FastMath.pow(location.getX() - this.minX, 2), FastMath.pow(location.getX() - this.maxX, 2)) + Math.min(FastMath.pow(location.getZ() - this.minZ, 2), FastMath.pow(location.getZ() - this.maxZ, 2)));
+      return Math.sqrt(
+         Math.min(FastMath.pow(location.getX() - this.minX, 2), FastMath.pow(location.getX() - this.maxX, 2))
+            + Math.min(FastMath.pow(location.getZ() - this.minZ, 2), FastMath.pow(location.getZ() - this.maxZ, 2))
+      );
    }
 
    public double distance(double x, double z) {
@@ -82,11 +85,16 @@ public final class BoundingBox implements Cloneable {
       double centerX = (this.minX + this.maxX) / 2.0;
       double centerY = (this.minY + this.maxY) / 2.0;
       double centerZ = (this.minZ + this.maxZ) / 2.0;
-      return (new Location(world, centerX, centerY, centerZ)).getDirection();
+      return new Location(world, centerX, centerY, centerZ).getDirection();
    }
 
    public boolean hasPoint(Vector point) {
-      return point.getX() >= this.minX && point.getX() <= this.maxX && point.getY() >= this.minY && point.getY() <= this.maxY && point.getZ() >= this.minZ && point.getZ() <= this.maxZ;
+      return point.getX() >= this.minX
+         && point.getX() <= this.maxX
+         && point.getY() >= this.minY
+         && point.getY() <= this.maxY
+         && point.getZ() >= this.minZ
+         && point.getZ() <= this.maxZ;
    }
 
    public BoundingBox add(BoundingBox box) {
@@ -211,28 +219,23 @@ public final class BoundingBox implements Cloneable {
             Location test = new Location(this.data.getWorld(), (double)i1, 64.0, (double)j1);
             long chunkPair;
             if ((chunkPair = BlockUtil.getChunkPair(test)) != lastChunkPair) {
-               Karhu.getInstance().getChunkManager().getChunk(test, (c) -> {
+               Karhu.getInstance().getChunkManager().getChunk(test, c -> {
                   Entity[] entities = c.getEntities();
                   if (entities != null) {
                      this.nearbyEntities.addAll(Arrays.asList(entities));
                   }
-
                });
                lastChunkPair = chunkPair;
             }
          }
       }
-
    }
 
-   public List getCollidingEntities() {
-      List list = new ArrayList();
+   public List<Entity> getCollidingEntities() {
+      List<Entity> list = new ArrayList();
       AxisAlignedBB bbThis = this.toBB();
       if (!this.nearbyEntities.isEmpty()) {
-         Iterator var3 = this.nearbyEntities.iterator();
-
-         while(var3.hasNext()) {
-            Entity e = (Entity)var3.next();
+         for(Entity e : this.nearbyEntities) {
             if (e != null && e.getEntityId() != this.data.getBukkitPlayer().getEntityId()) {
                AxisAlignedBB bb = CollisionBoxParser.from(e);
                if (bb != null && e != this.data.getBukkitPlayer() && bb.distanceXYZ(bbThis) <= 4.0) {
@@ -245,13 +248,11 @@ public final class BoundingBox implements Cloneable {
       return list;
    }
 
-   public List getCollidingEntitiesNew() {
-      List list = new ArrayList();
+   public List<EntityType> getCollidingEntitiesNew() {
+      List<EntityType> list = new ArrayList();
       AxisAlignedBB bbThis = this.toBB();
-      Iterator var3 = this.data.getEntityData().values().iterator();
 
-      while(var3.hasNext()) {
-         EntityData edata = (EntityData)var3.next();
+      for(EntityData edata : this.data.getEntityData().values()) {
          if (edata.getEid() != this.data.getBukkitPlayer().getEntityId()) {
             AxisAlignedBB bb = edata.getEntityBoundingBox();
             if (bb != null && bb.distanceXYZ(bbThis) <= 4.0) {
@@ -267,8 +268,8 @@ public final class BoundingBox implements Cloneable {
       return new AxisAlignedBB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
    }
 
-   public List getCollidingBlocks() {
-      List blocks = new ArrayList();
+   public List<Block> getCollidingBlocks() {
+      List<Block> blocks = new ArrayList();
       int xFloor = MathHelper.floor_double(this.minX);
       int xCeil = MathHelper.floor_double(this.maxX);
       int yFloor = MathHelper.floor_double(this.minY);
@@ -299,12 +300,10 @@ public final class BoundingBox implements Cloneable {
       }
    }
 
-   public List getCachedCollidingBlocks(List blocks) {
-      List blocksWanted = new ArrayList();
-      Iterator var3 = blocks.iterator();
+   public List<Material> getCachedCollidingBlocks(List<Block> blocks) {
+      List<Material> blocksWanted = new ArrayList();
 
-      while(var3.hasNext()) {
-         Block block = (Block)var3.next();
+      for(Block block : blocks) {
          float expandY = !MaterialChecks.FENCES.contains(block.getType()) && !MaterialChecks.MOVABLE.contains(block.getType()) ? 1.0F : 1.5F;
          AxisAlignedBB blockAABB = new AxisAlignedBB(block.getLocation(), 1.0, (double)expandY);
          if (this.intersectsWith(blockAABB)) {
@@ -315,12 +314,10 @@ public final class BoundingBox implements Cloneable {
       return blocksWanted;
    }
 
-   public List getCollidingOnLanded(List blocks, double posX, double posY, double posZ) {
-      List blocksWanted = new ArrayList();
-      Iterator var9 = blocks.iterator();
+   public List<Material> getCollidingOnLanded(List<Block> blocks, double posX, double posY, double posZ) {
+      List<Material> blocksWanted = new ArrayList();
 
-      while(var9.hasNext()) {
-         Block block = (Block)var9.next();
+      for(Block block : blocks) {
          AxisAlignedBB blockAABB = new AxisAlignedBB(block.getLocation(), 1.0);
          if (this.intersectsWith(posX, posY, posZ, blockAABB)) {
             blocksWanted.add(block.getType());
@@ -330,18 +327,16 @@ public final class BoundingBox implements Cloneable {
       return blocksWanted;
    }
 
-   public List getCollidingMaterialAccel(List blocks) {
+   public List<Material> getCollidingMaterialAccel(List<Block> blocks) {
       int i = MathHelper.floor_double(this.minX);
       int j = MathHelper.floor_double(this.maxX + 1.0);
       int k = MathHelper.floor_double(this.minY);
       int l = MathHelper.floor_double(this.maxY + 1.0);
       int i1 = MathHelper.floor_double(this.minZ);
       int j1 = MathHelper.floor_double(this.maxZ + 1.0);
-      List blocksWanted = new ArrayList();
-      Iterator var9 = blocks.iterator();
+      List<Material> blocksWanted = new ArrayList();
 
-      while(var9.hasNext()) {
-         Block block = (Block)var9.next();
+      for(Block block : blocks) {
          AxisAlignedBB blockAABB = new AxisAlignedBB(block.getLocation(), 1.0);
 
          for(int k1 = i; k1 < j; ++k1) {
@@ -358,17 +353,15 @@ public final class BoundingBox implements Cloneable {
       return blocksWanted;
    }
 
-   public boolean getAnyLiquid(List blocks) {
+   public boolean getAnyLiquid(List<Block> blocks) {
       int i = MathHelper.floor_double(this.minX);
       int j = MathHelper.floor_double(this.maxX);
       int k = MathHelper.floor_double(this.minY);
       int l = MathHelper.floor_double(this.maxY);
       int i1 = MathHelper.floor_double(this.minZ);
       int j1 = MathHelper.floor_double(this.maxZ);
-      Iterator var8 = blocks.iterator();
 
-      while(var8.hasNext()) {
-         Block block = (Block)var8.next();
+      for(Block block : blocks) {
          AxisAlignedBB blockAABB = new AxisAlignedBB(block.getLocation(), 1.0);
 
          for(int k1 = i; k1 < j; ++k1) {
@@ -385,8 +378,8 @@ public final class BoundingBox implements Cloneable {
       return false;
    }
 
-   public List getCollidingAir() {
-      List blocks = new ArrayList();
+   public List<Block> getCollidingAir() {
+      List<Block> blocks = new ArrayList();
       int xFloor = MathHelper.floor(this.minX);
       int xCeil = MathHelper.ceiling_double_int(this.maxX);
       int yFloor = MathHelper.floor(this.minY);
@@ -413,8 +406,8 @@ public final class BoundingBox implements Cloneable {
       return blocks;
    }
 
-   public boolean checkBlocks(Predicate p) {
-      List blocks = new ArrayList();
+   public boolean checkBlocks(Predicate<Material> p) {
+      List<Block> blocks = new ArrayList();
       int xFloor = (int)Math.floor(this.minX);
       int xCeil = (int)Math.ceil(this.maxX);
       int yFloor = (int)Math.floor(this.minY);
@@ -434,13 +427,16 @@ public final class BoundingBox implements Cloneable {
          }
       }
 
-      return (new KarhuStream(blocks)).any((t) -> {
-         return p.test(t.getType());
-      });
+      return new KarhuStream(blocks).any(t -> p.test(t.getType()));
    }
 
    public boolean intersectsWith(AxisAlignedBB other, int floorX, int floorY, int floorZ, int ceilX, int ceilY, int ceilZ) {
-      return other.minX < (double)ceilX && other.maxX > (double)floorX && other.minY < (double)ceilY && other.maxY > (double)floorY && other.minZ < (double)ceilZ && other.maxZ > (double)floorZ;
+      return other.minX < (double)ceilX
+         && other.maxX > (double)floorX
+         && other.minY < (double)ceilY
+         && other.maxY > (double)floorY
+         && other.minZ < (double)ceilZ
+         && other.maxZ > (double)floorZ;
    }
 
    public boolean intersectsWith(double posX, double posY, double posZ, AxisAlignedBB other) {
@@ -448,13 +444,24 @@ public final class BoundingBox implements Cloneable {
    }
 
    public boolean intersectsWith(AxisAlignedBB other) {
-      return other.maxX >= this.minX && other.minX <= this.maxX && other.maxY >= this.minY && other.minY <= this.maxY && other.maxZ >= this.minZ && other.minZ <= this.maxZ;
+      return other.maxX >= this.minX
+         && other.minX <= this.maxX
+         && other.maxY >= this.minY
+         && other.minY <= this.maxY
+         && other.maxZ >= this.minZ
+         && other.minZ <= this.maxZ;
    }
 
    public boolean intersectsWithTest(AxisAlignedBB other) {
-      return other.minX <= this.maxX && other.maxX >= this.minX && other.minY <= this.maxY && other.maxY >= this.minY && other.minZ <= this.maxZ && other.maxZ >= this.minZ;
+      return other.minX <= this.maxX
+         && other.maxX >= this.minX
+         && other.minY <= this.maxY
+         && other.maxY >= this.minY
+         && other.minZ <= this.maxZ
+         && other.maxZ >= this.minZ;
    }
 
+   @Override
    public String toString() {
       return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + " -> " + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
    }
@@ -463,8 +470,7 @@ public final class BoundingBox implements Cloneable {
       try {
          return (BoundingBox)super.clone();
       } catch (Throwable var2) {
-         Throwable $ex = var2;
-         throw $ex;
+         throw var2;
       }
    }
 
@@ -485,7 +491,6 @@ public final class BoundingBox implements Cloneable {
    }
 
    public int getMAX_BLOCKS_TO_CHECK() {
-      this.getClass();
       return 512;
    }
 
@@ -517,7 +522,7 @@ public final class BoundingBox implements Cloneable {
       return this.data;
    }
 
-   public ConcurrentSet getNearbyEntities() {
+   public ConcurrentSet<Entity> getNearbyEntities() {
       return this.nearbyEntities;
    }
 

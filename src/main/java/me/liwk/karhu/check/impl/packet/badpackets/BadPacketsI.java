@@ -22,19 +22,20 @@ public final class BadPacketsI extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof TransactionEvent) {
          long time = (long)((double)((TransactionEvent)packet).getNow() / 1000000.0);
          long flying = (long)((double)this.data.lastFlying / 1000000.0);
-         if (time - flying > (long)(this.data.isNewerThan8() ? '鱀' : 4000) + this.data.getTransactionPing() && time - this.lastFlag > 250L && !this.data.isSpectating() && !this.data.getBukkitPlayer().isDead()) {
-            if (++this.violations > 20.0) {
-               this.fail("* Blink?\n T: §b" + (time - flying) / 50L, this.getBanVL(), 110L);
-               this.lastFlag = time;
-            }
-         } else {
+         if (time - flying <= (long)(this.data.isNewerThan8() ? '鱀' : 4000) + this.data.getTransactionPing()
+            || time - this.lastFlag <= 250L
+            || this.data.isSpectating()
+            || this.data.getBukkitPlayer().isDead()) {
             this.violations *= 0.2;
+         } else if (++this.violations > 20.0) {
+            this.fail("* Blink?\n T: §b" + (time - flying) / 50L, this.getBanVL(), 110L);
+            this.lastFlag = time;
          }
       }
-
    }
 }

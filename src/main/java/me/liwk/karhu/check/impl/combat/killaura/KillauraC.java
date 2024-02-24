@@ -27,6 +27,7 @@ public final class KillauraC extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (this.data.getClientVersion().getProtocolVersion() <= 47 && !Karhu.getInstance().isViaRewind()) {
          if (packet instanceof AttackEvent) {
@@ -54,6 +55,5 @@ public final class KillauraC extends PacketCheck {
          ++this.swings;
          this.swungAt = this.data.getTotalTicks();
       }
-
    }
 }

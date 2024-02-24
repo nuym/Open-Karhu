@@ -22,6 +22,7 @@ public class AimAssistI extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
@@ -34,14 +35,11 @@ public class AimAssistI extends RotationCheck {
             this.zeroDeltaTicks = 0;
          }
 
-         if (this.zeroDeltaTicks > 40 && deltaYaw > 3.0F && Math.abs(to.getPitch()) < 45.0F && this.data.deltas.deltaXZ > 0.08) {
-            if (++this.violations > 5.0) {
-               this.fail("* Weird rotation\n §f* p: §b" + to.getPitch() + "\n §f* lp: §b" + from.getPitch(), this.getBanVL(), 300L);
-            }
-         } else {
+         if (this.zeroDeltaTicks <= 40 || !(deltaYaw > 3.0F) || !(Math.abs(to.getPitch()) < 45.0F) || !(this.data.deltas.deltaXZ > 0.08)) {
             this.violations *= 0.75;
+         } else if (++this.violations > 5.0) {
+            this.fail("* Weird rotation\n §f* p: §b" + to.getPitch() + "\n §f* lp: §b" + from.getPitch(), this.getBanVL(), 300L);
          }
-
       }
    }
 }

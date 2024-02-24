@@ -3,10 +3,9 @@ package me.liwk.karhu.util.gui;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import me.liwk.karhu.util.task.Tasker;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,17 +13,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitScheduler;
 
 public class Gui implements Listener {
-   private HashMap pages;
-   private HashMap items;
-   private static final List guis = new ArrayList();
-   private HashMap playerPages = new HashMap();
-   private final Set buttons;
+   private HashMap<Integer, Inventory> pages;
+   private HashMap<Integer, HashMap<Integer, ItemStack>> items;
+   private static final List<Gui> guis = new ArrayList<>();
+   private HashMap<Player, Integer> playerPages = new HashMap<>();
+   private final Set<Button> buttons;
    private String title;
    private int size;
    private Inventory inv;
@@ -37,9 +35,9 @@ public class Gui implements Listener {
          guis.add(this);
       }
 
-      this.pages = new HashMap();
-      this.items = new HashMap();
-      this.buttons = new HashSet();
+      this.pages = new HashMap<>();
+      this.items = new HashMap<>();
+      this.buttons = new HashSet<>();
       this.title = title;
       this.size = size;
       this.partiallyTouchable = false;
@@ -79,7 +77,7 @@ public class Gui implements Listener {
       }
    }
 
-   public HashMap getPages() {
+   public HashMap<Integer, Inventory> getPages() {
       return this.pages;
    }
 
@@ -96,7 +94,7 @@ public class Gui implements Listener {
    }
 
    public ItemStack getItem(int pos) {
-      HashMap items = (HashMap)this.items.get(1);
+      HashMap<Integer, ItemStack> items = this.items.get(1);
       return items != null && !items.isEmpty() && items.containsKey(pos) ? (ItemStack)items.get(pos) : null;
    }
 
@@ -121,7 +119,6 @@ public class Gui implements Listener {
 
          this.buttons.add(button);
       }
-
    }
 
    private Inventory createPage(boolean addPageButtons) {
@@ -129,7 +126,7 @@ public class Gui implements Listener {
    }
 
    private Inventory createPage(int page, boolean addPageButtons) {
-      Inventory inv = Bukkit.createInventory((InventoryHolder)null, this.getSize(), this.getTitle());
+      Inventory inv = Bukkit.createInventory(null, this.getSize(), this.getTitle());
       this.getPages().put(page, inv);
       if (addPageButtons) {
          this.addPageButtons(inv);
@@ -138,7 +135,6 @@ public class Gui implements Listener {
       return inv;
    }
 
-   /** @deprecated */
    @Deprecated
    public void hardRefresh(Player player) {
       this.close(player);
@@ -149,7 +145,6 @@ public class Gui implements Listener {
       player.updateInventory();
    }
 
-   /** @deprecated */
    @Deprecated
    public void refresh(Player player) {
       this.hardRefresh(player);
@@ -165,11 +160,13 @@ public class Gui implements Listener {
       prevMeta.setDisplayName("§7Previous page");
       prevPageItem.setItemMeta(prevMeta);
       this.addButton(new Button(inv, inv.getSize() - 1, nextPageItem) {
+         @Override
          public void onClick(Player clicker, ClickType clickType) {
             Gui.this.nextPage(clicker);
          }
       });
       this.addButton(new Button(inv, inv.getSize() - 9, prevPageItem) {
+         @Override
          public void onClick(Player clicker, ClickType clickType) {
             Gui.this.previousPage(clicker);
          }
@@ -200,26 +197,19 @@ public class Gui implements Listener {
    public void open(Player player) {
       Tasker.taskAsync(() -> {
          if (this.getPages() != null && !this.getPages().isEmpty()) {
-            this.inv = Bukkit.createInventory((InventoryHolder)null, this.size, this.title + "§r");
+            this.inv = Bukkit.createInventory(null, this.size, this.title + "§r");
             if (this.items.isEmpty() && this.buttons.isEmpty()) {
                player.openInventory(this.inv);
             } else {
-               HashMap items = (HashMap)this.items.get(1);
-               Iterator var3;
+               HashMap<Integer, ItemStack> items = this.items.get(1);
                if (!this.items.isEmpty()) {
-                  var3 = items.entrySet().iterator();
-
-                  while(var3.hasNext()) {
-                     Map.Entry e = (Map.Entry)var3.next();
-                     this.inv.setItem((Integer)e.getKey(), (ItemStack)e.getValue());
+                  for(Entry<Integer, ItemStack> e : items.entrySet()) {
+                     this.inv.setItem(e.getKey(), (ItemStack)e.getValue());
                   }
                }
 
                if (!this.buttons.isEmpty()) {
-                  var3 = this.getButtons().iterator();
-
-                  while(var3.hasNext()) {
-                     Button b = (Button)var3.next();
+                  for(Button b : this.getButtons()) {
                      this.inv.setItem(b.pos, b.item);
                      if (b.inv == null) {
                         b.inv = this.inv;
@@ -228,9 +218,7 @@ public class Gui implements Listener {
                }
 
                this.playerPages.put(player, 1);
-               Tasker.run(() -> {
-                  player.openInventory(this.inv);
-               });
+               Tasker.run(() -> player.openInventory(this.inv));
             }
          } else {
             throw new IllegalArgumentException("You must have at least 1 page in your gui!");
@@ -241,13 +229,13 @@ public class Gui implements Listener {
    public void addItem(int page, ItemStack item, int pos) {
       if (this.getPages() != null && !this.getPages().isEmpty()) {
          if (!this.items.containsKey(page)) {
-            items = new HashMap();
-            HashMap items = new HashMap();
+            HashMap<Integer, HashMap<Integer, ItemStack>> list = new HashMap<>();
+            HashMap<Integer, ItemStack> items = new HashMap<>();
             items.put(pos, item);
-            items.put(page, items);
+            list.put(page, items);
             this.items.put(page, items);
          } else {
-            items = (HashMap)this.items.get(page);
+            HashMap<Integer, ItemStack> items = this.items.get(page);
             if (items.containsKey(pos)) {
                items.replace(pos, item);
             } else {
@@ -256,7 +244,6 @@ public class Gui implements Listener {
 
             this.items.replace(page, items);
          }
-
       } else {
          throw new IllegalArgumentException("You must have at least 1 page in your gui!");
       }
@@ -276,14 +263,13 @@ public class Gui implements Listener {
    private void nextPage(Player player) {
       if (this.getPages() != null && !this.getPages().isEmpty()) {
          if (this.playerPages.containsKey(player)) {
-            int currentPage = (Integer)this.playerPages.get(player);
+            int currentPage = this.playerPages.get(player);
             if (this.getPages().size() >= currentPage + 1) {
                Inventory nextPage = (Inventory)this.getPages().get(currentPage + 1);
                player.openInventory(nextPage);
                this.playerPages.put(player, currentPage + 1);
             }
          }
-
       } else {
          throw new IllegalArgumentException("You must have at least 1 page in your gui!");
       }
@@ -292,27 +278,24 @@ public class Gui implements Listener {
    private void previousPage(Player player) {
       if (this.getPages() != null && !this.getPages().isEmpty()) {
          if (this.playerPages.containsKey(player)) {
-            int currentPage = (Integer)this.playerPages.get(player);
+            int currentPage = this.playerPages.get(player);
             if (currentPage - 1 >= 1) {
                Inventory nextPage = (Inventory)this.getPages().get(currentPage - 1);
                player.openInventory(nextPage);
                this.playerPages.put(player, currentPage - 1);
             }
          }
-
       } else {
          throw new IllegalArgumentException("You must have at least 1 page in your gui!");
       }
    }
 
    public Button getButton(int pos) {
-      return (Button)this.getButtons().stream().filter((b) -> {
-         return b.pos == pos;
-      }).findFirst().orElse((Object)null);
+      return this.getButtons().stream().filter(b -> b.pos == pos).findFirst().orElse(null);
    }
 
    public int getPage(Player player) {
-      return (Integer)this.playerPages.getOrDefault(player, 0);
+      return this.playerPages.getOrDefault(player, 0);
    }
 
    public void close(Player player) {
@@ -328,11 +311,11 @@ public class Gui implements Listener {
       guis.remove(this);
    }
 
-   public Set getButtons() {
+   public Set<Button> getButtons() {
       return this.buttons;
    }
 
-   private HashMap getPlayerPages() {
+   private HashMap<Player, Integer> getPlayerPages() {
       return this.playerPages;
    }
 
@@ -341,16 +324,13 @@ public class Gui implements Listener {
       if (gui != null) {
          gui.close(player);
       }
-
    }
 
    public static Gui getGui(Player player) {
-      return (Gui)guis.stream().filter((gui) -> {
-         return gui.getPlayerPages().containsKey(player);
-      }).findFirst().orElse((Object)null);
+      return guis.stream().filter(gui -> gui.getPlayerPages().containsKey(player)).findFirst().orElse(null);
    }
 
-   public static void openGui(Player player, String title, int size, TypedCallback cb) {
+   public static void openGui(Player player, String title, int size, TypedCallback<Gui> cb) {
       Gui gui = new Gui(title, size);
       cb.execute(gui);
       gui.open(player);

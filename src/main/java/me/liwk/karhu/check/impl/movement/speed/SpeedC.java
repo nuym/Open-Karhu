@@ -22,11 +22,25 @@ public final class SpeedC extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate e) {
       float friction = this.data.getCurrentFriction();
       float lastTickFriction = this.data.getLastTickFriction();
       Vector velocity = this.data.getTickedVelocity();
-      if (!(this.data.deltas.deltaXZ < 0.1) && !(this.data.deltas.lastDX < 0.04) && !this.data.isOnLadder() && velocity == null && this.data.elapsed(this.data.getLastPistonPush()) > 3 && this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.elapsed(this.data.getLastGlide()) > 30 && this.data.elapsed(this.data.getLastRiptide()) > 30 && !this.data.isOnLiquid() && !this.data.isInBed() && !this.data.isOnScaffolding() && !this.data.isLastInBed() && this.data.elapsed(this.data.getLastCollidedH()) >= 2 && this.data.elapsed(this.data.getLastCollidedGhost()) >= 2) {
+      if (!(this.data.deltas.deltaXZ < 0.1)
+         && !(this.data.deltas.lastDX < 0.04)
+         && !this.data.isOnLadder()
+         && velocity == null
+         && this.data.elapsed(this.data.getLastPistonPush()) > 3
+         && this.data.elapsed(this.data.getLastFlyTick()) > 30
+         && this.data.elapsed(this.data.getLastGlide()) > 30
+         && this.data.elapsed(this.data.getLastRiptide()) > 30
+         && !this.data.isOnLiquid()
+         && !this.data.isInBed()
+         && !this.data.isOnScaffolding()
+         && !this.data.isLastInBed()
+         && this.data.elapsed(this.data.getLastCollidedH()) >= 2
+         && this.data.elapsed(this.data.getLastCollidedGhost()) >= 2) {
          double lowestMatch = Double.MAX_VALUE;
          double predictX = 0.0;
          double predictZ = 0.0;
@@ -35,31 +49,11 @@ public final class SpeedC extends PositionCheck {
 
          for(int forw = -1; forw < 2; ++forw) {
             for(int stra = -1; stra < 2; ++stra) {
-               boolean[] var15 = BOOLEANS_REVERSED;
-               int var16 = var15.length;
-
-               for(int var17 = 0; var17 < var16; ++var17) {
-                  boolean attack = var15[var17];
-                  boolean[] var19 = BOOLEANS_REVERSED;
-                  int var20 = var19.length;
-
-                  for(int var21 = 0; var21 < var20; ++var21) {
-                     boolean using = var19[var21];
-                     boolean[] var23 = BOOLEANS;
-                     int var24 = var23.length;
-
-                     for(int var25 = 0; var25 < var24; ++var25) {
-                        boolean sprinting = var23[var25];
-                        boolean[] var27 = BOOLEANS_REVERSED;
-                        int var28 = var27.length;
-
-                        for(int var29 = 0; var29 < var28; ++var29) {
-                           boolean sneaking = var27[var29];
-                           boolean[] var31 = BOOLEANS_REVERSED;
-                           int var32 = var31.length;
-
-                           for(int var33 = 0; var33 < var32; ++var33) {
-                              boolean jump = var31[var33];
+               for(boolean attack : BOOLEANS_REVERSED) {
+                  for(boolean using : BOOLEANS_REVERSED) {
+                     for(boolean sprinting : BOOLEANS) {
+                        for(boolean sneaking : BOOLEANS_REVERSED) {
+                           for(boolean jump : BOOLEANS_REVERSED) {
                               ++scenarios;
                               float forward = (float)forw;
                               float strafe = (float)stra;
@@ -79,8 +73,8 @@ public final class SpeedC extends PositionCheck {
                                  float moveSpeed = this.data.getWalkSpeed();
                                  double lastDX = this.data.deltas.lastDX;
                                  double lastDZ = this.data.deltas.lastDZ;
-                                 lastDX *= this.data.isLastLastOnGroundPacket() ? (double)lastTickFriction : 0.9100000262260437;
-                                 lastDZ *= this.data.isLastLastOnGroundPacket() ? (double)lastTickFriction : 0.9100000262260437;
+                                 lastDX *= this.data.isLastLastOnGroundPacket() ? (double)lastTickFriction : 0.91F;
+                                 lastDZ *= this.data.isLastLastOnGroundPacket() ? (double)lastTickFriction : 0.91F;
                                  if (attack) {
                                     lastDX *= 0.6;
                                     lastDZ *= 0.6;
@@ -99,19 +93,18 @@ public final class SpeedC extends PositionCheck {
                                  }
 
                                  float f5;
-                                 float inputForce;
                                  if (onGround) {
                                     f5 = moveSpeed * (0.16277136F / (friction * friction * friction));
                                     if (jump && sprinting) {
-                                       inputForce = e.to.yaw * 0.017453292F;
-                                       lastDX -= (double)(MathHelper.sin(inputForce) * 0.2F);
-                                       lastDZ += (double)(MathHelper.cos(inputForce) * 0.2F);
+                                       float radians = e.to.yaw * (float) (Math.PI / 180.0);
+                                       lastDX -= (double)(MathHelper.sin(radians) * 0.2F);
+                                       lastDZ += (double)(MathHelper.cos(radians) * 0.2F);
                                     }
                                  } else {
                                     f5 = sprinting ? 0.026F : 0.02F;
                                  }
 
-                                 inputForce = forward * forward + strafe * strafe;
+                                 float inputForce = forward * forward + strafe * strafe;
                                  if (inputForce >= 1.0E-4F) {
                                     inputForce = MathHelper.sqrt_float(inputForce);
                                     if (inputForce < 1.0F) {
@@ -121,7 +114,7 @@ public final class SpeedC extends PositionCheck {
                                     inputForce = f5 / inputForce;
                                     forward *= inputForce;
                                     strafe *= inputForce;
-                                    float yawShit = e.to.yaw * 3.1415927F / 180.0F;
+                                    float yawShit = e.to.yaw * (float) Math.PI / 180.0F;
                                     float yawSin = MathHelper.sin(yawShit);
                                     float yawCos = MathHelper.cos(yawShit);
                                     lastDX += (double)(strafe * yawCos - forward * yawSin);
@@ -151,14 +144,23 @@ public final class SpeedC extends PositionCheck {
          double tMult = Math.max(Karhu.getInstance().getConfigManager().getSpeedCMult(), 1.0001);
          if (invalid && this.data.deltas.deltaXZ > predicted * tMult) {
             if (++this.violations > 6.0) {
-               this.fail("* Prediction\n §f* match §b" + lowestMatch + "\n §f* predict §b" + predicted + "\n §f* scenarios §b" + scenarios + "\n §f* move §b" + this.data.deltas.deltaXZ, 300L);
+               this.fail(
+                  "* Prediction\n §f* match §b"
+                     + lowestMatch
+                     + "\n §f* predict §b"
+                     + predicted
+                     + "\n §f* scenarios §b"
+                     + scenarios
+                     + "\n §f* move §b"
+                     + this.data.deltas.deltaXZ,
+                  300L
+               );
             }
 
             this.debug(String.format("match: %s §fbuffer: %.1f", lowestMatch, this.violations));
          } else {
             this.decrease(0.075);
          }
-
       } else {
          this.decrease(0.005);
       }

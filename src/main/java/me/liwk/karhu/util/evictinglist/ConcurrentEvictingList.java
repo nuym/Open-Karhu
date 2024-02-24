@@ -5,14 +5,14 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
-public class ConcurrentEvictingList extends ConcurrentLinkedDeque {
+public class ConcurrentEvictingList<T> extends ConcurrentLinkedDeque<T> {
    private int maxSize;
 
    public ConcurrentEvictingList(int maxSize) {
       this.maxSize = maxSize;
    }
 
-   public ConcurrentEvictingList(Collection c, int maxSize) {
+   public ConcurrentEvictingList(Collection<? extends T> c, int maxSize) {
       super(c);
       this.maxSize = maxSize;
    }
@@ -21,19 +21,22 @@ public class ConcurrentEvictingList extends ConcurrentLinkedDeque {
       return this.maxSize;
    }
 
-   public boolean add(Object t) {
+   @Override
+   public boolean add(T t) {
       if (this.size() >= this.maxSize) {
-         this.remove(0);
+         this.remove(Integer.valueOf(0));
       }
 
       return super.add(t);
    }
 
-   public boolean addAll(Collection c) {
+   @Override
+   public boolean addAll(Collection<? extends T> c) {
       return c.stream().anyMatch(this::add);
    }
 
-   public Stream stream() {
-      return (new CopyOnWriteArrayList(this)).stream();
+   @Override
+   public Stream<T> stream() {
+      return new CopyOnWriteArrayList<>(this).stream();
    }
 }

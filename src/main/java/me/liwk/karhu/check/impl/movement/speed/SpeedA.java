@@ -13,7 +13,6 @@ import me.liwk.karhu.check.type.PositionCheck;
 import me.liwk.karhu.data.KarhuPlayer;
 import me.liwk.karhu.util.player.PlayerUtil;
 import me.liwk.karhu.util.update.MovementUpdate;
-import org.bukkit.entity.Player;
 
 @CheckInfo(
    name = "Speed (A)",
@@ -30,6 +29,7 @@ public final class SpeedA extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       double deltaH = this.data.deltas.deltaXZ;
       double offsetY = this.data.deltas.motionY;
@@ -41,22 +41,19 @@ public final class SpeedA extends PositionCheck {
 
       boolean backTrack = false;
       boolean jump = false;
-      List tags = new ArrayList();
+      List<String> tags = new ArrayList<>();
       if (this.data.elapsed(this.data.getLastSprintTick()) <= 3) {
          tags.add("sprinting");
       }
 
       float friction = 0.91F;
       float baseFriction = 0.54600006F;
-      double attributeSpeed;
-      double velocity2;
-      double diff;
       if (update.from.ground) {
          friction = this.data.getCurrentFriction();
          float frictionDiff = Math.abs(friction - 0.54600006F);
          float tMovementSpeed = movementSpeed;
          if ((double)frictionDiff >= 0.05 && this.data.elapsed(this.data.getFastDigTicks()) <= this.data.getPingInTicks()) {
-            tMovementSpeed *= 1.3F;
+            tMovementSpeed = movementSpeed * 1.3F;
             tMovementSpeed *= 0.75357103F;
             backTrack = true;
          }
@@ -65,22 +62,31 @@ public final class SpeedA extends PositionCheck {
          movementSpeed *= 0.16277136F / (friction * friction * friction);
          tags.add("ground");
          if (backTrack) {
-            attributeSpeed = deltaH - this.lastDeltaH;
-            velocity2 = attributeSpeed - (double)movementSpeed;
-            diff = attributeSpeed - (double)tMovementSpeed;
-            if (diff < velocity2) {
-               movementSpeed = tMovementSpeed;
+            double tDiff = deltaH - this.lastDeltaH;
+            double speedupServer = tDiff - (double)movementSpeed;
+            double speedupClient = tDiff - (double)tMovementSpeed;
+            if (speedupClient < speedupServer) {
                if (update.to.ground) {
                   friction = 0.54600006F;
                }
 
-               movementSpeed = (float)((double)movementSpeed + 0.05);
+               movementSpeed = (float)((double)tMovementSpeed + 0.05);
                tags.add("backtracked-slime-friction");
             }
          }
 
-         attributeSpeed = offsetY - jumpHeight;
-         if (!update.to.ground && (attributeSpeed >= -0.03125 || offsetY > 8.0 && this.data.getJumpBoost() >= 95 || this.data.elapsed(this.data.getLastInBerry()) <= 1 || this.data.isOnHoney() || this.data.isWasOnHoney() || this.data.getJumpBoost() < 0 || this.data.elapsed(this.data.getLastCollidedVGhost()) <= 3 || this.data.elapsed(this.data.getLastCollidedV()) < 3)) {
+         double offsetJump = offsetY - jumpHeight;
+         if (!update.to.ground
+            && (
+               offsetJump >= -0.03125
+                  || offsetY > 8.0 && this.data.getJumpBoost() >= 95
+                  || this.data.elapsed(this.data.getLastInBerry()) <= 1
+                  || this.data.isOnHoney()
+                  || this.data.isWasOnHoney()
+                  || this.data.getJumpBoost() < 0
+                  || this.data.elapsed(this.data.getLastCollidedVGhost()) <= 3
+                  || this.data.elapsed(this.data.getLastCollidedV()) < 3
+            )) {
             movementSpeed = (float)((double)movementSpeed + 0.2);
             tags.add("jump");
             jump = true;
@@ -90,11 +96,11 @@ public final class SpeedA extends PositionCheck {
          movementSpeed = 0.026F;
       }
 
-      double movementSpeed2 = 0.019999999552965164;
+      double movementSpeed2 = 0.02F;
       if (this.data.isWasOnWater()) {
          tags.add("water");
-         attributeSpeed = (double)this.data.getWalkSpeed();
-         attributeSpeed += attributeSpeed * 0.30000001192092896;
+         double attributeSpeed = (double)this.data.getWalkSpeed();
+         attributeSpeed += attributeSpeed * 0.3F;
          float f3 = (float)this.data.getDepthStriderLevel();
          float f9 = this.data.isSprinting() && this.data.isNewerThan12() ? 0.9F : 0.8F;
          if (f3 > 3.0F) {
@@ -124,10 +130,13 @@ public final class SpeedA extends PositionCheck {
          }
 
          if (!jump) {
-            if ((this.data.elapsed(this.data.getLastOnHalfBlock()) <= 1 || this.data.elapsed(this.data.getLastOnBoat()) <= 3) && (this.data.deltas.motionY >= 0.41999998688697815 || this.data.deltas.lastMotionY >= 0.41999998688697815) && this.data.elapsed(this.data.getLastCollided()) <= 1) {
+            if ((this.data.elapsed(this.data.getLastOnHalfBlock()) <= 1 || this.data.elapsed(this.data.getLastOnBoat()) <= 3)
+               && (this.data.deltas.motionY >= 0.42F || this.data.deltas.lastMotionY >= 0.42F)
+               && this.data.elapsed(this.data.getLastCollided()) <= 1) {
                movementSpeed = (float)((double)movementSpeed + 0.2);
                tags.add("jump");
-            } else if ((this.data.elapsed(this.data.getLastCollidedVGhost()) <= 10 || this.data.getTeleportManager().teleportTicks <= 2) && deltaH - this.lastDeltaH > 0.1) {
+            } else if ((this.data.elapsed(this.data.getLastCollidedVGhost()) <= 10 || this.data.getTeleportManager().teleportTicks <= 2)
+               && deltaH - this.lastDeltaH > 0.1) {
                movementSpeed = (float)((double)movementSpeed + 0.2);
                tags.add("jump");
             }
@@ -169,7 +178,9 @@ public final class SpeedA extends PositionCheck {
       boolean flag1 = false;
       if (this.data.isUsingItem()) {
          tags.add("item-use");
-         if (Karhu.getInstance().getConfigManager().isFlagNoSlow() && this.data.getVelocityHorizontal() == 0.0 && this.data.getBukkitPlayer().getWalkSpeed() < 0.21F) {
+         if (Karhu.getInstance().getConfigManager().isFlagNoSlow()
+            && this.data.getVelocityHorizontal() == 0.0
+            && this.data.getBukkitPlayer().getWalkSpeed() < 0.21F) {
             if (this.data.isBlocking() && !this.data.isEating() && this.data.getClientVersion().getProtocolVersion() > 47) {
                flag1 = false;
             } else {
@@ -184,7 +195,7 @@ public final class SpeedA extends PositionCheck {
       }
 
       boolean setback = false;
-      velocity2 = this.data.getVelocityHorizontal() != 0.0 ? this.data.getVelocityHorizontal() + 0.2 : 0.0;
+      double velocity2 = this.data.getVelocityHorizontal() != 0.0 ? this.data.getVelocityHorizontal() + 0.2 : 0.0;
       if (this.data.elapsed(this.data.getLastInLiquid()) <= 3 || this.data.elapsed(this.data.getLastInGhostLiquid()) <= 3) {
          if (this.data.isConfirmingVelocity()) {
             movementSpeed += 3.0F;
@@ -198,13 +209,27 @@ public final class SpeedA extends PositionCheck {
          movementSpeed = (float)((double)movementSpeed + this.data.getVelocityHorizontal() + 0.2);
       }
 
-      diff = deltaH - this.lastDeltaH;
+      double diff = deltaH - this.lastDeltaH;
       double speedup = diff - (double)movementSpeed;
       double p = diff / (double)movementSpeed * 100.0;
       boolean item = tags.contains("item-use");
       if (diff > (double)movementSpeed * Math.max(Karhu.getInstance().getConfigManager().getSpeedAMult(), 1.03)) {
-         if (this.data.elapsed(this.data.getLastFlyTick()) > 5 && !this.data.isPossiblyTeleporting() && !this.data.isSpectating() && this.data.elapsed(this.data.getLastPistonPush()) > 3 && !this.data.isOnPiston() && !this.data.isRiding() && deltaH > 0.15 && !this.data.isInBed() && !this.data.isLastInBed() && this.data.elapsed(this.data.getLastRiptide()) > 15 && this.data.elapsed(this.data.getLastGlide()) > 150 && !this.data.isRiptiding() && !this.data.isGliding()) {
-            double maxVL = this.data.isUsingItem() && this.data.isEating() ? 50.0 : (this.data.isUsingItem() && this.data.isBowing() ? 60.0 : (this.data.isUsingItem() ? 10.0 : 3.5));
+         if (this.data.elapsed(this.data.getLastFlyTick()) > 5
+            && !this.data.isPossiblyTeleporting()
+            && !this.data.isSpectating()
+            && this.data.elapsed(this.data.getLastPistonPush()) > 3
+            && !this.data.isOnPiston()
+            && !this.data.isRiding()
+            && deltaH > 0.15
+            && !this.data.isInBed()
+            && !this.data.isLastInBed()
+            && this.data.elapsed(this.data.getLastRiptide()) > 15
+            && this.data.elapsed(this.data.getLastGlide()) > 150
+            && !this.data.isRiptiding()
+            && !this.data.isGliding()) {
+            double maxVL = this.data.isUsingItem() && this.data.isEating()
+               ? 50.0
+               : (this.data.isUsingItem() && this.data.isBowing() ? 60.0 : (this.data.isUsingItem() ? 10.0 : 3.5));
             if (!Karhu.getInstance().getConfigManager().isFlagNoSlow()) {
                maxVL = 3.5;
             }
@@ -213,10 +238,10 @@ public final class SpeedA extends PositionCheck {
             if (Karhu.getInstance().getConfigManager().isFixEat() && item && shouldFix && !this.data.isPendingBackSwitch()) {
                int currentSlot = this.data.getCurrentSlot();
                int switchSlot = currentSlot == 8 ? 1 : currentSlot + 1;
-               PlayerUtil.sendPacket((Player)this.data.getBukkitPlayer(), new WrapperPlayServerHeldItemChange(switchSlot));
+               PlayerUtil.sendPacket(this.data.getBukkitPlayer(), new WrapperPlayServerHeldItemChange(switchSlot));
                this.data.setPendingBackSwitch(true);
                int uid = this.data.getCurrentServerTransaction();
-               Deque slots = (Deque)this.data.getBackSwitchSlots().getOrDefault(uid, new LinkedList());
+               Deque<Integer> slots = this.data.getBackSwitchSlots().getOrDefault(uid, new LinkedList<>());
                slots.add(currentSlot);
                this.data.getBackSwitchSlots().put(uid, slots);
                if (flag1) {
@@ -237,7 +262,35 @@ public final class SpeedA extends PositionCheck {
                   this.disallowMove(false);
                }
             } else if (!flag1 && (this.violations += 1.0 + speedup * 0.7) > maxVL) {
-               this.fail("* Moving faster than possible\n §f* p §b" + this.format(1, p) + "\n §f* mSpeed §b" + this.format(4, movementSpeed) + "\n §f* diff §b" + this.format(4, diff) + "\n §f* jump §b" + this.format(4, offsetY) + " | " + this.format(4, jumpHeight) + "\n §f* f5 §b" + friction + " | " + this.data.getClientAirTicks() + "\n §f* tags §b" + String.join("§f, §b", tags) + "\n §f* kb §b" + this.data.elapsed(this.data.getLastVelocityTaken()) + "\n §f* dXZ | lDXZ §b" + this.format(4, deltaH) + " | " + this.format(4, this.lastDeltaH) + "\n §f* tp §b" + this.data.getTeleportManager().zeroAmount + " | " + this.data.getTeleportManager().teleportTicks, 300L);
+               this.fail(
+                  "* Moving faster than possible\n §f* p §b"
+                     + this.format(1, Double.valueOf(p))
+                     + "\n §f* mSpeed §b"
+                     + this.format(4, Float.valueOf(movementSpeed))
+                     + "\n §f* diff §b"
+                     + this.format(4, Double.valueOf(diff))
+                     + "\n §f* jump §b"
+                     + this.format(4, Double.valueOf(offsetY))
+                     + " | "
+                     + this.format(4, Double.valueOf(jumpHeight))
+                     + "\n §f* f5 §b"
+                     + friction
+                     + " | "
+                     + this.data.getClientAirTicks()
+                     + "\n §f* tags §b"
+                     + String.join("§f, §b", tags)
+                     + "\n §f* kb §b"
+                     + this.data.elapsed(this.data.getLastVelocityTaken())
+                     + "\n §f* dXZ | lDXZ §b"
+                     + this.format(4, Double.valueOf(deltaH))
+                     + " | "
+                     + this.format(4, Double.valueOf(this.lastDeltaH))
+                     + "\n §f* tp §b"
+                     + this.data.getTeleportManager().zeroAmount
+                     + " | "
+                     + this.data.getTeleportManager().teleportTicks,
+                  300L
+               );
             }
          } else {
             this.violations = Math.max(this.violations - 0.0045, 0.0);

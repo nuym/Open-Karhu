@@ -8,8 +8,8 @@ import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Server;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.potion.PotionType;
@@ -43,6 +43,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWi
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.api.Check;
 import me.liwk.karhu.check.impl.movement.fly.FlyA;
@@ -68,7 +69,6 @@ import me.liwk.karhu.event.VelocityEvent;
 import me.liwk.karhu.event.WindowEvent;
 import me.liwk.karhu.handler.PlayerHandler;
 import me.liwk.karhu.handler.collision.type.MaterialChecks;
-import me.liwk.karhu.handler.net.TaskData;
 import me.liwk.karhu.manager.alert.MiscellaneousAlertPoster;
 import me.liwk.karhu.util.MathUtil;
 import me.liwk.karhu.util.Teleport;
@@ -93,7 +93,7 @@ import org.bukkit.util.Vector;
 
 public final class PacketProcessor extends SimplePacketListenerAbstract {
    private final Karhu plugin;
-   private final PassiveExpiringSet closedConnections = new PassiveExpiringSet(1000L);
+   private final PassiveExpiringSet<UUID> closedConnections = new PassiveExpiringSet<>(1000L);
 
    public PacketProcessor(Karhu plugin) {
       super(PacketListenerPriority.MONITOR);
@@ -106,7 +106,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
       PacketPlayReceiveEvent cloned = null;
       if (e.getUser() != null && e.getUser().getUUID() != null) {
          KarhuPlayer data = this.plugin.getDataManager().getPlayerData(e.getUser());
-         PacketType.Play.Client type = e.getPacketType();
+         Client type = e.getPacketType();
          boolean handleOthers = true;
          if (data != null) {
             if (data.getBukkitPlayer() == null && e.getPlayer() != null) {
@@ -117,74 +117,89 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                cloned = e.clone();
                WrapperPlayClientPlayerFlying packet = new WrapperPlayClientPlayerFlying(e);
                Location location = packet.getLocation();
-               if (Karhu.getInstance().getConfigManager().isAnticrash() && Karhu.getInstance().getConfigManager().isLargeMove() && (Math.abs(location.getX()) > 3.0E7 || Math.abs(location.getY()) > 3.0E7 || Math.abs(location.getZ()) > 3.0E7 || (double)Math.abs(location.getPitch()) >= 1000.0 || Math.abs(location.getYaw()) >= Float.MAX_VALUE)) {
+               if (Karhu.getInstance().getConfigManager().isAnticrash()
+                  && Karhu.getInstance().getConfigManager().isLargeMove()
+                  && (
+                     Math.abs(location.getX()) > 3.0E7
+                        || Math.abs(location.getY()) > 3.0E7
+                        || Math.abs(location.getZ()) > 3.0E7
+                        || (double)Math.abs(location.getPitch()) >= 1000.0
+                        || Math.abs(location.getYaw()) >= Float.MAX_VALUE
+                  )) {
                   e.setCancelled(true);
                   data.handleKickAlert("Invalid position");
                   handleOthers = false;
                }
-            } else {
+            } else if (type == Client.CHAT_MESSAGE) {
+               handleOthers = false;
+               if (Karhu.SERVER_VERSION.isOlderThan(ServerVersion.V_1_19)) {
+                  WrapperPlayClientChatMessage packet = new WrapperPlayClientChatMessage(e);
+                  String chat = packet.getMessage();
+                  if (chat != null && chat.toLowerCase().contains("${")) {
+                     e.setCancelled(true);
+                  }
+               }
+            } else if (type == Client.PLUGIN_MESSAGE) {
+               cloned = e.clone();
+               WrapperPlayClientPluginMessage packet = new WrapperPlayClientPluginMessage(e);
+               Object channelObject = packet.getChannelName();
                String channelName;
-               if (type == Client.CHAT_MESSAGE) {
-                  handleOthers = false;
-                  if (Karhu.SERVER_VERSION.isOlderThan(ServerVersion.V_1_19)) {
-                     WrapperPlayClientChatMessage packet = new WrapperPlayClientChatMessage(e);
-                     channelName = packet.getMessage();
-                     if (channelName != null && channelName.toLowerCase().contains("${")) {
-                        e.setCancelled(true);
-                     }
+               if (channelObject != null) {
+                  channelName = (String)channelObject;
+               } else {
+                  ResourceLocation resourceLocation = (ResourceLocation)channelObject;
+                  channelName = resourceLocation.getNamespace() + ":" + resourceLocation.getKey();
+               }
+
+               if (packet.getChannelName().equals("MC|Brand") || channelName.equals("minecraft:brand")) {
+                  byte[] dataBytes = packet.getData();
+                  String brand = new String(Arrays.copyOfRange(dataBytes, 1, dataBytes.length));
+                  data.setBrand(brand);
+                  brand = brand.replaceAll("[^a-zA-Z0-9_-]", "");
+                  brand = brand.replaceAll("Velocity", "");
+                  if (brand.equalsIgnoreCase("Cave Client")) {
+                     brand = "Cave Client";
+                  } else if (brand.contains("lunarclient")) {
+                     brand = "Lunar";
+                  } else if (brand.contains("PLC18")) {
+                     brand = "PvPLounge";
+                  } else if (brand.contains("fmlforge")) {
+                     brand = "Forge";
+                  } else if (brand.contains("salwyrr")) {
+                     brand = "Salwyrr";
                   }
-               } else if (type == Client.PLUGIN_MESSAGE) {
-                  cloned = e.clone();
-                  WrapperPlayClientPluginMessage packet = new WrapperPlayClientPluginMessage(e);
-                  Object channelObject = packet.getChannelName();
-                  if (channelObject != null) {
-                     channelName = (String)channelObject;
-                  } else {
-                     ResourceLocation resourceLocation = (ResourceLocation)channelObject;
-                     channelName = resourceLocation.getNamespace() + ":" + resourceLocation.getKey();
+
+                  String brand2;
+                  try {
+                     brand2 = brand.toUpperCase().charAt(0) + brand.substring(1);
+                  } catch (StringIndexOutOfBoundsException var17) {
+                     brand2 = brand;
                   }
 
-                  if (packet.getChannelName().equals("MC|Brand") || channelName.equals("minecraft:brand")) {
-                     byte[] dataBytes = packet.getData();
-                     String brand = new String(Arrays.copyOfRange(dataBytes, 1, dataBytes.length));
-                     data.setBrand(brand);
-                     brand = brand.replaceAll("[^a-zA-Z0-9_-]", "");
-                     brand = brand.replaceAll("Velocity", "");
-                     if (brand.equalsIgnoreCase("Cave Client")) {
-                        brand = "Cave Client";
-                     } else if (brand.contains("lunarclient")) {
-                        brand = "Lunar";
-                     } else if (brand.contains("PLC18")) {
-                        brand = "PvPLounge";
-                     } else if (brand.contains("fmlforge")) {
-                        brand = "Forge";
-                     } else if (brand.contains("salwyrr")) {
-                        brand = "Salwyrr";
-                     }
+                  if (brand2.length() > 30) {
+                     brand2 = "INVALID_BRAND";
+                  }
 
-                     String brand2;
-                     try {
-                        brand2 = brand.toUpperCase().charAt(0) + brand.substring(1);
-                     } catch (StringIndexOutOfBoundsException var17) {
-                        brand2 = brand;
-                     }
+                  data.setCleanBrand(brand2);
+                  if (!brand.equalsIgnoreCase("vanilla") && !data.isBrandPosted() && Karhu.getInstance().getConfigManager().isClientCheck()) {
+                     data.setBrandPosted(true);
+                     MiscellaneousAlertPoster.postMisc(
+                        Karhu.getInstance().getConfigManager().getClientCheckMessage().replace("%player%", data.getName()).replace("%brand%", brand2),
+                        data,
+                        "Brand"
+                     );
+                  }
 
-                     if (brand2.length() > 30) {
-                        brand2 = "INVALID_BRAND";
-                     }
-
-                     data.setCleanBrand(brand2);
-                     if (!brand.equalsIgnoreCase("vanilla") && !data.isBrandPosted() && Karhu.getInstance().getConfigManager().isClientCheck()) {
-                        data.setBrandPosted(true);
-                        MiscellaneousAlertPoster.postMisc(Karhu.getInstance().getConfigManager().getClientCheckMessage().replace("%player%", data.getName()).replace("%brand%", brand2), data, "Brand");
-                     }
-
-                     String unallowed = Karhu.getInstance().getConfigManager().getConfig().getString("unallowed-brands.brands", "Vivecraft");
-                     if (unallowed.contains(brand)) {
-                        Tasker.run(() -> {
-                           data.getBukkitPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&', Karhu.getInstance().getConfigManager().getConfig().getString("unallowed-brands.kick-msg")));
-                        });
-                     }
+                  String unallowed = Karhu.getInstance().getConfigManager().getConfig().getString("unallowed-brands.brands", "Vivecraft");
+                  if (unallowed.contains(brand)) {
+                     Tasker.run(
+                        () -> data.getBukkitPlayer()
+                              .kickPlayer(
+                                 ChatColor.translateAlternateColorCodes(
+                                    '&', Karhu.getInstance().getConfigManager().getConfig().getString("unallowed-brands.kick-msg")
+                                 )
+                              )
+                     );
                   }
                }
             }
@@ -202,7 +217,6 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
             } else if (cloned != null) {
                cloned.cleanUp();
             }
-
          }
       }
    }
@@ -213,15 +227,14 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
       if (e.getUser() != null && e.getUser().getUUID() != null) {
          KarhuPlayer data = this.plugin.getDataManager().getPlayerData(e.getUser());
          if (data != null) {
-            PacketType.Play.Server packetID = e.getPacketType();
+            Server packetID = e.getPacketType();
             boolean handleAsync = true;
             if (data.getBukkitPlayer() == null && e.getPlayer() != null) {
                data.setBukkitPlayer((Player)e.getPlayer());
             }
 
             if (!data.isRemovingObject()) {
-               short tid;
-               switch (packetID) {
+               switch(packetID) {
                   case ENTITY_EFFECT:
                      cloned = e.clone();
                      WrapperPlayServerEntityEffect packet = new WrapperPlayServerEntityEffect(e);
@@ -242,19 +255,17 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                         return;
                      }
 
-                     tid = (short)ping.getId();
-                     data.getThread().getExecutorService().execute(() -> {
-                        Karhu.getInstance().getTransactionHandler().handleTransaction(tid, nanoTime, data);
-                     });
+                     short id = (short)ping.getId();
+                     data.getThread().getExecutorService().execute(() -> Karhu.getInstance().getTransactionHandler().handleTransaction(id, nanoTime, data));
                      handleAsync = false;
                      break;
                   case WINDOW_CONFIRMATION:
                      WrapperPlayServerWindowConfirmation transaction = new WrapperPlayServerWindowConfirmation(e);
-                     tid = transaction.getActionId();
+                     short tid = transaction.getActionId();
                      if (!transaction.isAccepted()) {
-                        data.getThread().getExecutorService().execute(() -> {
-                           Karhu.getInstance().getTransactionHandler().handleTransaction(tid, nanoTime, data);
-                        });
+                        data.getThread()
+                           .getExecutorService()
+                           .execute(() -> Karhu.getInstance().getTransactionHandler().handleTransaction(tid, nanoTime, data));
                      }
 
                      handleAsync = false;
@@ -270,19 +281,31 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                   cloned.cleanUp();
                }
             }
-
          }
       }
    }
 
    public void handlePostPlayReceive(WrapperPlayClientPlayerFlying packet, KarhuPlayer data) {
       long now = System.currentTimeMillis();
-      if (!packet.hasPositionChanged() && !packet.hasRotationChanged() && packet.isOnGround() == data.isLastOnGroundPacket() && !data.recentlyTeleported(2) && !data.isPossiblyTeleporting() && Karhu.getInstance().getServerTick() - data.getCreatedOnTick() > 80L && !data.isViaMCP() && data.isNewerThan8()) {
-         Tasker.run(() -> {
-            Karhu.getInstance().getAlertsManager().getAlertsToggled().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach((staff) -> {
-               staff.sendMessage("§7[§c!§7] §c" + data.getBukkitPlayer().getName() + " §7is on a protocol that is related to hacked clients");
-            });
-         });
+      if (!packet.hasPositionChanged()
+         && !packet.hasRotationChanged()
+         && packet.isOnGround() == data.isLastOnGroundPacket()
+         && !data.recentlyTeleported(2)
+         && !data.isPossiblyTeleporting()
+         && Karhu.getInstance().getServerTick() - data.getCreatedOnTick() > 80L
+         && !data.isViaMCP()
+         && data.isNewerThan8()) {
+         Tasker.run(
+            () -> Karhu.getInstance()
+                  .getAlertsManager()
+                  .getAlertsToggled()
+                  .stream()
+                  .map(Bukkit::getPlayer)
+                  .filter(Objects::nonNull)
+                  .forEach(
+                     staff -> staff.sendMessage("§7[§c!§7] §c" + data.getBukkitPlayer().getName() + " §7is on a protocol that is related to hacked clients")
+                  )
+         );
          data.setViaMCP(true);
       }
 
@@ -294,7 +317,6 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                data.getBukkitPlayer().setAllowFlight(true);
                data.setCorrectedFly(true);
             }
-
          });
       }
 
@@ -305,16 +327,14 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
       }
 
       if (data.getTasks().containsKey(data.getTotalTicks())) {
-         ((TaskData)data.getTasks().remove(data.getTotalTicks())).consumeTask();
+         data.getTasks().remove(data.getTotalTicks()).consumeTask();
       }
 
       data.getTeleportManager().handlePostFlying();
       data.getLastTargets().clear();
-      data.getDesyncedBlockHandler().getClientSideBlocks().removeIf((block) -> {
-         return data.getServerTick() - block.getServerTick() > 2L;
-      });
+      data.getDesyncedBlockHandler().getClientSideBlocks().removeIf(block -> data.getServerTick() - block.getServerTick() > 2L);
       if (data.getTickedVelocity() != null) {
-         data.setTickedVelocity((Vector)null);
+         data.setTickedVelocity(null);
       }
 
       data.setAttacks(0);
@@ -354,16 +374,12 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
    }
 
    public void handlePlayReceive(PacketPlayReceiveEvent e, KarhuPlayer data, long nanoTime, long timeMillis) {
-      PacketType.Play.Client type = e.getPacketType();
+      Client type = e.getPacketType();
       if (data != null) {
          boolean isFlying = WrapperPlayClientPlayerFlying.isFlying(type);
          WrapperPlayClientPlayerFlying packet = null;
          Event callEvent = null;
          Karhu.getInstance().getTransactionHandler().handlePlayReceive(e, nanoTime, data);
-         boolean ground;
-         boolean run;
-         double xDiff;
-         double zDiff;
          if (isFlying) {
             packet = new WrapperPlayClientPlayerFlying(e);
             Location location = packet.getLocation();
@@ -393,7 +409,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
             float pitch = location.getPitch();
             boolean position = packet.hasPositionChanged();
             boolean look = packet.hasRotationChanged();
-            ground = packet.isOnGround();
+            boolean ground = packet.isOnGround();
             double x;
             double y;
             double z;
@@ -505,7 +521,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
             }
 
             data.getMovementHandler().handleMotions(position, look);
-            run = data.getLocation().distance(data.getLastLocation()) > 0.0 || data.getLocation().distance(data.getLastLastLocation()) > 0.0;
+            boolean run = data.getLocation().distance(data.getLastLocation()) > 0.0 || data.getLocation().distance(data.getLastLastLocation()) > 0.0;
             if (run) {
                data.getCollisionHandler().handleLastTicks();
                data.getCollisionHandler().handle(position);
@@ -535,9 +551,9 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
 
             NMSValueParser.parse(data);
             float friction = data.isOnGroundPacket() ? data.getCurrentFriction() : 0.91F;
-            xDiff = data.deltas.deltaX * (double)friction;
-            zDiff = data.deltas.deltaZ * (double)friction;
-            double prediction = (data.deltas.motionY - 0.08) * 0.9800000190734863;
+            double xDiff = data.deltas.deltaX * (double)friction;
+            double zDiff = data.deltas.deltaZ * (double)friction;
+            double prediction = (data.deltas.motionY - 0.08) * 0.98F;
             if (xDiff * xDiff + prediction * prediction + zDiff * zDiff <= 9.0E-4) {
                data.deltas.predictX = xDiff * xDiff;
                data.deltas.predictY = prediction * prediction;
@@ -552,8 +568,13 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
             double chunkMove = data.getLocation().y > 0.0 ? 0.09800000190735147 : 0.0;
             boolean exemptable = data.getTickedVelocity() != null;
             boolean unload = Math.abs(data.deltas.motionY + chunkMove) <= 1.0E-7;
-            if (unload && data.elapsed(data.getLastInUnloadedChunk()) > MathUtil.getPingInTicks(data.getTransactionPing()) + 8 && !exemptable && !data.isDidFlagMovement() && !data.isPossiblyTeleporting() && data.elapsed(data.getLastFlyTick()) > 30) {
-               Check flyA = (Check)data.getCheckManager().getCheck(FlyA.class);
+            if (unload
+               && data.elapsed(data.getLastInUnloadedChunk()) > MathUtil.getPingInTicks(data.getTransactionPing()) + 8
+               && !exemptable
+               && !data.isDidFlagMovement()
+               && !data.isPossiblyTeleporting()
+               && data.elapsed(data.getLastFlyTick()) > 30) {
+               Check<?> flyA = data.getCheckManager().getCheck(FlyA.class);
                if (Karhu.getInstance().getCheckState().isEnabled(flyA.getName())) {
                   flyA.setViolations(flyA.getViolations() + 1.0);
                   if (flyA.getViolations() >= 3.0) {
@@ -565,11 +586,28 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
 
             data.setLastPossibleInUnloadedChunk(unload ? data.getTotalTicks() : data.getLastPossibleInUnloadedChunk());
             if (look) {
-               data.getCheckManager().runChecks(data.getCheckManager().getRotationChecks(), new MovementUpdate(data.getLastLastLocation(), data.getLastLocation(), data.getLocation(), packet.isOnGround()), (Object)null);
+               data.getCheckManager()
+                  .runChecks(
+                     data.getCheckManager().getRotationChecks(),
+                     new MovementUpdate(data.getLastLastLocation(), data.getLastLocation(), data.getLocation(), packet.isOnGround()),
+                     null
+                  );
             }
 
             boolean teleport = data.getTeleportManager().teleportTicks == 0;
-            callEvent = new FlyingEvent(data.getLocation().getX(), data.getLocation().getY(), data.getLocation().getZ(), yaw, pitch, position, look, ground, teleport, nanoTime, timeMillis);
+            callEvent = new FlyingEvent(
+               data.getLocation().getX(),
+               data.getLocation().getY(),
+               data.getLocation().getZ(),
+               yaw,
+               pitch,
+               position,
+               look,
+               ground,
+               teleport,
+               nanoTime,
+               timeMillis
+            );
             data.setElapsedOnLiquid(data.isOnLiquid() ? data.getElapsedOnLiquid() + 1 : 0);
             data.setElapsedUnderBlock(data.isUnderBlock() ? data.getElapsedUnderBlock() + 1 : 0);
             data.setWasPlacing(data.isPlacing());
@@ -589,27 +627,30 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                data.setVelocityY(0.0);
                data.setVelocityZ(0.0);
                data.setVelocityHorizontal(0.0);
-               data.setTickedVelocity((Vector)null);
+               data.setTickedVelocity(null);
                data.setTakingVertical(false);
             }
 
             if (position) {
-               data.getCheckManager().runChecks(data.getCheckManager().getPositionChecks(), new MovementUpdate(data.getLastLastLocation(), data.getLastLocation(), data.getLocation(), packet.isOnGround()), (Object)null);
+               data.getCheckManager()
+                  .runChecks(
+                     data.getCheckManager().getPositionChecks(),
+                     new MovementUpdate(data.getLastLastLocation(), data.getLastLocation(), data.getLocation(), packet.isOnGround()),
+                     null
+                  );
             }
 
             if (Karhu.getInstance().getConfigManager().isPingKick()) {
                if (data.getTransactionPing() > (long)Karhu.getInstance().getConfigManager().getPingKickMaxPing()) {
                   if (++data.badPingTicks >= Karhu.getInstance().getConfigManager().getPingKickTicks()) {
-                     Tasker.run(() -> {
-                        data.getBukkitPlayer().kickPlayer(Karhu.getInstance().getConfigManager().getPingKickMsg());
-                     });
+                     Tasker.run(() -> data.getBukkitPlayer().kickPlayer(Karhu.getInstance().getConfigManager().getPingKickMsg()));
                   }
                } else {
                   data.badPingTicks = Math.max(data.getBadPingTicks() - 70, 0);
                }
             }
          } else {
-            switch (type) {
+            switch(type) {
                case PONG:
                case WINDOW_CONFIRMATION:
                   callEvent = new TransactionEvent(nanoTime);
@@ -618,7 +659,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                   WrapperPlayClientInteractEntity use = new WrapperPlayClientInteractEntity(e);
                   int id = use.getEntityId();
                   Entity entity = SpigotReflectionUtil.getEntityById(id);
-                  EntityData eData = (EntityData)data.getEntityData().get(id);
+                  EntityData eData = data.getEntityData().get(id);
                   if (eData == null) {
                      return;
                   }
@@ -636,16 +677,22 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                         data.setLastTarget(target);
                         data.getLastTargets().add(id);
                      } else {
-                        data.setLastTarget((LivingEntity)null);
+                        data.setLastTarget(null);
                      }
 
-                     data.setLastAbortLoc((Vector)null);
+                     data.setLastAbortLoc(null);
                      data.setDigging(false);
                      data.setUsingItem(false);
                      data.setEating(false);
                      data.setBlocking(false);
                   } else if ((use.getAction() == InteractAction.INTERACT || use.getAction() == InteractAction.INTERACT_AT) && entity instanceof LivingEntity) {
-                     callEvent = new InteractEvent(id, isPlayer, use.getTarget().isPresent() ? (Vector3f)use.getTarget().get() : null, use.getAction() == InteractAction.INTERACT_AT, nanoTime);
+                     callEvent = new InteractEvent(
+                        id,
+                        isPlayer,
+                        use.getTarget().isPresent() ? (Vector3f)use.getTarget().get() : null,
+                        use.getAction() == InteractAction.INTERACT_AT,
+                        nanoTime
+                     );
                   }
                   break;
                case ANIMATION:
@@ -654,7 +701,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                      boolean state = data.getLocation().distance(new CustomLocation(aborted.getX(), aborted.getY(), aborted.getZ())) < 7.0;
                      if (data.getLastAttackTick() <= 1) {
                         state = false;
-                        data.setLastAbortLoc((Vector)null);
+                        data.setLastAbortLoc(null);
                      }
 
                      if (!state) {
@@ -683,7 +730,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                   break;
                case CLICK_WINDOW:
                   WrapperPlayClientClickWindow winClick = new WrapperPlayClientClickWindow(e);
-                  data.getCrashHandler().handleWindowClick(winClick.getSlot(), (Integer)winClick.getStateId().orElse(0), winClick.getWindowId(), winClick.getButton());
+                  data.getCrashHandler().handleWindowClick(winClick.getSlot(), winClick.getStateId().orElse(0), winClick.getWindowId(), winClick.getButton());
                   callEvent = new WindowEvent(nanoTime);
                   break;
                case PLAYER_ABILITIES:
@@ -706,7 +753,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                   break;
                case ENTITY_ACTION:
                   WrapperPlayClientEntityAction action = new WrapperPlayClientEntityAction(e);
-                  switch (action.getAction()) {
+                  switch(action.getAction()) {
                      case START_SPRINTING:
                         data.setWasSprinting(data.isSprinting());
                         data.setSprinting(true);
@@ -742,7 +789,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                case PLAYER_DIGGING:
                   WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(e);
                   Vector position = new Vector(dig.getBlockPosition().x, dig.getBlockPosition().y, dig.getBlockPosition().z);
-                  switch (dig.getAction()) {
+                  switch(dig.getAction()) {
                      case START_DIGGING:
                         data.setDigging(true);
                         data.setDiggingBasic(true);
@@ -750,7 +797,9 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                         if (Karhu.SERVER_VERSION.isOlderThanOrEquals(ServerVersion.V_1_12_2) && !data.isInUnloadedChunk()) {
                            org.bukkit.Location blockIn = new org.bukkit.Location(data.getWorld(), position.getX(), position.getY(), position.getZ());
                            Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(blockIn);
-                           if (block != null && MaterialChecks.ONETAPS.contains(blockIn.getBlock().getType()) && data.getLocation().toVector().distance(position) <= 2.0) {
+                           if (block != null
+                              && MaterialChecks.ONETAPS.contains(blockIn.getBlock().getType())
+                              && data.getLocation().toVector().distance(position) <= 2.0) {
                               data.setFastDigTicks(data.getTotalTicks());
                            }
                         }
@@ -773,7 +822,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                      case FINISHED_DIGGING:
                         data.setDigging(false);
                         data.setDiggingBasic(false);
-                        data.setLastAbortLoc((Vector)null);
+                        data.setLastAbortLoc(null);
                         data.setDigStopTicks(data.getTotalTicks());
                   }
 
@@ -791,46 +840,49 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                      ItemStack stack8 = data.getStackInHand();
                      Material stackType = stack8.getType();
                      BlockFace face = place.getFace();
-                     ground = false;
+                     boolean placed = false;
                      boolean pebug = loc.getY() == 4095.0;
-                     boolean eating;
-                     if (loc.getX() != -1.0 || loc.getY() != 255.0 && !pebug && loc.getY() != -1.0 || loc.getZ() != -1.0 || face.getFaceValue() != 255 && !pebug) {
+                     if (loc.getX() != -1.0
+                        || loc.getY() != 255.0 && !pebug && loc.getY() != -1.0
+                        || loc.getZ() != -1.0
+                        || face.getFaceValue() != 255 && !pebug) {
                         data.setSpoofPlaceTicks(data.getTotalTicks());
-                        eating = MaterialChecks.LIQUID_BUCKETS.contains(stackType);
-                        if (stack.getType().isBlock() || eating) {
+                        boolean bucket = MaterialChecks.LIQUID_BUCKETS.contains(stackType);
+                        if (stack.getType().isBlock() || bucket) {
                            double diffX = Math.abs(data.getLocation().x - (double)loc.getBlockX());
-                           xDiff = Math.abs(data.getLocation().z - (double)loc.getBlockZ());
-                           zDiff = (double)loc.getBlockY();
-                           if (diffX <= 3.0 && zDiff <= data.getLocation().y + 3.0 && xDiff <= 3.0) {
+                           double diffZ = Math.abs(data.getLocation().z - (double)loc.getBlockZ());
+                           double blockY = (double)loc.getBlockY();
+                           if (diffX <= 3.0 && blockY <= data.getLocation().y + 3.0 && diffZ <= 3.0) {
                               data.setPlaceTicks(data.getTotalTicks());
-                              if (eating) {
+                              if (bucket) {
                                  data.setBucketTicks(data.getTotalTicks());
                               }
                            }
 
-                           if (diffX <= 2.0 && zDiff <= data.getLocation().y + 2.0 && xDiff <= 2.0) {
+                           if (diffX <= 2.0 && blockY <= data.getLocation().y + 2.0 && diffZ <= 2.0) {
                               data.setUnderPlaceTicks(data.getTotalTicks());
                            }
 
                            data.setPlacing(true);
                         }
 
-                        ground = true;
+                        placed = true;
                      } else if (stack8.getDurability() <= 16384) {
-                        eating = false;
-                        run = false;
+                        boolean eating = false;
+                        boolean blocking = false;
                         boolean bowing = false;
                         if (MaterialChecks.SWORDS.contains(stackType)) {
-                           run = true;
+                           blocking = true;
                            data.setBlocking(true);
                         } else if (MaterialChecks.BOWS.contains(stackType) && data.getBukkitPlayer().getInventory().contains(Material.ARROW)) {
                            bowing = true;
                            data.setBowing(true);
-                        } else if (stack8.getType().isEdible() && (data.getBukkitPlayer().getFoodLevel() < 20 || MaterialChecks.EDIBLE_WITHOUT_HUNGER.contains(stackType))) {
+                        } else if (stack8.getType().isEdible()
+                           && (data.getBukkitPlayer().getFoodLevel() < 20 || MaterialChecks.EDIBLE_WITHOUT_HUNGER.contains(stackType))) {
                            eating = true;
                         }
 
-                        if (run || bowing || eating) {
+                        if (blocking || bowing || eating) {
                            data.setUsingItem(true);
                            if (eating) {
                               data.setEating(true);
@@ -840,7 +892,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                         }
                      }
 
-                     switch (face.getFaceValue()) {
+                     switch(face.getFaceValue()) {
                         case 0:
                            --y;
                            break;
@@ -862,7 +914,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
 
                      Vector placedLocation = new Vector(x, y, z);
                      Vector3f cursor = place.getCursorPosition();
-                     if (ground) {
+                     if (placed) {
                         org.bukkit.Location against = new org.bukkit.Location(data.getWorld(), loc.getX(), loc.getY(), loc.getZ());
                         Block blockAgainst = Karhu.getInstance().getChunkManager().getChunkBlockAt(against);
                         Material material = blockAgainst == null ? Material.AIR : blockAgainst.getType();
@@ -882,7 +934,19 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                         }
                      }
 
-                     callEvent = new BlockPlaceEvent(placedLocation, loc, stack8, (double)cursor.getX(), (double)cursor.getY(), (double)cursor.getZ(), face, face.getFaceValue(), nanoTime, timeMillis, data.getWorld());
+                     callEvent = new BlockPlaceEvent(
+                        placedLocation,
+                        loc,
+                        stack8,
+                        (double)cursor.getX(),
+                        (double)cursor.getY(),
+                        (double)cursor.getZ(),
+                        face,
+                        face.getFaceValue(),
+                        nanoTime,
+                        timeMillis,
+                        data.getWorld()
+                     );
                      data.getCrashHandler().handlePlace();
                   } else if (type == Client.USE_ITEM && Karhu.SERVER_VERSION.isNewerThan(ServerVersion.V_1_8_8)) {
                   }
@@ -915,18 +979,17 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
          }
 
          if (callEvent != null) {
-            data.getCheckManager().runChecks(data.getCheckManager().getPacketChecks(), callEvent, (Object)null);
+            data.getCheckManager().runChecks(data.getCheckManager().getPacketChecks(), callEvent, null);
          }
 
          if (isFlying) {
             this.handlePostPlayReceive(packet, data);
          }
       }
-
    }
 
    public void handlePacketPlaySend(PacketPlaySendEvent e, KarhuPlayer data, long nanoTime) {
-      PacketType.Play.Server packetID = e.getPacketType();
+      Server packetID = e.getPacketType();
       if (data != null) {
          Event callEvent = null;
          TransactionHandler network = Karhu.getInstance().getTransactionHandler();
@@ -935,18 +998,17 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
             return;
          }
 
-         Vector3d pos;
-         switch (packetID) {
+         switch(packetID) {
             case ENTITY_VELOCITY:
                WrapperPlayServerEntityVelocity velocity = new WrapperPlayServerEntityVelocity(e);
-               pos = velocity.getVelocity();
+               Vector3d vecVelocity = velocity.getVelocity();
                if (velocity.getEntityId() == e.getUser().getEntityId()) {
-                  callEvent = new VelocityEvent(pos.getX(), pos.getY(), pos.getZ(), velocity.getEntityId());
+                  callEvent = new VelocityEvent(vecVelocity.getX(), vecVelocity.getY(), vecVelocity.getZ(), velocity.getEntityId());
                }
                break;
             case PLAYER_POSITION_AND_LOOK:
                WrapperPlayServerPlayerPositionAndLook position = new WrapperPlayServerPlayerPositionAndLook(e);
-               pos = new Vector3d(position.getX(), position.getY(), position.getZ());
+               Vector3d pos = new Vector3d(position.getX(), position.getY(), position.getZ());
                CustomLocation locationPlayer = data.getLocation();
                if (!data.isNewerThan8()) {
                   if (position.isRelativeFlag(RelativeFlag.X)) {
@@ -969,7 +1031,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
 
                boolean checkBB = Karhu.SERVER_VERSION.isOlderThanOrEquals(ServerVersion.V_1_7_10);
                double x = pos.getX();
-               double y = !checkBB ? pos.getY() : pos.getY() - 1.6200000047683716;
+               double y = !checkBB ? pos.getY() : pos.getY() - 1.62F;
                double z = pos.getZ();
                Teleport teleport = new Teleport(new TeleportPosition(x, y, z));
                ++data.getTeleportManager().teleportAmount;
@@ -983,9 +1045,8 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
          }
 
          if (callEvent != null) {
-            data.getCheckManager().runChecks(data.getCheckManager().getPacketChecks(), callEvent, (Object)null);
+            data.getCheckManager().runChecks(data.getCheckManager().getPacketChecks(), callEvent, null);
          }
       }
-
    }
 }

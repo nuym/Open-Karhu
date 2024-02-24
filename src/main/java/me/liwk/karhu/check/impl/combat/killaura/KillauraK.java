@@ -22,13 +22,15 @@ public final class KillauraK extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof DigEvent) {
          DiggingAction type = ((DigEvent)packet).getDigType();
-         if (this.data.getClientVersion().getProtocolVersion() <= 47 && type == DiggingAction.RELEASE_USE_ITEM && (this.data.isPlacing() || this.data.isUsingItem())) {
+         if (this.data.getClientVersion().getProtocolVersion() <= 47
+            && type == DiggingAction.RELEASE_USE_ITEM
+            && (this.data.isPlacing() || this.data.isUsingItem())) {
             this.fail("* Illegal block order", this.getBanVL(), 120L);
          }
       }
-
    }
 }

@@ -25,6 +25,7 @@ public final class MotionJ extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate e) {
       boolean canFlag = true;
       CustomLocation to = e.getTo();
@@ -35,7 +36,7 @@ public final class MotionJ extends PositionCheck {
       double motionY = this.data.deltas.motionY;
       double lastMotionY = this.data.deltas.lastMotionY;
       if (!(Math.abs(motionY + 0.098) <= 1.0E-5)) {
-         double prediction = Math.abs((lastMotionY - 0.08) * 0.9800000190734863) <= threshold ? 0.0 : (lastMotionY - 0.08) * 0.9800000190734863;
+         double prediction = Math.abs((lastMotionY - 0.08) * 0.98F) <= threshold ? 0.0 : (lastMotionY - 0.08) * 0.98F;
          if (tickVel != null) {
             prediction = tickVel.getY();
          }
@@ -44,7 +45,9 @@ public final class MotionJ extends PositionCheck {
             prediction = 0.0;
          }
 
-         if ((!(Math.abs(prediction * prediction) <= 0.03125) || !(this.data.deltas.deltaXZ < 0.15)) && this.desyncPosTicks <= 0 && this.data.getMoveTicks() > 1) {
+         if ((!(Math.abs(prediction * prediction) <= 0.03125) || !(this.data.deltas.deltaXZ < 0.15))
+            && this.desyncPosTicks <= 0
+            && this.data.getMoveTicks() > 1) {
             this.desyncsInRow = 0;
          } else {
             threshold = 0.05;
@@ -60,32 +63,31 @@ public final class MotionJ extends PositionCheck {
          }
 
          --this.desyncPosTicks;
-         double predictionDifference;
          if (this.data.isWasOnWater()) {
-            predictionDifference = lastMotionY;
+            double fixedLastMotion = lastMotionY;
             if (motionY > 0.0) {
-               predictionDifference += 0.03999999910593033;
+               fixedLastMotion = lastMotionY + 0.04F;
             }
 
-            prediction = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : predictionDifference * 0.800000011920929 - 0.02;
+            prediction = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : fixedLastMotion * 0.8F - 0.02;
             threshold += this.data.isCollidedHorizontally() ? 0.4 : 0.35;
          } else if (this.data.isOnWater()) {
             threshold += 0.4;
          }
 
          if (this.data.isWasOnLava()) {
-            predictionDifference = lastMotionY;
+            double fixedLastMotion = lastMotionY;
             if (motionY > 0.0) {
-               predictionDifference += 0.03999999910593033;
+               fixedLastMotion = lastMotionY + 0.04F;
             }
 
-            prediction = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : predictionDifference * 0.5 - 0.02;
+            prediction = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : fixedLastMotion * 0.5 - 0.02;
             threshold += this.data.isCollidedHorizontally() ? 0.4 : 0.35;
          } else if (this.data.isOnLava()) {
             threshold += 0.4;
          }
 
-         predictionDifference = Math.abs(prediction - this.data.deltas.motionY);
+         double predictionDifference = Math.abs(prediction - this.data.deltas.motionY);
          if (Math.abs(lastMotionY - 0.083) < 0.001 && predictionDifference > 0.078) {
             prediction = 0.0;
             predictionDifference = Math.abs(prediction - this.data.deltas.motionY);
@@ -107,7 +109,10 @@ public final class MotionJ extends PositionCheck {
             threshold += 0.031;
          }
 
-         boolean underBlock = this.data.elapsed(this.data.getLastCollidedV()) <= 2 || this.data.isUnderBlock() || this.data.elapsed(this.data.getLastCollidedVGhost()) <= 3 || this.data.isUnderGhostBlock();
+         boolean underBlock = this.data.elapsed(this.data.getLastCollidedV()) <= 2
+            || this.data.isUnderBlock()
+            || this.data.elapsed(this.data.getLastCollidedVGhost()) <= 3
+            || this.data.isUnderGhostBlock();
          boolean climbable = this.data.elapsed(this.data.getLastOnClimbable()) <= 8 || this.data.isOnLadder();
          boolean slime = this.data.elapsed(this.data.getLastOnSlime()) <= 2 || this.data.isOnSlime();
          boolean web = this.data.elapsed(this.data.getLastInWeb()) <= 5 || this.data.isInWeb();
@@ -122,19 +127,36 @@ public final class MotionJ extends PositionCheck {
             threshold += 0.8;
          }
 
-         if (Math.abs(predictionOffset) > threshold + min && Math.abs(prediction) >= threshold + min && canFlag && this.data.elapsed(this.data.getLastGlide()) >= 30 && this.data.elapsed(this.data.getLastRiptide()) >= 30 && !this.data.isUnderGhostBlock() && !this.data.isOnLiquid() && !this.data.isSpectating() && !this.data.isInsideBlock() && !this.data.isPossiblyTeleporting() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
-            if (!underBlock && !climbable && !slime && !web && !piston && !this.data.isUnderWeb()) {
-               if (!e.to.ground && !e.from.ground && this.data.getAirTicks() > 0 && ++this.violations > maxVL) {
-                  String info = String.format("predict: %.3f, motionY: %.3f\nthreshold: %f, ct/st: %d/%d\nteleport: %d\nvelocity: %.4f\nmove: %d\ndeltaX/deltaZ: %.3f/%.3f", prediction, motionY, threshold, this.data.getClientAirTicks(), this.data.getAirTicks(), this.data.getTeleportManager().teleportTicks, tickVel != null ? tickVel.getY() : 0.0, this.data.getMoveTicks(), this.data.deltas.deltaX, this.data.deltas.deltaZ);
-                  this.fail(info, this.getBanVL(), 200L);
-               }
-            } else {
-               this.violations = Math.max(this.violations - 0.06235, 0.0);
-            }
-         } else {
+         if (!(Math.abs(predictionOffset) > threshold + min)
+            || !(Math.abs(prediction) >= threshold + min)
+            || !canFlag
+            || this.data.elapsed(this.data.getLastGlide()) < 30
+            || this.data.elapsed(this.data.getLastRiptide()) < 30
+            || this.data.isUnderGhostBlock()
+            || this.data.isOnLiquid()
+            || this.data.isSpectating()
+            || this.data.isInsideBlock()
+            || this.data.isPossiblyTeleporting()
+            || this.data.elapsed(this.data.getLastFlyTick()) <= 30) {
             this.violations = Math.max(this.violations - 0.065, 0.0);
+         } else if (underBlock || climbable || slime || web || piston || this.data.isUnderWeb()) {
+            this.violations = Math.max(this.violations - 0.06235, 0.0);
+         } else if (!e.to.ground && !e.from.ground && this.data.getAirTicks() > 0 && ++this.violations > maxVL) {
+            String info = String.format(
+               "predict: %.3f, motionY: %.3f\nthreshold: %f, ct/st: %d/%d\nteleport: %d\nvelocity: %.4f\nmove: %d\ndeltaX/deltaZ: %.3f/%.3f",
+               prediction,
+               motionY,
+               threshold,
+               this.data.getClientAirTicks(),
+               this.data.getAirTicks(),
+               this.data.getTeleportManager().teleportTicks,
+               tickVel != null ? tickVel.getY() : 0.0,
+               this.data.getMoveTicks(),
+               this.data.deltas.deltaX,
+               this.data.deltas.deltaZ
+            );
+            this.fail(info, this.getBanVL(), 200L);
          }
-
       }
    }
 }

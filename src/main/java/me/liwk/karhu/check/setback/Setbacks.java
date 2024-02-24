@@ -25,6 +25,8 @@ public final class Setbacks {
       return locMod;
    }
 
+   // $VF: Unable to simplify switch on enum
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static Location moveOutOfBlockSafely(double x, double z, KarhuPlayer data) {
       int blockX = MathHelper.floor(x);
       int blockZ = MathHelper.floor(z);
@@ -35,15 +37,12 @@ public final class Setbacks {
          double relativeZMovement = z - (double)blockZ;
          BlockFace direction = null;
          double lowestValue = Double.MAX_VALUE;
-         BlockFace[] var14 = new BlockFace[]{BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH};
-         int var15 = var14.length;
 
-         for(int var16 = 0; var16 < var15; ++var16) {
-            BlockFace direction2 = var14[var16];
+         for(BlockFace direction2 : new BlockFace[]{BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH}) {
             double d7 = direction2 != BlockFace.WEST && direction2 != BlockFace.EAST ? relativeZMovement : relativeXMovement;
             double d6 = direction2 != BlockFace.EAST && direction2 != BlockFace.SOUTH ? d7 : 1.0 - d7;
             boolean doesSuffocate;
-            switch (1.$SwitchMap$org$bukkit$block$BlockFace[direction2.ordinal()]) {
+            switch(1.$SwitchMap$org$bukkit$block$BlockFace[direction2.ordinal()]) {
                case 1:
                   doesSuffocate = suffocatesAt(blockX + 1, blockZ, data);
                   break;
@@ -67,42 +66,32 @@ public final class Setbacks {
          if (direction != null) {
             Location loc = data.getLocation().toLocation(data.getWorld());
             Location toSetback = null;
-            Location locSubtract;
-            Location locAddition;
             if (direction != BlockFace.WEST && direction != BlockFace.EAST) {
-               locSubtract = loc.clone();
-               locAddition = loc.clone();
+               Location locSubtract = loc.clone();
+               Location locAddition = loc.clone();
                locSubtract.setZ(loc.getZ() - 0.1 * (double)direction.getModZ());
                locAddition.setZ(loc.getZ() + 0.1 * (double)direction.getModZ());
                if (BlockUtil.chunkLoaded(locSubtract) && !locSubtract.getBlock().getType().isSolid()) {
-                  Tasker.run(() -> {
-                     data.getBukkitPlayer().teleport(locSubtract);
-                  });
+                  Tasker.run(() -> data.getBukkitPlayer().teleport(locSubtract));
                   return locSubtract;
                }
 
                if (BlockUtil.chunkLoaded(locAddition) && !locAddition.getBlock().getType().isSolid()) {
-                  Tasker.run(() -> {
-                     data.getBukkitPlayer().teleport(locAddition);
-                  });
+                  Tasker.run(() -> data.getBukkitPlayer().teleport(locAddition));
                   return locAddition;
                }
             } else {
-               locSubtract = loc.clone();
-               locAddition = loc.clone();
+               Location locSubtract = loc.clone();
+               Location locAddition = loc.clone();
                locSubtract.setX(loc.getX() - 0.1 * (double)direction.getModX());
                locAddition.setX(loc.getX() + 0.1 * (double)direction.getModX());
                if (BlockUtil.chunkLoaded(locSubtract) && !locSubtract.getBlock().getType().isSolid()) {
-                  Tasker.run(() -> {
-                     data.getBukkitPlayer().teleport(locSubtract);
-                  });
+                  Tasker.run(() -> data.getBukkitPlayer().teleport(locSubtract));
                   return locSubtract;
                }
 
                if (BlockUtil.chunkLoaded(locAddition) && !locAddition.getBlock().getType().isSolid()) {
-                  Tasker.run(() -> {
-                     data.getBukkitPlayer().teleport(locAddition);
-                  });
+                  Tasker.run(() -> data.getBukkitPlayer().teleport(locAddition));
                   return locAddition;
                }
             }
@@ -113,7 +102,10 @@ public final class Setbacks {
    }
 
    public static boolean suffocatesAt(int x, int z, KarhuPlayer data) {
-      BoundingBox boundingBox = (new BoundingBox(data, (double)x, data.getBoundingBox().minY, (double)z, (double)x + 1.0, data.getBoundingBox().maxY, (double)z + 1.0)).expand(-1.0E-7);
+      BoundingBox boundingBox = new BoundingBox(
+            data, (double)x, data.getBoundingBox().minY, (double)z, (double)x + 1.0, data.getBoundingBox().maxY, (double)z + 1.0
+         )
+         .expand(-1.0E-7);
       return !boundingBox.getCollidingBlocks().isEmpty();
    }
 }

@@ -25,12 +25,17 @@ public class AimAssistE extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.to;
       CustomLocation from = update.from;
       float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
       float deltaYaw = Math.abs(to.getYaw() - from.getYaw());
-      boolean canCheck = this.data.elapsed(this.data.getLastCinematic()) > 5 && Math.abs(to.pitch) < 90.0F && Math.abs(from.pitch) < 90.0F && deltaPitch <= 5.0F && !this.data.recentlyTeleported(5);
+      boolean canCheck = this.data.elapsed(this.data.getLastCinematic()) > 5
+         && Math.abs(to.pitch) < 90.0F
+         && Math.abs(from.pitch) < 90.0F
+         && deltaPitch <= 5.0F
+         && !this.data.recentlyTeleported(5);
       double addition = (double)this.lastGCD < 0.003 ? 0.5 : 0.0;
       float gcdPITCH = MathUtil.getGcd(deltaPitch, this.lastDeltaPitch);
       float gcdYAW = MathUtil.getGcd(deltaYaw, this.lastDeltaYaw);

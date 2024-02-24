@@ -26,14 +26,11 @@ public class AnalysisB extends RotationCheck {
       super(data, karhu);
    }
 
-
-
-
    @Override
    public void handle(MovementUpdate update) {
       if (this.data.getLastAttackTick() <= 60 && this.data.getLastTarget() != null) {
          if (this.data.getLastAttackTick() <= 40) {
-            EntityData edata = (EntityData)this.data.getEntityData().get(this.data.getLastTarget().getEntityId());
+            EntityData edata = this.data.getEntityData().get(this.data.getLastTarget().getEntityId());
             if (edata != null) {
                CustomLocation to = update.getTo();
                CustomLocation from = update.getFrom();
@@ -47,7 +44,20 @@ public class AnalysisB extends RotationCheck {
                double angleDiffDiff = Math.abs(aDiff - this.lastAngleDiff);
                if ((double)deltaYaw > 3.5 && aDiff <= 0.075 && this.data.deltas.deltaXZ > 0.1) {
                   if (++this.violations > 5.0) {
-                     this.fail("* Aimlock\n §f* p: §b" + deltaPitch + "\n §f* y: §b" + deltaYaw + "\n §f* ang: §b" + angle + "\n §f* ad: §b" + aDiff + "\n §f* add: §b" + angleDiffDiff, this.getBanVL(), 300L);
+                     this.fail(
+                        "* Aimlock\n §f* p: §b"
+                           + deltaPitch
+                           + "\n §f* y: §b"
+                           + deltaYaw
+                           + "\n §f* ang: §b"
+                           + angle
+                           + "\n §f* ad: §b"
+                           + aDiff
+                           + "\n §f* add: §b"
+                           + angleDiffDiff,
+                        this.getBanVL(),
+                        300L
+                     );
                   }
                } else {
                   this.violations = Math.max(this.violations - 0.15, 0.0);

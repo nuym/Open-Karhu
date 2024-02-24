@@ -10,7 +10,7 @@ public final class VelocityHandler {
          double velocityNew = data.getVelocityY();
          if (Math.abs(data.deltas.motionY - velocityNew) > 0.001 + (data.elapsed(data.getPredictionTicks()) < 2 ? 0.0309 : 0.0)) {
             velocityNew -= 0.08;
-            velocityNew *= 0.9800000190734863;
+            velocityNew *= 0.98F;
          }
 
          data.setVelocityY(velocityNew);

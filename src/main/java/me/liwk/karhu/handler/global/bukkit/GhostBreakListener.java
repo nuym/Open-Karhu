@@ -28,7 +28,7 @@ public class GhostBreakListener implements Listener {
          Player p = e.getPlayer();
          KarhuPlayer data = Karhu.getInstance().getDataManager().getPlayerData(p.getUniqueId());
          if (data != null) {
-            GhostBreak check = (GhostBreak)data.getCheckManager().getCheck(GhostBreak.class);
+            GhostBreak check = data.getCheckManager().getCheck(GhostBreak.class);
             if (Karhu.getInstance().getCheckState().isEnabled(check.getName())) {
                if (data.isRiding()) {
                   return;
@@ -43,14 +43,26 @@ public class GhostBreakListener implements Listener {
                Location loc = block.getLocation();
                Vector locVec = loc.toVector();
                Material material = block.getType();
-               if (MaterialChecks.STAIRS.contains(material) || block.isLiquid() || MaterialChecks.TORCHES.contains(material) || MaterialChecks.BUTTONS.contains(material) || MaterialChecks.SIGNS.contains(material) || MaterialChecks.CLIMBABLE.contains(material) || MaterialChecks.HALFS.contains(material) || MaterialChecks.TRAPS.contains(material) || material.name().contains("SNOW")) {
+               if (MaterialChecks.STAIRS.contains(material)
+                  || block.isLiquid()
+                  || MaterialChecks.TORCHES.contains(material)
+                  || MaterialChecks.BUTTONS.contains(material)
+                  || MaterialChecks.SIGNS.contains(material)
+                  || MaterialChecks.CLIMBABLE.contains(material)
+                  || MaterialChecks.HALFS.contains(material)
+                  || MaterialChecks.TRAPS.contains(material)
+                  || material.name().contains("SNOW")) {
                   return;
                }
 
                Vector direction = MathUtil.getDirection(data.getLocation().getYaw(), data.getLocation().getPitch());
                Vector direction2 = MathUtil.getDirection(data.getLastLocation().getYaw(), data.getLastLocation().getPitch());
-               float sneakAmount1_8 = !data.isWasSneaking() && !data.isWasWasSneaking() ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F)) : 1.54F;
-               float sneakAmount1_13 = !data.isWasSneaking() && !data.isWasWasSneaking() ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F)) : 1.27F;
+               float sneakAmount1_8 = !data.isWasSneaking() && !data.isWasWasSneaking()
+                  ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F))
+                  : 1.54F;
+               float sneakAmount1_13 = !data.isWasSneaking() && !data.isWasWasSneaking()
+                  ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F))
+                  : 1.27F;
                Vector eyeLocation = playerLoc.toVector().clone().add(new Vector(0.0F, !data.isNewerThan12() ? sneakAmount1_8 : sneakAmount1_13, 0.0F));
                AxisAlignedBB targetAABB = new AxisAlignedBB(locVec, locVec, true);
                Vector bounds = BlockUtil.getBlockBounds(material);
@@ -62,7 +74,18 @@ public class GhostBreakListener implements Listener {
                   Block bukkitBlock = iter.next();
                   Location bukkitBlockLocation = bukkitBlock.getLocation();
                   Material iteratedMaterial = bukkitBlock.getType();
-                  if (!bukkitBlockLocation.equals(loc) && !MaterialChecks.AIR.contains(iteratedMaterial) && !MaterialChecks.STAIRS.contains(iteratedMaterial) && !bukkitBlock.isLiquid() && !MaterialChecks.TORCHES.contains(iteratedMaterial) && !MaterialChecks.BUTTONS.contains(iteratedMaterial) && !MaterialChecks.SIGNS.contains(iteratedMaterial) && !MaterialChecks.CLIMBABLE.contains(iteratedMaterial) && !MaterialChecks.HALFS.contains(iteratedMaterial) && !MaterialChecks.ONETAPS.contains(iteratedMaterial) && !MaterialChecks.GRASS.contains(iteratedMaterial) && !iteratedMaterial.name().contains("SNOW")) {
+                  if (!bukkitBlockLocation.equals(loc)
+                     && !MaterialChecks.AIR.contains(iteratedMaterial)
+                     && !MaterialChecks.STAIRS.contains(iteratedMaterial)
+                     && !bukkitBlock.isLiquid()
+                     && !MaterialChecks.TORCHES.contains(iteratedMaterial)
+                     && !MaterialChecks.BUTTONS.contains(iteratedMaterial)
+                     && !MaterialChecks.SIGNS.contains(iteratedMaterial)
+                     && !MaterialChecks.CLIMBABLE.contains(iteratedMaterial)
+                     && !MaterialChecks.HALFS.contains(iteratedMaterial)
+                     && !MaterialChecks.ONETAPS.contains(iteratedMaterial)
+                     && !MaterialChecks.GRASS.contains(iteratedMaterial)
+                     && !iteratedMaterial.name().contains("SNOW")) {
                      Vector bukkitLocVec = bukkitBlockLocation.toVector();
                      AxisAlignedBB iteratedBlockAABB = new AxisAlignedBB(bukkitLocVec, bukkitLocVec, true);
                      Vector boundsIterated = BlockUtil.getBlockBounds(bukkitBlock.getType());
@@ -75,7 +98,18 @@ public class GhostBreakListener implements Listener {
                         check.setViolations(check.getViolations() + 1.0);
                         if (dist < distance - 0.1 && dist2 < distance) {
                            if (check.getViolations() > (double)(MathUtil.getPingInTicks(data.getTransactionPing()) + 3)) {
-                              check.fail("Tried to break block behind walls (cancelled)\n* distance: " + distance + " | " + dist + "\n* looking at: " + bukkitBlock.getType() + "\n* broke: " + block.getType(), check.getBanVL(), 200L);
+                              check.fail(
+                                 "Tried to break block behind walls (cancelled)\n* distance: "
+                                    + distance
+                                    + " | "
+                                    + dist
+                                    + "\n* looking at: "
+                                    + bukkitBlock.getType()
+                                    + "\n* broke: "
+                                    + block.getType(),
+                                 check.getBanVL(),
+                                 200L
+                              );
                            }
 
                            e.setCancelled(true);
@@ -88,7 +122,6 @@ public class GhostBreakListener implements Listener {
                }
             }
          }
-
       }
    }
 }

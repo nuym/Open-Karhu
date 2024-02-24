@@ -20,7 +20,6 @@ public class Benchmark {
       if (++this.results > 20000) {
          this.results /= 2;
       }
-
    }
 
    private void insertAverage(double sample) {

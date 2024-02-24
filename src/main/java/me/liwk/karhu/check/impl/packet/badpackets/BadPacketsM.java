@@ -25,7 +25,7 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
    credits = "§c§lCREDITS: §aWizzard §7made this check."
 )
 public final class BadPacketsM extends PacketCheck {
-   Deque interactions = new ArrayDeque();
+   Deque<Integer> interactions = new ArrayDeque<>();
    int flying;
    boolean released;
 
@@ -33,6 +33,7 @@ public final class BadPacketsM extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (this.data.getClientVersion().getProtocolVersion() <= 47) {
          if (packet instanceof FlyingEvent) {
@@ -50,7 +51,7 @@ public final class BadPacketsM extends PacketCheck {
             }
 
             if (this.interactions.add(this.flying) && this.interactions.size() >= 25) {
-               double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.interactions));
+               double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.interactions));
                if (std < 0.3) {
                   this.fail(String.format("* Wtap\nstd: %.2f", std), this.getBanVL(), 125L);
                }
@@ -62,7 +63,6 @@ public final class BadPacketsM extends PacketCheck {
          } else if (packet instanceof DigEvent && ((DigEvent)packet).getDigType() == DiggingAction.RELEASE_USE_ITEM) {
             this.released = true;
          }
-
       }
    }
 }

@@ -26,6 +26,7 @@ public final class KillauraB extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!this.data.isNewerThan8()) {
          if (packet instanceof FlyingEvent) {
@@ -45,6 +46,5 @@ public final class KillauraB extends PacketCheck {
             }
          }
       }
-
    }
 }

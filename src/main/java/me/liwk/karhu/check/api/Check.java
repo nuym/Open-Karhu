@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -37,7 +36,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.ServerOperator;
 
-public abstract class Check {
+public abstract class Check<T> {
    protected final KarhuPlayer data;
    protected final Karhu karhu;
    protected final ConfigManager cfg;
@@ -78,7 +77,7 @@ public abstract class Check {
    }
 
    public final CheckInfo getCheckInfo() {
-      return this.checkInfo == null ? (CheckInfo)this.getClass().getAnnotation(CheckInfo.class) : this.checkInfo;
+      return this.checkInfo == null ? this.getClass().getAnnotation(CheckInfo.class) : this.checkInfo;
    }
 
    public final void fail(String debug, long time) {
@@ -98,128 +97,246 @@ public abstract class Check {
             this.nowNano = System.nanoTime();
             Player player = this.data.getBukkitPlayer();
             if (!this.karhu.getConfigManager().isBypass() || !player.hasPermission("karhu.bypass")) {
-               if (!this.karhu.isServerLagging(this.now) && !this.karhu.hasRecentlyDropped(1000L)) {
-                  if (!this.data.isBanned()) {
-                     if (!this.subCheck) {
-                        if ((this.subCategory != SubCategory.AUTOCLICKER || this.name.equals("AutoClicker (A)")) && this.subCategory != SubCategory.BADPACKETS && this.subCategory != SubCategory.KILLAURA || !this.data.isNewerThan8() || !((double)(this.nowNano - this.data.lastFlying) / 1000000.0 > 55.0)) {
-                           locationParsed = this.format(2, this.data.getLocation().getX()) + "," + this.format(2, this.data.getLocation().getY()) + "," + this.format(2, this.data.getLocation().getZ());
-                           String worldParsed = this.data.getWorld().getName();
-                           int tempviolations = this.data.getViolations(this, time * 1000L) + 1;
-                           boolean autoban = Karhu.getInstance().getCheckState().isAutoban(this.name);
-                           boolean banwave = Karhu.getInstance().getCheckState().isBanwave(this.name);
-                           String cmd = this.karhu.getConfigManager().getAlertClickCommand();
-                           String checkNameFormatted = this.experimental ? this.name + this.cfg.getExpIcon() : this.name;
-                           checkNameFormatted = !autoban ? checkNameFormatted + this.cfg.getNoPunishIcon() : checkNameFormatted;
-                           BaseComponent hover = new TextComponent(this.karhu.getConfigManager().getPrefix() + this.karhu.getConfigManager().getAlertMessage().replaceAll("%player%", this.data.getName()).replaceAll("%version%", this.data.getClientVersion().toString().replaceAll("_", ".").replaceAll("v.", "")).replaceAll("%brand%", this.data.getBrand()).replaceAll("%ping%", String.valueOf(this.data.getTransactionPing())).replaceAll("%tps%", String.valueOf(this.karhu.getTPS())).replaceAll("%check%", checkNameFormatted).replaceAll("%experimental%", MathUtil.booleanToString(this.experimental)).replaceAll("%vl%", String.valueOf(tempviolations)));
-                           if (cmd != null) {
-                              hover.setClickEvent(new ClickEvent(Action.RUN_COMMAND, cmd.replace("%player%", player.getName())));
-                           }
-
-                           String finalDebug = ChatColor.translateAlternateColorCodes('&', this.karhu.getConfigManager().getAlertHoverMessage().replaceAll("%info%", debug.replaceAll("§b", Karhu.getInstance().getConfigManager().getAlertHoverMessageHighlight())).replaceAll("%player%", this.data.getName()).replaceAll("%ping%", String.valueOf(this.data.getTransactionPing())).replaceAll("%world%", player.getWorld().getName()).replaceAll("%ticks%", String.valueOf(this.data.getTotalTicks())).replaceAll("%loc%", locationParsed).replaceAll("%client%", this.data.getCleanBrand()).replaceAll("%check%", checkNameFormatted).replaceAll("%experimental%", MathUtil.booleanToString(this.experimental)).replaceAll("%version%", this.data.getClientVersion().toString().replaceAll("_", ".").replaceAll("v.", "")).replaceAll("%time%", String.valueOf(this.now - this.lastFlag)).replaceAll("%tps%", String.valueOf(this.karhu.getTPS())));
-                           hover.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, (new ComponentBuilder(finalDebug)).create()));
-                           String alert = this.karhu.getConfigManager().getPrefix() + this.karhu.getConfigManager().getAlertMessage().replaceAll("%player%", player.getName()).replaceAll("%version%", this.data.getClientVersion().toString().replaceAll("_", ".").replaceAll("v.", "")).replaceAll("%brand%", this.data.getCleanBrand()).replaceAll("%client%", this.data.getCleanBrand()).replaceAll("%ping%", String.valueOf(this.data.getTransactionPing())).replaceAll("%tps%", String.valueOf(this.karhu.getTPS())).replaceAll("%check%", checkNameFormatted).replaceAll("%vl%", String.valueOf(tempviolations)).replaceAll("%maxvl%", String.valueOf(maxvl));
-                           String databaseUser = Karhu.getInstance().getConfigManager().isCrackedServer() ? player.getName() : player.getUniqueId().toString();
-                           boolean autobanDisable = false;
-                           int violations;
-                           if (Karhu.isAPIAvailable()) {
-                              if (APICaller.callAlert(this.data.getBukkitPlayer(), this.getCheckInfo(), this, debug, hover, tempviolations, maxvl, this.data.getTransactionPing())) {
-                                 this.data.addViolation(this);
-                                 violations = this.data.getViolations(this, time * 1000L);
-                                 this.data.setCheckVl((double)violations, this);
-                                 this.handleAlert(player, debug, alert, hover, violations);
-                                 if (this.karhu.getConfigManager().isPullback() && (this.category == Category.MOVEMENT || this.category == Category.PACKET || this.category == Category.WORLD)) {
-                                    this.failSilent();
+               if (this.karhu.isServerLagging(this.now) || this.karhu.hasRecentlyDropped(1000L)) {
+                  if (this.now - this.karhu.lastPerformanceAnnounce > 10000L) {
+                     this.karhu.lastPerformanceAnnounce = this.now;
+                     String var19 = this.karhu.getConfigManager().getLagWarnDisplay().toUpperCase();
+                     switch(var19) {
+                        case "CONSOLE":
+                           String msg = this.karhu
+                              .getConfigManager()
+                              .getLagWarnMsg()
+                              .replaceAll("%prefix%", this.karhu.getConfigManager().getPrefix())
+                              .replaceAll("%player%", player.getName());
+                           Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
+                           break;
+                        case "CHAT":
+                           Bukkit.getOnlinePlayers()
+                              .stream()
+                              .filter(ServerOperator::isOp)
+                              .forEach(
+                                 staff -> {
+                                    String msg = this.karhu
+                                       .getConfigManager()
+                                       .getLagWarnMsg()
+                                       .replaceAll("%prefix%", this.karhu.getConfigManager().getPrefix())
+                                       .replaceAll("%player%", player.getName());
+                                    staff.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
                                  }
+                              );
+                        case "NONE":
+                     }
+                  }
+               } else if (!this.data.isBanned()) {
+                  if (!this.subCheck) {
+                     if ((this.subCategory != SubCategory.AUTOCLICKER || this.name.equals("AutoClicker (A)"))
+                           && this.subCategory != SubCategory.BADPACKETS
+                           && this.subCategory != SubCategory.KILLAURA
+                        || !this.data.isNewerThan8()
+                        || !((double)(this.nowNano - this.data.lastFlying) / 1000000.0 > 55.0)) {
+                        String locationParsed = this.format(2, this.data.getLocation().getX())
+                           + ","
+                           + this.format(2, this.data.getLocation().getY())
+                           + ","
+                           + this.format(2, this.data.getLocation().getZ());
+                        String worldParsed = this.data.getWorld().getName();
+                        int tempviolations = this.data.getViolations(this, time * 1000L) + 1;
+                        boolean autoban = Karhu.getInstance().getCheckState().isAutoban(this.name);
+                        boolean banwave = Karhu.getInstance().getCheckState().isBanwave(this.name);
+                        String cmd = this.karhu.getConfigManager().getAlertClickCommand();
+                        String checkNameFormatted = this.experimental ? this.name + this.cfg.getExpIcon() : this.name;
+                        checkNameFormatted = !autoban ? checkNameFormatted + this.cfg.getNoPunishIcon() : checkNameFormatted;
+                        BaseComponent hover = new TextComponent(
+                           this.karhu.getConfigManager().getPrefix()
+                              + this.karhu
+                                 .getConfigManager()
+                                 .getAlertMessage()
+                                 .replaceAll("%player%", this.data.getName())
+                                 .replaceAll("%version%", this.data.getClientVersion().toString().replaceAll("_", ".").replaceAll("v.", ""))
+                                 .replaceAll("%brand%", this.data.getBrand())
+                                 .replaceAll("%ping%", String.valueOf(this.data.getTransactionPing()))
+                                 .replaceAll("%tps%", String.valueOf(this.karhu.getTPS()))
+                                 .replaceAll("%check%", checkNameFormatted)
+                                 .replaceAll("%experimental%", MathUtil.booleanToString(this.experimental))
+                                 .replaceAll("%vl%", String.valueOf(tempviolations))
+                        );
+                        if (cmd != null) {
+                           hover.setClickEvent(new ClickEvent(Action.RUN_COMMAND, cmd.replace("%player%", player.getName())));
+                        }
 
-                                 if (violations == this.getBanwaveVL() && banwave) {
-                                    Tasker.taskAsync(() -> {
-                                       Karhu.getInstance().getWaveManager().addToWave(databaseUser, this.name);
-                                    });
-                                 }
-
-                                 if (violations >= maxvl && autoban && this.karhu.getConfigManager().isAutoban() && !this.data.isBanned() && !player.hasPermission("karhu.bypass.ban")) {
-                                    if (!autobanDisable) {
-                                       Karhu.storage.addAlert(new ViolationX(databaseUser, checkNameFormatted, violations, this.now, debug + " [PUNISHED]", locationParsed, worldParsed, this.data.getTransactionPing(), this.karhu.getTPS()));
-                                       Karhu.storage.addBan(new BanX(databaseUser, checkNameFormatted, this.now, debug, this.data.getTransactionPing(), this.karhu.getTPS()));
-                                    }
-
-                                    this.handlePunishment(player);
-                                    if (this.karhu.getConfigManager().isDiscordAlert() && !autobanDisable && this.karhu.getConfigManager().isSendBans()) {
-                                       this.karhu.getDiscordThread().execute(() -> {
-                                          this.handleDiscord(player, this.name, debug, violations, true);
-                                       });
-                                    }
-                                 } else {
-                                    Karhu.storage.addAlert(new ViolationX(databaseUser, checkNameFormatted, violations, this.now, debug, locationParsed, worldParsed, this.data.getTransactionPing(), this.karhu.getTPS()));
-                                 }
-                              }
-                           } else {
+                        String finalDebug = ChatColor.translateAlternateColorCodes(
+                           '&',
+                           this.karhu
+                              .getConfigManager()
+                              .getAlertHoverMessage()
+                              .replaceAll("%info%", debug.replaceAll("§b", Karhu.getInstance().getConfigManager().getAlertHoverMessageHighlight()))
+                              .replaceAll("%player%", this.data.getName())
+                              .replaceAll("%ping%", String.valueOf(this.data.getTransactionPing()))
+                              .replaceAll("%world%", player.getWorld().getName())
+                              .replaceAll("%ticks%", String.valueOf(this.data.getTotalTicks()))
+                              .replaceAll("%loc%", locationParsed)
+                              .replaceAll("%client%", this.data.getCleanBrand())
+                              .replaceAll("%check%", checkNameFormatted)
+                              .replaceAll("%experimental%", MathUtil.booleanToString(this.experimental))
+                              .replaceAll("%version%", this.data.getClientVersion().toString().replaceAll("_", ".").replaceAll("v.", ""))
+                              .replaceAll("%time%", String.valueOf(this.now - this.lastFlag))
+                              .replaceAll("%tps%", String.valueOf(this.karhu.getTPS()))
+                        );
+                        hover.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(finalDebug).create()));
+                        String alert = this.karhu.getConfigManager().getPrefix()
+                           + this.karhu
+                              .getConfigManager()
+                              .getAlertMessage()
+                              .replaceAll("%player%", player.getName())
+                              .replaceAll("%version%", this.data.getClientVersion().toString().replaceAll("_", ".").replaceAll("v.", ""))
+                              .replaceAll("%brand%", this.data.getCleanBrand())
+                              .replaceAll("%client%", this.data.getCleanBrand())
+                              .replaceAll("%ping%", String.valueOf(this.data.getTransactionPing()))
+                              .replaceAll("%tps%", String.valueOf(this.karhu.getTPS()))
+                              .replaceAll("%check%", checkNameFormatted)
+                              .replaceAll("%vl%", String.valueOf(tempviolations))
+                              .replaceAll("%maxvl%", String.valueOf(maxvl));
+                        String databaseUser = Karhu.getInstance().getConfigManager().isCrackedServer() ? player.getName() : player.getUniqueId().toString();
+                        boolean autobanDisable = false;
+                        if (Karhu.isAPIAvailable()) {
+                           if (APICaller.callAlert(
+                              this.data.getBukkitPlayer(), this.getCheckInfo(), this, debug, hover, tempviolations, maxvl, this.data.getTransactionPing()
+                           )) {
                               this.data.addViolation(this);
-                              violations = this.data.getViolations(this, time * 1000L);
+                              int violations = this.data.getViolations(this, time * 1000L);
                               this.data.setCheckVl((double)violations, this);
                               this.handleAlert(player, debug, alert, hover, violations);
-                              if (this.karhu.getConfigManager().isPullback() && (this.category == Category.MOVEMENT || this.category == Category.WORLD)) {
+                              if (this.karhu.getConfigManager().isPullback()
+                                 && (this.category == Category.MOVEMENT || this.category == Category.PACKET || this.category == Category.WORLD)) {
                                  this.failSilent();
-                                 if (this.category == Category.MOVEMENT || this.name.equals("Timer (A)")) {
-                                    this.data.getLocation().setCheats(true);
-                                 }
                               }
 
                               if (violations == this.getBanwaveVL() && banwave) {
-                                 Tasker.taskAsync(() -> {
-                                    Karhu.getInstance().getWaveManager().addToWave(databaseUser, this.name);
-                                 });
+                                 Tasker.taskAsync(() -> Karhu.getInstance().getWaveManager().addToWave(databaseUser, this.name));
                               }
 
-                              if (violations >= maxvl && autoban && this.karhu.getConfigManager().isAutoban() && !this.data.isBanned() && !player.hasPermission("karhu.bypass.ban")) {
+                              if (violations >= maxvl
+                                 && autoban
+                                 && this.karhu.getConfigManager().isAutoban()
+                                 && !this.data.isBanned()
+                                 && !player.hasPermission("karhu.bypass.ban")) {
                                  if (!autobanDisable) {
-                                    Karhu.storage.addAlert(new ViolationX(databaseUser, checkNameFormatted, violations, this.now, debug + " [PUNISHED]", locationParsed, worldParsed, this.data.getTransactionPing(), this.karhu.getTPS()));
-                                    Karhu.storage.addBan(new BanX(databaseUser, checkNameFormatted, this.now, debug, this.data.getTransactionPing(), this.karhu.getTPS()));
+                                    Karhu.storage
+                                       .addAlert(
+                                          new ViolationX(
+                                             databaseUser,
+                                             checkNameFormatted,
+                                             violations,
+                                             this.now,
+                                             debug + " [PUNISHED]",
+                                             locationParsed,
+                                             worldParsed,
+                                             this.data.getTransactionPing(),
+                                             this.karhu.getTPS()
+                                          )
+                                       );
+                                    Karhu.storage
+                                       .addBan(
+                                          new BanX(databaseUser, checkNameFormatted, this.now, debug, this.data.getTransactionPing(), this.karhu.getTPS())
+                                       );
                                  }
 
                                  this.handlePunishment(player);
                                  if (this.karhu.getConfigManager().isDiscordAlert() && !autobanDisable && this.karhu.getConfigManager().isSendBans()) {
-                                    this.karhu.getDiscordThread().execute(() -> {
-                                       this.handleDiscord(player, this.name, debug, violations, true);
-                                    });
+                                    this.karhu.getDiscordThread().execute(() -> this.handleDiscord(player, this.name, debug, violations, true));
                                  }
                               } else {
-                                 Karhu.storage.addAlert(new ViolationX(databaseUser, checkNameFormatted, violations, this.now, debug, locationParsed, worldParsed, this.data.getTransactionPing(), this.karhu.getTPS()));
+                                 Karhu.storage
+                                    .addAlert(
+                                       new ViolationX(
+                                          databaseUser,
+                                          checkNameFormatted,
+                                          violations,
+                                          this.now,
+                                          debug,
+                                          locationParsed,
+                                          worldParsed,
+                                          this.data.getTransactionPing(),
+                                          this.karhu.getTPS()
+                                       )
+                                    );
+                              }
+                           }
+                        } else {
+                           this.data.addViolation(this);
+                           int violations = this.data.getViolations(this, time * 1000L);
+                           this.data.setCheckVl((double)violations, this);
+                           this.handleAlert(player, debug, alert, hover, violations);
+                           if (this.karhu.getConfigManager().isPullback() && (this.category == Category.MOVEMENT || this.category == Category.WORLD)) {
+                              this.failSilent();
+                              if (this.category == Category.MOVEMENT || this.name.equals("Timer (A)")) {
+                                 this.data.getLocation().setCheats(true);
                               }
                            }
 
-                           if (this.category == Category.MOVEMENT) {
-                              this.data.setDidFlagMovement(true);
-                              this.data.setLastMovementFlag(this.data.getTotalTicks());
+                           if (violations == this.getBanwaveVL() && banwave) {
+                              Tasker.taskAsync(() -> Karhu.getInstance().getWaveManager().addToWave(databaseUser, this.name));
                            }
 
+                           if (violations >= maxvl
+                              && autoban
+                              && this.karhu.getConfigManager().isAutoban()
+                              && !this.data.isBanned()
+                              && !player.hasPermission("karhu.bypass.ban")) {
+                              if (!autobanDisable) {
+                                 Karhu.storage
+                                    .addAlert(
+                                       new ViolationX(
+                                          databaseUser,
+                                          checkNameFormatted,
+                                          violations,
+                                          this.now,
+                                          debug + " [PUNISHED]",
+                                          locationParsed,
+                                          worldParsed,
+                                          this.data.getTransactionPing(),
+                                          this.karhu.getTPS()
+                                       )
+                                    );
+                                 Karhu.storage
+                                    .addBan(new BanX(databaseUser, checkNameFormatted, this.now, debug, this.data.getTransactionPing(), this.karhu.getTPS()));
+                              }
+
+                              this.handlePunishment(player);
+                              if (this.karhu.getConfigManager().isDiscordAlert() && !autobanDisable && this.karhu.getConfigManager().isSendBans()) {
+                                 this.karhu.getDiscordThread().execute(() -> this.handleDiscord(player, this.name, debug, violations, true));
+                              }
+                           } else {
+                              Karhu.storage
+                                 .addAlert(
+                                    new ViolationX(
+                                       databaseUser,
+                                       checkNameFormatted,
+                                       violations,
+                                       this.now,
+                                       debug,
+                                       locationParsed,
+                                       worldParsed,
+                                       this.data.getTransactionPing(),
+                                       this.karhu.getTPS()
+                                    )
+                                 );
+                           }
+                        }
+
+                        if (this.category == Category.MOVEMENT) {
+                           this.data.setDidFlagMovement(true);
+                           this.data.setLastMovementFlag(this.data.getTotalTicks());
                         }
                      }
                   }
-               } else {
-                  if (this.now - this.karhu.lastPerformanceAnnounce > 10000L) {
-                     this.karhu.lastPerformanceAnnounce = this.now;
-                     switch (this.karhu.getConfigManager().getLagWarnDisplay().toUpperCase()) {
-                        case "CONSOLE":
-                           String msg = this.karhu.getConfigManager().getLagWarnMsg().replaceAll("%prefix%", this.karhu.getConfigManager().getPrefix()).replaceAll("%player%", player.getName());
-                           Bukkit.getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
-                           break;
-                        case "CHAT":
-                           Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp).forEach((staff) -> {
-                              String msg = this.karhu.getConfigManager().getLagWarnMsg().replaceAll("%prefix%", this.karhu.getConfigManager().getPrefix()).replaceAll("%player%", player.getName());
-                              staff.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
-                           });
-                        case "NONE":
-                     }
-                  }
-
                }
             }
          }
       }
    }
 
-   public abstract void handle(Object var1);
+   public abstract void handle(T var1);
 
    protected final String format(int places, Object obj) {
       return String.format("%." + places + "f", obj);
@@ -229,37 +346,29 @@ public abstract class Check {
       String cmd = this.karhu.getConfigManager().getAlertClickCommand();
       if (cmd != null) {
          if (this.now - this.lastFlag > Karhu.getInstance().getConfigManager().getAlertDelay()) {
-            if (this.karhu.getConfigManager().isHoverlessAlert()) {
-               this.karhu.getAlertsManager().getAlertsToggled().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach((staffx) -> {
-                  staffx.sendMessage(text);
-               });
-            } else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
-               Iterator var7 = this.karhu.getAlertsManager().getAlertsToggled().iterator();
-
-               label66:
-               while(true) {
-                  while(true) {
-                     Player staff;
-                     do {
-                        do {
-                           if (!var7.hasNext()) {
-                              break label66;
-                           }
-
-                           UUID uuid = (UUID)var7.next();
-                           staff = Bukkit.getPlayer(uuid);
-                        } while(!this.karhu.getConfigManager().isSpigotApiAlert());
-                     } while(staff == null);
-
-                     if (!staff.hasPermission("karhu.hover-debug") && !AlertsManager.ADMINS.contains(staff.getUniqueId())) {
-                        staff.sendMessage(text);
-                     } else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
-                        staff.spigot().sendMessage(hover);
-                     } else {
-                        staff.spigot().sendMessage(hover);
+            if (!this.karhu.getConfigManager().isHoverlessAlert()) {
+               if (this.karhu.getConfigManager().isSpigotApiAlert()) {
+                  for(UUID uuid : this.karhu.getAlertsManager().getAlertsToggled()) {
+                     Player staff = Bukkit.getPlayer(uuid);
+                     if (this.karhu.getConfigManager().isSpigotApiAlert() && staff != null) {
+                        if (!staff.hasPermission("karhu.hover-debug") && !AlertsManager.ADMINS.contains(staff.getUniqueId())) {
+                           staff.sendMessage(text);
+                        } else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
+                           staff.spigot().sendMessage(hover);
+                        } else {
+                           staff.spigot().sendMessage(hover);
+                        }
                      }
                   }
                }
+            } else {
+               this.karhu
+                  .getAlertsManager()
+                  .getAlertsToggled()
+                  .stream()
+                  .map(Bukkit::getPlayer)
+                  .filter(Objects::nonNull)
+                  .forEach(staffx -> staffx.sendMessage(text));
             }
 
             this.lastFlag = this.now;
@@ -268,16 +377,13 @@ public abstract class Check {
          if (this.karhu.getConfigManager().isDiscordAlert() && this.karhu.getConfigManager().isSendAlerts()) {
             int modulo = this.karhu.getConfigManager().getConfig().getInt("discord.post-vl-rate");
             if (violations % modulo == 0) {
-               this.karhu.getDiscordThread().execute(() -> {
-                  this.handleDiscord(player, this.name, debug, violations, false);
-               });
+               this.karhu.getDiscordThread().execute(() -> this.handleDiscord(player, this.name, debug, violations, false));
             }
          }
 
          if (this.karhu.getConfigManager().isBungeeAlert() && violations % this.karhu.getConfigManager().getBungeePostRate() == 0) {
             BungeeAPI.sendAlert(this.experimental ? this.name + this.cfg.getExpIcon() : this.name + "#" + violations + "#" + player.getName());
          }
-
       }
    }
 
@@ -293,95 +399,258 @@ public abstract class Check {
       LocalDateTime now = LocalDateTime.now();
       discord.setUsername(this.karhu.getConfigManager().getName());
       discord.setTts(false);
-      String serverName = this.karhu.getConfigManager().getServerName().equalsIgnoreCase("Karhu") ? "Karhu (edit by changing server-name in config.yml)" : this.karhu.getConfigManager().getServerName();
-      IOException ex;
+      String serverName = this.karhu.getConfigManager().getServerName().equalsIgnoreCase("Karhu")
+         ? "Karhu (edit by changing server-name in config.yml)"
+         : this.karhu.getConfigManager().getServerName();
       if (!punish) {
          if (sendAlerts) {
             if (showIcon) {
-               discord.addEmbed((new Webhook.EmbedObject()).setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")").setThumbnail("https://minotar.net/avatar/" + player.getName() + "/50.png").setDescription(ChatColor.stripColor(data.replaceAll("\n", " "))).setColor(Color.CYAN).addField("Server: ", serverName, true).addField("Info", (showWorld ? "W: " + player.getWorld().getName() + " | C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ()) : " C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ())) + (showStats ? " | TPS: " + Karhu.getInstance().getTPS() + " | Ping: " + this.data.getTransactionPing() + "ms | CL: " + this.data.getCleanBrand() + " | V: " + MathUtil.parseVersion(this.data.getClientVersion()) : " | T: " + this.data.getTotalTicks()), false).addField("Date", dtf.format(now), false));
+               discord.addEmbed(
+                  new Webhook.EmbedObject()
+                     .setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")")
+                     .setThumbnail("https://minotar.net/avatar/" + player.getName() + "/50.png")
+                     .setDescription(ChatColor.stripColor(data.replaceAll("\n", " ")))
+                     .setColor(Color.CYAN)
+                     .addField("Server: ", serverName, true)
+                     .addField(
+                        "Info",
+                        (
+                              showWorld
+                                 ? "W: "
+                                    + player.getWorld().getName()
+                                    + " | C: "
+                                    + this.format(1, player.getLocation().getX())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getY())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getZ())
+                                 : " C: "
+                                    + this.format(1, player.getLocation().getX())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getY())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getZ())
+                           )
+                           + (
+                              showStats
+                                 ? " | TPS: "
+                                    + Karhu.getInstance().getTPS()
+                                    + " | Ping: "
+                                    + this.data.getTransactionPing()
+                                    + "ms | CL: "
+                                    + this.data.getCleanBrand()
+                                    + " | V: "
+                                    + MathUtil.parseVersion(this.data.getClientVersion())
+                                 : " | T: " + this.data.getTotalTicks()
+                           ),
+                        false
+                     )
+                     .addField("Date", dtf.format(now), false)
+               );
             } else {
-               discord.addEmbed((new Webhook.EmbedObject()).setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")").setDescription(ChatColor.stripColor(data.replaceAll("\n", " "))).setColor(Color.CYAN).addField("Server: ", serverName, true).addField("Info", (showWorld ? "W: " + player.getWorld().getName() + " | C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ()) : " C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ())) + (showStats ? " | TPS: " + Karhu.getInstance().getTPS() + " | Ping: " + this.data.getTransactionPing() + "ms | CL: " + this.data.getCleanBrand() + " | V: " + MathUtil.parseVersion(this.data.getClientVersion()) : " | T: " + this.data.getTotalTicks()), false).addField("Date", dtf.format(now), false));
+               discord.addEmbed(
+                  new Webhook.EmbedObject()
+                     .setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")")
+                     .setDescription(ChatColor.stripColor(data.replaceAll("\n", " ")))
+                     .setColor(Color.CYAN)
+                     .addField("Server: ", serverName, true)
+                     .addField(
+                        "Info",
+                        (
+                              showWorld
+                                 ? "W: "
+                                    + player.getWorld().getName()
+                                    + " | C: "
+                                    + this.format(1, player.getLocation().getX())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getY())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getZ())
+                                 : " C: "
+                                    + this.format(1, player.getLocation().getX())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getY())
+                                    + "/"
+                                    + this.format(1, player.getLocation().getZ())
+                           )
+                           + (
+                              showStats
+                                 ? " | TPS: "
+                                    + Karhu.getInstance().getTPS()
+                                    + " | Ping: "
+                                    + this.data.getTransactionPing()
+                                    + "ms | CL: "
+                                    + this.data.getCleanBrand()
+                                    + " | V: "
+                                    + MathUtil.parseVersion(this.data.getClientVersion())
+                                 : " | T: " + this.data.getTotalTicks()
+                           ),
+                        false
+                     )
+                     .addField("Date", dtf.format(now), false)
+               );
             }
 
             try {
                discord.execute();
             } catch (IOException var18) {
-               ex = var18;
-               if (ex.toString().contains("429")) {
+               if (var18.toString().contains("429")) {
                   this.karhu.getPlug().getLogger().warning("Unable to post discord webhook: 429 Too many requests");
-               } else if (!ex.getMessage().contains("no protocol")) {
-                  this.karhu.getPlug().getLogger().warning("Unable to post discord webhook: " + ex.getMessage());
+               } else if (!var18.getMessage().contains("no protocol")) {
+                  this.karhu.getPlug().getLogger().warning("Unable to post discord webhook: " + var18.getMessage());
                }
             }
          }
       } else if (sendPunish) {
          if (showIcon) {
-            discord.addEmbed((new Webhook.EmbedObject()).setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")").setThumbnail("https://minotar.net/avatar/" + player.getName() + "/50.png").setDescription(ChatColor.stripColor(data.replaceAll("\n", " "))).setColor(Color.RED).addField("Server: ", serverName, true).addField("Info", (showWorld ? "W: " + player.getWorld().getName() + " | C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ()) : " C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ())) + (showStats ? " | TPS: " + Karhu.getInstance().getTPS() + " | Ping: " + this.data.getTransactionPing() + "ms | CL: " + this.data.getCleanBrand() + " | V: " + MathUtil.parseVersion(this.data.getClientVersion()) : " | T: " + this.data.getTotalTicks()), false).addField("Date", dtf.format(now), false));
+            discord.addEmbed(
+               new Webhook.EmbedObject()
+                  .setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")")
+                  .setThumbnail("https://minotar.net/avatar/" + player.getName() + "/50.png")
+                  .setDescription(ChatColor.stripColor(data.replaceAll("\n", " ")))
+                  .setColor(Color.RED)
+                  .addField("Server: ", serverName, true)
+                  .addField(
+                     "Info",
+                     (
+                           showWorld
+                              ? "W: "
+                                 + player.getWorld().getName()
+                                 + " | C: "
+                                 + this.format(1, player.getLocation().getX())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getY())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getZ())
+                              : " C: "
+                                 + this.format(1, player.getLocation().getX())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getY())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getZ())
+                        )
+                        + (
+                           showStats
+                              ? " | TPS: "
+                                 + Karhu.getInstance().getTPS()
+                                 + " | Ping: "
+                                 + this.data.getTransactionPing()
+                                 + "ms | CL: "
+                                 + this.data.getCleanBrand()
+                                 + " | V: "
+                                 + MathUtil.parseVersion(this.data.getClientVersion())
+                              : " | T: " + this.data.getTotalTicks()
+                        ),
+                     false
+                  )
+                  .addField("Date", dtf.format(now), false)
+            );
          } else {
-            discord.addEmbed((new Webhook.EmbedObject()).setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")").setDescription(ChatColor.stripColor(data.replaceAll("\n", " "))).setColor(Color.RED).addField("Server: ", serverName, true).addField("Info", (showWorld ? "W: " + player.getWorld().getName() + " | C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ()) : " C: " + this.format(1, player.getLocation().getX()) + "/" + this.format(1, player.getLocation().getY()) + "/" + this.format(1, player.getLocation().getZ())) + (showStats ? " | TPS: " + Karhu.getInstance().getTPS() + " | Ping: " + this.data.getTransactionPing() + "ms | CL: " + this.data.getCleanBrand() + " | V: " + MathUtil.parseVersion(this.data.getClientVersion()) : " | T: " + this.data.getTotalTicks()), false).addField("Date", dtf.format(now), false));
+            discord.addEmbed(
+               new Webhook.EmbedObject()
+                  .setTitle("```" + player.getName() + " " + player.getUniqueId() + "``` | " + check + " (x" + violations + ")")
+                  .setDescription(ChatColor.stripColor(data.replaceAll("\n", " ")))
+                  .setColor(Color.RED)
+                  .addField("Server: ", serverName, true)
+                  .addField(
+                     "Info",
+                     (
+                           showWorld
+                              ? "W: "
+                                 + player.getWorld().getName()
+                                 + " | C: "
+                                 + this.format(1, player.getLocation().getX())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getY())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getZ())
+                              : " C: "
+                                 + this.format(1, player.getLocation().getX())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getY())
+                                 + "/"
+                                 + this.format(1, player.getLocation().getZ())
+                        )
+                        + (
+                           showStats
+                              ? " | TPS: "
+                                 + Karhu.getInstance().getTPS()
+                                 + " | Ping: "
+                                 + this.data.getTransactionPing()
+                                 + "ms | CL: "
+                                 + this.data.getCleanBrand()
+                                 + " | V: "
+                                 + MathUtil.parseVersion(this.data.getClientVersion())
+                              : " | T: " + this.data.getTotalTicks()
+                        ),
+                     false
+                  )
+                  .addField("Date", dtf.format(now), false)
+            );
          }
 
          try {
             discord.execute();
          } catch (IOException var17) {
-            ex = var17;
-            if (ex.toString().contains("429")) {
+            if (var17.toString().contains("429")) {
                this.karhu.getPlug().getLogger().warning("Unable to post discord webhook: 429 Too many requests");
-            } else if (!ex.getMessage().contains("no protocol")) {
-               this.karhu.getPlug().getLogger().warning("Unable to post discord webhook: " + ex.getMessage());
+            } else if (!var17.getMessage().contains("no protocol")) {
+               this.karhu.getPlug().getLogger().warning("Unable to post discord webhook: " + var17.getMessage());
             }
          }
       }
-
    }
 
    private void handlePunishment(Player player) {
       long delayTime = this.karhu.getConfigManager().getCommandDelay();
-      boolean firstLoop;
-      List banCMD;
-      Iterator var6;
-      String ban;
       if (!Karhu.isAPIAvailable()) {
          if (Karhu.getInstance().getConfigManager().isDisallowFlagsAfterPunish()) {
             this.data.setBanned(true);
          }
 
          if (this.karhu.getConfigManager().isPunishBroadcast()) {
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', Karhu.getInstance().getConfigManager().getConfig().getString("Punishments.message").replaceAll("%check%", this.name).replaceAll("%player%", this.data.getName())));
+            Bukkit.broadcastMessage(
+               ChatColor.translateAlternateColorCodes(
+                  '&',
+                  Karhu.getInstance()
+                     .getConfigManager()
+                     .getConfig()
+                     .getString("Punishments.message")
+                     .replaceAll("%check%", this.name)
+                     .replaceAll("%player%", this.data.getName())
+               )
+            );
          }
 
-         firstLoop = true;
-         banCMD = Karhu.getInstance().getCheckState().isBanning(this) ? Karhu.getInstance().getConfigManager().getPunishmentsBan() : Karhu.getInstance().getConfigManager().getPunishmentsKick();
+         boolean firstLoop = true;
+         List<String> banCMD = Karhu.getInstance().getCheckState().isBanning(this)
+            ? Karhu.getInstance().getConfigManager().getPunishmentsBan()
+            : Karhu.getInstance().getConfigManager().getPunishmentsKick();
          if (!Karhu.getInstance().getConfigManager().isBungeeCommand()) {
-            var6 = banCMD.iterator();
-
-            while(var6.hasNext()) {
-               ban = (String)var6.next();
+            for(String ban : banCMD) {
                if (firstLoop) {
-                  Tasker.run(() -> {
-                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  });
+                  Tasker.run(
+                     () -> Bukkit.getServer()
+                           .dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name))
+                  );
                   firstLoop = false;
                } else {
-                  Tasker.runTaskLater(() -> {
-                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  }, 20L * delayTime);
+                  Tasker.runTaskLater(
+                     () -> Bukkit.getServer()
+                           .dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name)),
+                     20L * delayTime
+                  );
                }
             }
          } else {
-            var6 = banCMD.iterator();
-
-            while(var6.hasNext()) {
-               ban = (String)var6.next();
+            for(String ban : banCMD) {
                if (firstLoop) {
-                  Tasker.run(() -> {
-                     BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  });
+                  Tasker.run(() -> BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name)));
                   firstLoop = false;
                } else {
-                  Tasker.runTaskLater(() -> {
-                     BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  }, 20L * delayTime);
+                  Tasker.runTaskLater(
+                     () -> BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name)), 20L * delayTime
+                  );
                }
             }
          }
@@ -391,46 +660,52 @@ public abstract class Check {
          }
 
          if (this.karhu.getConfigManager().isPunishBroadcast()) {
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', Karhu.getInstance().getConfigManager().getConfig().getString("Punishments.message").replaceAll("%check%", this.name).replaceAll("%player%", this.data.getName())));
+            Bukkit.broadcastMessage(
+               ChatColor.translateAlternateColorCodes(
+                  '&',
+                  Karhu.getInstance()
+                     .getConfigManager()
+                     .getConfig()
+                     .getString("Punishments.message")
+                     .replaceAll("%check%", this.name)
+                     .replaceAll("%player%", this.data.getName())
+               )
+            );
          }
 
-         firstLoop = true;
-         banCMD = Karhu.getInstance().getCheckState().isBanning(this) ? Karhu.getInstance().getConfigManager().getPunishmentsBan() : Karhu.getInstance().getConfigManager().getPunishmentsKick();
+         boolean firstLoop = true;
+         List<String> banCMD = Karhu.getInstance().getCheckState().isBanning(this)
+            ? Karhu.getInstance().getConfigManager().getPunishmentsBan()
+            : Karhu.getInstance().getConfigManager().getPunishmentsKick();
          if (!Karhu.getInstance().getConfigManager().isBungeeCommand()) {
-            var6 = banCMD.iterator();
-
-            while(var6.hasNext()) {
-               ban = (String)var6.next();
+            for(String ban : banCMD) {
                if (firstLoop) {
-                  Tasker.run(() -> {
-                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  });
+                  Tasker.run(
+                     () -> Bukkit.getServer()
+                           .dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name))
+                  );
                   firstLoop = false;
                } else {
-                  Tasker.runTaskLater(() -> {
-                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  }, 20L * delayTime);
+                  Tasker.runTaskLater(
+                     () -> Bukkit.getServer()
+                           .dispatchCommand(Bukkit.getConsoleSender(), ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name)),
+                     20L * delayTime
+                  );
                }
             }
          } else {
-            var6 = banCMD.iterator();
-
-            while(var6.hasNext()) {
-               ban = (String)var6.next();
+            for(String ban : banCMD) {
                if (firstLoop) {
-                  Tasker.run(() -> {
-                     BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  });
+                  Tasker.run(() -> BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name)));
                   firstLoop = false;
                } else {
-                  Tasker.runTaskLater(() -> {
-                     BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name));
-                  }, 20L * delayTime);
+                  Tasker.runTaskLater(
+                     () -> BungeeAPI.sendCommand(ban.replaceAll("%player%", player.getName()).replaceAll("%check%", this.name)), 20L * delayTime
+                  );
                }
             }
          }
       }
-
    }
 
    public int getBanVL() {
@@ -445,38 +720,39 @@ public abstract class Check {
       if (this.data.isInitialized()) {
          this.pullback();
       }
-
    }
 
    public void disallowMove(boolean glide) {
       if (this.data.isInitialized() && this.canSetbackStrict()) {
          this.cancel(glide);
       }
-
    }
 
    public void cancel(boolean glide) {
       if (glide || this.data.elapsed(this.data.getLastMovementFlag()) > 1 || this.data.isPossiblyTeleporting()) {
          Player player = this.data.getBukkitPlayer();
          Location teleport = Setbacks.forgeToRotatedLocation(this.data.getSafeSetback().toLocation(this.data.getWorld()), this.data);
-         MiscellaneousAlertPoster.postSetback(this.data.getName() + ChatColor.RED + " " + (glide ? " chunk lag " : this.name + " limit exceeded ") + teleport.toVector() + " tp: " + this.data.getTeleportManager().teleportTicks);
+         MiscellaneousAlertPoster.postSetback(
+            this.data.getName()
+               + ChatColor.RED
+               + " "
+               + (glide ? " chunk lag " : this.name + " limit exceeded ")
+               + teleport.toVector()
+               + " tp: "
+               + this.data.getTeleportManager().teleportTicks
+         );
          if (this.canSetbackStrict2(teleport)) {
             if (Karhu.isAPIAvailable()) {
                if (APICaller.callPullback(player, this.getCheckInfo(), this, teleport)) {
-                  Tasker.run(() -> {
-                     this.data.teleport(teleport);
-                  });
+                  Tasker.run(() -> this.data.teleport(teleport));
                }
             } else {
-               Tasker.run(() -> {
-                  this.data.teleport(teleport);
-               });
+               Tasker.run(() -> this.data.teleport(teleport));
             }
 
             this.data.setDidFlagMovement(true);
             this.data.setLastMovementFlag(this.data.getTotalTicks());
          }
-
       }
    }
 
@@ -487,18 +763,13 @@ public abstract class Check {
          if (this.canSetback()) {
             if (Karhu.isAPIAvailable()) {
                if (APICaller.callPullback(player, this.getCheckInfo(), this, setback.toLocation(this.data.getWorld()))) {
-                  Tasker.run(() -> {
-                     this.data.teleport(setback);
-                  });
+                  Tasker.run(() -> this.data.teleport(setback));
                }
             } else {
-               Tasker.run(() -> {
-                  this.data.teleport(setback);
-               });
+               Tasker.run(() -> this.data.teleport(setback));
             }
          }
       }
-
    }
 
    public void pullback(Location location) {
@@ -512,19 +783,14 @@ public abstract class Check {
                this.data.setLastMovementFlag(this.data.getTotalTicks());
                if (Karhu.isAPIAvailable()) {
                   if (APICaller.callPullback(player, this.getCheckInfo(), this, setback)) {
-                     Tasker.run(() -> {
-                        this.data.teleport(setback);
-                     });
+                     Tasker.run(() -> this.data.teleport(setback));
                   }
                } else {
-                  Tasker.run(() -> {
-                     this.data.teleport(setback);
-                  });
+                  Tasker.run(() -> this.data.teleport(setback));
                }
             }
          }
       }
-
    }
 
    public void pullback(CustomLocation location) {
@@ -538,27 +804,33 @@ public abstract class Check {
                this.data.setLastMovementFlag(this.data.getTotalTicks());
                if (Karhu.isAPIAvailable()) {
                   if (APICaller.callPullback(player, this.getCheckInfo(), this, setback.toLocation(this.data.getWorld()))) {
-                     Tasker.run(() -> {
-                        this.data.teleport(setback);
-                     });
+                     Tasker.run(() -> this.data.teleport(setback));
                   }
                } else {
-                  Tasker.run(() -> {
-                     this.data.teleport(setback);
-                  });
+                  Tasker.run(() -> this.data.teleport(setback));
                }
             }
          }
       }
-
    }
 
    public boolean canSetback() {
-      return BlockUtil.chunkLoaded(this.data.getLastLocation().toLocation(this.data.getWorld())) && BlockUtil.chunkLoaded(this.data.getLastLastLocation().toLocation(this.data.getWorld())) && BlockUtil.chunkLoaded(this.data.getLocation().toLocation(this.data.getWorld())) && !this.data.isPossiblyTeleporting() && !this.data.getBukkitPlayer().isDead() && !this.data.isDidFlagMovement() && this.data.getTotalTicks() > 40;
+      return BlockUtil.chunkLoaded(this.data.getLastLocation().toLocation(this.data.getWorld()))
+         && BlockUtil.chunkLoaded(this.data.getLastLastLocation().toLocation(this.data.getWorld()))
+         && BlockUtil.chunkLoaded(this.data.getLocation().toLocation(this.data.getWorld()))
+         && !this.data.isPossiblyTeleporting()
+         && !this.data.getBukkitPlayer().isDead()
+         && !this.data.isDidFlagMovement()
+         && this.data.getTotalTicks() > 40;
    }
 
    public boolean canSetbackStrict() {
-      return BlockUtil.chunkLoaded(this.data.getLastLocation().toLocation(this.data.getWorld())) && BlockUtil.chunkLoaded(this.data.getLastLastLocation().toLocation(this.data.getWorld())) && BlockUtil.chunkLoaded(this.data.getLocation().toLocation(this.data.getWorld())) && !this.data.isPossiblyTeleporting() && !this.data.getBukkitPlayer().isDead() && this.data.getTotalTicks() > 40;
+      return BlockUtil.chunkLoaded(this.data.getLastLocation().toLocation(this.data.getWorld()))
+         && BlockUtil.chunkLoaded(this.data.getLastLastLocation().toLocation(this.data.getWorld()))
+         && BlockUtil.chunkLoaded(this.data.getLocation().toLocation(this.data.getWorld()))
+         && !this.data.isPossiblyTeleporting()
+         && !this.data.getBukkitPlayer().isDead()
+         && this.data.getTotalTicks() > 40;
    }
 
    public boolean canSetbackStrict2(Location location) {
@@ -570,7 +842,14 @@ public abstract class Check {
          location = this.fixSetback(this.data.getLocation().toLocation(this.data.getWorld()));
       }
 
-      return BlockUtil.chunkLoaded(location) && !location.getBlock().getType().isSolid() && !this.data.isWasWasInUnloadedChunk() && !this.data.isWasInUnloadedChunk() && !this.data.isInUnloadedChunk() && !this.data.isPossiblyTeleporting() && !this.data.getBukkitPlayer().isDead() && this.data.getTotalTicks() > 40;
+      return BlockUtil.chunkLoaded(location)
+         && !location.getBlock().getType().isSolid()
+         && !this.data.isWasWasInUnloadedChunk()
+         && !this.data.isWasInUnloadedChunk()
+         && !this.data.isInUnloadedChunk()
+         && !this.data.isPossiblyTeleporting()
+         && !this.data.getBukkitPlayer().isDead()
+         && this.data.getTotalTicks() > 40;
    }
 
    public Location fixSetback(Location location) {
@@ -591,16 +870,18 @@ public abstract class Check {
 
    public void debug(String formatted) {
       String debugForm = "§7[§b" + this.name + "§7] §9" + this.data.getName() + " §f" + formatted;
-      this.karhu.getAlertsManager().getDebugToggled().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach((admin) -> {
-         admin.sendMessage(debugForm);
-      });
+      this.karhu.getAlertsManager().getDebugToggled().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(admin -> admin.sendMessage(debugForm));
    }
 
    public void debugMisc(String formatted) {
       String debugForm = "§7[§b" + this.name + "§7] §9" + this.data.getName() + " §f" + formatted;
-      this.karhu.getAlertsManager().getMiscDebugToggled().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach((admin) -> {
-         admin.sendMessage(debugForm);
-      });
+      this.karhu
+         .getAlertsManager()
+         .getMiscDebugToggled()
+         .stream()
+         .map(Bukkit::getPlayer)
+         .filter(Objects::nonNull)
+         .forEach(admin -> admin.sendMessage(debugForm));
    }
 
    protected double increase(double increase) {

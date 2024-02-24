@@ -17,11 +17,9 @@ public class SQLite {
          Query.use(conn);
          Karhu.getInstance().printCool("&b> &aConnection to SQLite has been established.");
       } catch (Exception var1) {
-         Exception e = var1;
          Karhu.getInstance().printCool("&b> &cConnection to SQLite has failed.");
-         e.printStackTrace();
+         var1.printStackTrace();
       }
-
    }
 
    public static void use() {
@@ -32,9 +30,7 @@ public class SQLite {
             Query.use(conn);
          }
       } catch (Exception var1) {
-         Exception e = var1;
-         e.printStackTrace();
+         var1.printStackTrace();
       }
-
    }
 }

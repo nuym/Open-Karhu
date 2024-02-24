@@ -8,33 +8,33 @@ import me.liwk.karhu.check.api.ViolationX;
 import me.liwk.karhu.data.KarhuPlayer;
 
 public interface Storage {
-   void init() throws Throwable;
+   void init();
 
    void addAlert(ViolationX var1);
 
    void addBan(BanX var1);
 
-   List getViolations(String var1, Check var2, int var3, int var4, long var5, long var7) throws Throwable;
+   List<ViolationX> getViolations(String var1, Check var2, int var3, int var4, long var5, long var7);
 
-   List getAllViolations(String var1) throws Throwable;
+   List<ViolationX> getAllViolations(String var1);
 
-   List getBanwaveList() throws Throwable;
+   List<String> getBanwaveList();
 
    boolean isInBanwave(String var1);
 
    void addToBanWave(BanWaveX var1);
 
-   void removeFromBanWave(String var1) throws Throwable;
+   void removeFromBanWave(String var1);
 
-   int getViolationAmount(String var1) throws Throwable;
+   int getViolationAmount(String var1);
 
    void loadActiveViolations(String var1, KarhuPlayer var2);
 
-   void purge(String var1, boolean var2) throws Throwable;
+   void purge(String var1, boolean var2);
 
-   int getAllViolationsInStorage() throws Throwable;
+   int getAllViolationsInStorage();
 
-   List getRecentBans() throws Throwable;
+   List<BanX> getRecentBans();
 
    void checkFiles();
 

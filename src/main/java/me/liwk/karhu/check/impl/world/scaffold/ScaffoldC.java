@@ -31,6 +31,7 @@ public final class ScaffoldC extends PacketCheck {
       this.setSetback(false);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent) {
          BlockPlaceEvent place = (BlockPlaceEvent)packet;
@@ -64,6 +65,5 @@ public final class ScaffoldC extends PacketCheck {
       } else if (packet instanceof FlyingEvent) {
          ++this.delay;
       }
-
    }
 }

@@ -24,6 +24,7 @@ public final class AutoClickerA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (this.canClick()) {
@@ -49,6 +50,5 @@ public final class AutoClickerA extends PacketCheck {
          this.delay = 0;
          this.clicks = 0;
       }
-
    }
 }

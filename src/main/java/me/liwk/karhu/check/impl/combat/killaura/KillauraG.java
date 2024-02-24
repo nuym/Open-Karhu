@@ -25,16 +25,19 @@ public final class KillauraG extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!this.data.isNewerThan8()) {
          if (packet instanceof FlyingEvent) {
             this.sentInteract = false;
          } else if (packet instanceof BlockPlaceEvent && ((BlockPlaceEvent)packet).isUsableItem()) {
             this.sentInteract = true;
-         } else if (packet instanceof DigEvent && ((DigEvent)packet).getDigType() == DiggingAction.RELEASE_USE_ITEM && this.sentInteract && !this.data.isPossiblyTeleporting()) {
+         } else if (packet instanceof DigEvent
+            && ((DigEvent)packet).getDigType() == DiggingAction.RELEASE_USE_ITEM
+            && this.sentInteract
+            && !this.data.isPossiblyTeleporting()) {
             this.fail("* Illegal sword blocking order", this.getBanVL(), 600L);
          }
       }
-
    }
 }

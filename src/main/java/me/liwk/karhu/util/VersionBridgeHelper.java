@@ -36,7 +36,9 @@ public final class VersionBridgeHelper {
       } else if (data.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16)) {
          return false;
       } else {
-         float f2 = Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16) ? data.getBukkitPlayer().getAttackCooldown() : (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_9) ? 1.0F : 1.0F);
+         float f2 = Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16)
+            ? data.getBukkitPlayer().getAttackCooldown()
+            : (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_9) ? 1.0F : 1.0F);
          boolean flag = f2 > 0.9F && entity instanceof Player;
          int i = s != null && s.hasItemMeta() && s.getItemMeta().hasEnchant(Enchantment.KNOCKBACK) ? 1 : 0;
          if (data.isSprinting() && flag) {
@@ -58,7 +60,9 @@ public final class VersionBridgeHelper {
       } else if (data.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16)) {
          return false;
       } else {
-         float f2 = Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16) ? data.getBukkitPlayer().getAttackCooldown() : (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_9) ? 1.0F : 1.0F);
+         float f2 = Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16)
+            ? data.getBukkitPlayer().getAttackCooldown()
+            : (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_9) ? 1.0F : 1.0F);
          boolean flag = f2 > 0.9F && entity instanceof Player;
          int i = 0;
          if (data.isSprinting() && flag) {

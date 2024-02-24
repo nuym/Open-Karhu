@@ -24,12 +24,13 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 )
 public final class AutoClickerB extends PacketCheck {
    int flying;
-   Deque samples = new ArrayDeque();
+   Deque<Integer> samples = new ArrayDeque<>();
 
    public AutoClickerB(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent && !this.data.isHasDig()) {
          boolean valid = !this.data.isPlacing() && !this.data.isUsingItem();
@@ -43,12 +44,23 @@ public final class AutoClickerB extends PacketCheck {
             }
 
             if (this.samples.size() == 500) {
-               double kur = (new Kurtosis()).evaluate(MathUtil.dequeTranslator(this.samples));
-               double ske = (new Skewness()).evaluate(MathUtil.dequeTranslator(this.samples));
-               double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.samples));
+               double kur = new Kurtosis().evaluate(MathUtil.dequeTranslator(this.samples));
+               double ske = new Skewness().evaluate(MathUtil.dequeTranslator(this.samples));
+               double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.samples));
                if (ske < 0.2 && kur < 0.0 && std < 0.7) {
                   if (++this.violations > 2.0) {
-                     this.fail("* Weird click pattern\n§f* KU §b" + this.format(2, kur) + "\n§f* SK §b" + this.format(2, ske) + "\n§f* STD §b" + this.format(2, std) + "\n§f* SK §b" + this.format(2, ske), this.getBanVL(), 400L);
+                     this.fail(
+                        "* Weird click pattern\n§f* KU §b"
+                           + this.format(2, Double.valueOf(kur))
+                           + "\n§f* SK §b"
+                           + this.format(2, Double.valueOf(ske))
+                           + "\n§f* STD §b"
+                           + this.format(2, Double.valueOf(std))
+                           + "\n§f* SK §b"
+                           + this.format(2, Double.valueOf(ske)),
+                        this.getBanVL(),
+                        400L
+                     );
                   }
                } else {
                   this.violations = Math.max(this.violations - 0.5, 0.0);
@@ -62,6 +74,5 @@ public final class AutoClickerB extends PacketCheck {
       } else if (packet instanceof FlyingEvent && !((FlyingEvent)packet).isTeleport()) {
          ++this.flying;
       }
-
    }
 }

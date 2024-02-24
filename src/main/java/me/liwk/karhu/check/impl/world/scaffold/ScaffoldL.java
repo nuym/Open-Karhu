@@ -34,6 +34,7 @@ public final class ScaffoldL extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!this.data.isNewerThan16()) {
          if (packet instanceof BlockPlaceEvent) {
@@ -43,7 +44,10 @@ public final class ScaffoldL extends PacketCheck {
                if (item != null && item.getType().isBlock()) {
                   Vector location = this.data.getLocation().toVector();
                   Vector blockLocation = ((BlockPlaceEvent)packet).getBlockPos();
-                  if (location.distance(blockLocation) <= 2.0 && this.isNotGroundBridging() && this.isNotGroundBridging2() && location.getY() > blockLocation.getY()) {
+                  if (location.distance(blockLocation) <= 2.0
+                     && this.isNotGroundBridging()
+                     && this.isNotGroundBridging2()
+                     && location.getY() > blockLocation.getY()) {
                      this.sameY = this.lastY == blockLocation.getY();
                      this.lastY = blockLocation.getY();
                      this.placed = true;
@@ -55,7 +59,8 @@ public final class ScaffoldL extends PacketCheck {
          } else if (packet instanceof FlyingEvent) {
             ++this.movements;
             if (this.placed) {
-               boolean eligible = this.data.deltas.deltaXZ > (double)PlayerUtil.getBaseSpeedAttribute(this.data, 1.8F) && this.data.elapsed(this.data.getLastVelocityTaken()) > 5;
+               boolean eligible = this.data.deltas.deltaXZ > (double)PlayerUtil.getBaseSpeedAttribute(this.data, 1.8F)
+                  && this.data.elapsed(this.data.getLastVelocityTaken()) > 5;
                if (eligible) {
                   if (!this.sameY) {
                      this.sameYStreak = 0;
@@ -84,12 +89,13 @@ public final class ScaffoldL extends PacketCheck {
 
             this.placed = false;
          }
-
       }
    }
 
    public boolean isNotGroundBridging() {
-      Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
+      Block block = Karhu.getInstance()
+         .getChunkManager()
+         .getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
       if (block == null) {
          return false;
       } else {
@@ -98,7 +104,9 @@ public final class ScaffoldL extends PacketCheck {
    }
 
    public boolean isNotGroundBridging2() {
-      Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 3.0, 0.0).toLocation(this.data.getWorld()));
+      Block block = Karhu.getInstance()
+         .getChunkManager()
+         .getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 3.0, 0.0).toLocation(this.data.getWorld()));
       if (block == null) {
          return false;
       } else {

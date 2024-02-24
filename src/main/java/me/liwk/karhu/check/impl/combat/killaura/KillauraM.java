@@ -1,6 +1,5 @@
 package me.liwk.karhu.check.impl.combat.killaura;
 
-import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import me.liwk.karhu.Karhu;
@@ -20,12 +19,13 @@ import me.liwk.karhu.util.update.MovementUpdate;
    experimental = true
 )
 public final class KillauraM extends RotationCheck {
-   private final Deque pitches = new LinkedList();
+   private final Deque<Float> pitches = new LinkedList<>();
 
    public KillauraM(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
@@ -37,11 +37,20 @@ public final class KillauraM extends RotationCheck {
 
       if (this.pitches.size() == 40) {
          double avg = MathUtil.getAverage(this.pitches);
-         double std = MathUtil.getStandardDeviation((Collection)this.pitches);
+         double std = MathUtil.getStandardDeviation(this.pitches);
          double osc = MathUtil.getOscillation(this.pitches);
          if (osc > 40.0 && std > 12.5 && avg > 25.0) {
             if (++this.violations > (double)(this.data.getSensitivity() > 90 ? 5 : 2)) {
-               this.fail("* Randomized aim\n §f* std: §b" + this.format(3, std) + "\n §f* avg: §b" + this.format(3, avg) + "\n §f* osc: §b" + this.format(3, osc), this.getBanVL(), 300L);
+               this.fail(
+                  "* Randomized aim\n §f* std: §b"
+                     + this.format(3, Double.valueOf(std))
+                     + "\n §f* avg: §b"
+                     + this.format(3, Double.valueOf(avg))
+                     + "\n §f* osc: §b"
+                     + this.format(3, Double.valueOf(osc)),
+                  this.getBanVL(),
+                  300L
+               );
             }
          } else {
             this.violations = Math.max(this.violations - (this.data.getSensitivity() > 90 ? 0.2 : 0.05), -0.2);
@@ -49,6 +58,5 @@ public final class KillauraM extends RotationCheck {
 
          this.pitches.clear();
       }
-
    }
 }

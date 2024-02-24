@@ -30,7 +30,6 @@ public final class MovementHandler {
          this.data.deltas.lastAccelXZ = this.data.deltas.accelXZ;
          this.data.deltas.accelXZ = this.data.deltas.deltaXZ - this.data.deltas.lastDXZ;
       }
-
    }
 
    public void handleOther(boolean ground) {

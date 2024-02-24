@@ -16,8 +16,8 @@ import org.bukkit.entity.Entity;
 public final class NMSWorldProvider {
    private final Karhu karhu;
 
-   public List getCollidingBoundingBoxes(Entity entityIn, AxisAlignedBB bb) {
-      List list = Lists.newArrayList();
+   public List<AxisAlignedBB> getCollidingBoundingBoxes(Entity entityIn, AxisAlignedBB bb) {
+      List<AxisAlignedBB> list = Lists.newArrayList();
       int i = MathHelper.floor_double(bb.minX);
       int j = MathHelper.floor_double(bb.maxX + 1.0);
       int k = MathHelper.floor_double(bb.minY);
@@ -48,13 +48,19 @@ public final class NMSWorldProvider {
       }
    }
 
-   public void addCollisionBoxesToList(Block b, BlockPos pos, AxisAlignedBB mask, List list) {
+   public void addCollisionBoxesToList(Block b, BlockPos pos, AxisAlignedBB mask, List<AxisAlignedBB> list) {
       double maxY = !MaterialChecks.FENCES.contains(b.getType()) && !MaterialChecks.SHULKER_BOXES.contains(b.getType()) ? 1.0 : 1.5;
-      AxisAlignedBB axisalignedbb = new AxisAlignedBB((double)pos.getX() + 0.0, (double)pos.getY() + 0.0, (double)pos.getZ() + 0.0, (double)pos.getX() + 1.0, (double)pos.getY() + maxY, (double)pos.getZ() + 1.0);
+      AxisAlignedBB axisalignedbb = new AxisAlignedBB(
+         (double)pos.getX() + 0.0,
+         (double)pos.getY() + 0.0,
+         (double)pos.getZ() + 0.0,
+         (double)pos.getX() + 1.0,
+         (double)pos.getY() + maxY,
+         (double)pos.getZ() + 1.0
+      );
       if (mask.intersectsWith(axisalignedbb)) {
          list.add(axisalignedbb);
       }
-
    }
 
    public boolean isAreaLoaded(World w, BlockPos from, BlockPos to) {

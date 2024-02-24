@@ -3,7 +3,6 @@ package me.liwk.karhu.world.nms;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import me.liwk.karhu.data.KarhuPlayer;
@@ -12,7 +11,19 @@ import me.liwk.karhu.util.mc.MathHelper;
 import me.liwk.karhu.util.pair.Pair;
 
 public final class NMSValueParser {
-   public static final List KEY_COMBOS = Collections.synchronizedList(Arrays.asList(new float[]{1.0F, -1.0F}, new float[]{1.0F, 0.0F}, new float[]{1.0F, 1.0F}, new float[]{0.0F, -1.0F}, new float[]{0.0F, 0.0F}, new float[]{0.0F, 1.0F}, new float[]{-1.0F, -1.0F}, new float[]{-1.0F, 0.0F}, new float[]{-1.0F, 1.0F}));
+   public static final List<float[]> KEY_COMBOS = Collections.synchronizedList(
+      Arrays.asList(
+         new float[]{1.0F, -1.0F},
+         new float[]{1.0F, 0.0F},
+         new float[]{1.0F, 1.0F},
+         new float[]{0.0F, -1.0F},
+         new float[]{0.0F, 0.0F},
+         new float[]{0.0F, 1.0F},
+         new float[]{-1.0F, -1.0F},
+         new float[]{-1.0F, 0.0F},
+         new float[]{-1.0F, 1.0F}
+      )
+   );
    public static final boolean[] BOOLEANS = new boolean[]{true, false};
    public static final boolean[] BOOLEANS_REVERSED = new boolean[]{false, true};
 
@@ -27,16 +38,20 @@ public final class NMSValueParser {
 
       data.setLastAttributeSpeed(data.getAttributeSpeed());
       data.setAttributeSpeed(attri);
-      double jumpMotion = 0.41999998688697815;
+      double jumpMotion = 0.42F;
       jumpMotion += (double)((float)data.getJumpBoost() * 0.1F);
       double difference = data.deltas.motionY - jumpMotion;
       data.setJumpedLastTick(data.isJumpedCurrentTick());
-      data.setJumpedCurrentTick(Math.abs(difference) <= 0.03125 && data.isLastOnGroundPacket() && !data.isOnGroundPacket() || data.isLastOnGroundPacket() && !data.isOnGroundPacket() && data.elapsed(data.getLastCollidedV()) <= 1 && data.deltas.motionY > 0.0 || data.recentlyTeleported(2));
+      data.setJumpedCurrentTick(
+         Math.abs(difference) <= 0.03125 && data.isLastOnGroundPacket() && !data.isOnGroundPacket()
+            || data.isLastOnGroundPacket() && !data.isOnGroundPacket() && data.elapsed(data.getLastCollidedV()) <= 1 && data.deltas.motionY > 0.0
+            || data.recentlyTeleported(2)
+      );
       data.setJumped(data.isJumpedCurrentTick());
    }
 
    public static double moveFlying(KarhuPlayer data, float strafe, float forward, boolean sprint) {
-      float friction = (Float)moveEntityWithHeading(data, sprint).getY();
+      float friction = moveEntityWithHeading(data, sprint).getY();
       float f = strafe * strafe + forward * forward;
       if (f >= 1.0E-4F) {
          f = MathHelper.sqrt_float(f);
@@ -47,8 +62,8 @@ public final class NMSValueParser {
          f = friction / f;
          strafe *= f;
          forward *= f;
-         float f1 = MathHelper.sin(data.getLocation().getYaw() * 3.1415927F / 180.0F);
-         float f2 = MathHelper.cos(data.getLocation().getYaw() * 3.1415927F / 180.0F);
+         float f1 = MathHelper.sin(data.getLocation().getYaw() * (float) Math.PI / 180.0F);
+         float f2 = MathHelper.cos(data.getLocation().getYaw() * (float) Math.PI / 180.0F);
          float xAdd = strafe * f2 - forward * f1;
          float zAdd = forward * f2 + strafe * f1;
          return (double)MathUtil.hypot(xAdd, zAdd);
@@ -57,8 +72,8 @@ public final class NMSValueParser {
       }
    }
 
-   public static Pair moveFlyingPair(KarhuPlayer data, float strafe, float forward, boolean sprint) {
-      float friction = (Float)moveEntityWithHeading(data, sprint).getY();
+   public static Pair<Float, Float> moveFlyingPair(KarhuPlayer data, float strafe, float forward, boolean sprint) {
+      float friction = moveEntityWithHeading(data, sprint).getY();
       float f = strafe * strafe + forward * forward;
       if (f >= 1.0E-4F) {
          f = MathHelper.sqrt_float(f);
@@ -69,16 +84,16 @@ public final class NMSValueParser {
          f = friction / f;
          strafe *= f;
          forward *= f;
-         float yawRadius = data.getLocation().getYaw() * 3.1415927F / 180.0F;
+         float yawRadius = data.getLocation().getYaw() * (float) Math.PI / 180.0F;
          float f1 = MathHelper.sin(yawRadius);
          float f2 = MathHelper.cos(yawRadius);
-         return new Pair(strafe * f2 - forward * f1, forward * f2 + strafe * f1);
+         return new Pair<>(strafe * f2 - forward * f1, forward * f2 + strafe * f1);
       } else {
          return null;
       }
    }
 
-   public static Pair moveFlyingPair2(KarhuPlayer data, float strafe, float forward, float friction) {
+   public static Pair<Float, Float> moveFlyingPair2(KarhuPlayer data, float strafe, float forward, float friction) {
       float f = strafe * strafe + forward * forward;
       if (f >= 1.0E-4F) {
          f = MathHelper.sqrt_float(f);
@@ -89,38 +104,37 @@ public final class NMSValueParser {
          f = friction / f;
          strafe *= f;
          forward *= f;
-         float yawRadius = data.getLocation().getYaw() * 3.1415927F / 180.0F;
+         float yawRadius = data.getLocation().getYaw() * (float) Math.PI / 180.0F;
          float f1 = MathHelper.sin(yawRadius);
          float f2 = MathHelper.cos(yawRadius);
-         return new Pair(strafe * f2 - forward * f1, forward * f2 + strafe * f1);
+         return new Pair<>(strafe * f2 - forward * f1, forward * f2 + strafe * f1);
       } else {
          return null;
       }
    }
 
-   public static Pair moveEntityWithHeading(KarhuPlayer data) {
-      float f1;
-      float f2;
-      float f3;
+   public static Pair<Float, Float> moveEntityWithHeading(KarhuPlayer data) {
       if (!data.isOnWater()) {
-         f1 = 0.91F;
+         float f4 = 0.91F;
          if (data.isLastOnGroundPacket()) {
-            f1 = data.getCurrentFriction();
+            f4 = data.getCurrentFriction();
          }
 
-         f3 = 0.16277136F / (f1 * f1 * f1);
+         float f = 0.16277136F / (f4 * f4 * f4);
+         float f5;
          if (data.isLastOnGroundPacket()) {
-            f2 = data.getWalkSpeed();
-            f2 += f2 * 0.3F;
-            f2 *= f3;
+            f5 = data.getWalkSpeed();
+            f5 += f5 * 0.3F;
+            f5 *= f;
          } else {
-            f2 = 0.025999999F;
+            f5 = 0.025999999F;
          }
 
-         return new Pair(f1, f2);
+         return new Pair<>(f4, f5);
       } else {
-         f1 = data.isSprinting() && data.isNewerThan12() ? 0.9F : 0.8F;
-         f2 = 0.02F;
+         float f1 = data.isSprinting() && data.isNewerThan12() ? 0.9F : 0.8F;
+         float f2 = 0.02F;
+         float f3;
          if (data.getDepthStriderLevel() > 0) {
             f3 = (float)data.getDepthStriderLevel();
          } else {
@@ -144,36 +158,35 @@ public final class NMSValueParser {
             f1 = 0.96F;
          }
 
-         return new Pair(f1, f2);
+         return new Pair<>(f1, f2);
       }
    }
 
-   public static Pair moveEntityWithHeading(KarhuPlayer data, boolean sprint) {
-      float f1;
-      float f2;
-      float f3;
+   public static Pair<Float, Float> moveEntityWithHeading(KarhuPlayer data, boolean sprint) {
       if (!data.isLastOnWaterOffset()) {
-         f1 = 0.91F;
+         float f4 = 0.91F;
          if (data.isLastOnGroundPacket()) {
-            f1 = data.getLastTickFriction();
+            f4 = data.getLastTickFriction();
          }
 
-         f3 = 0.16277136F / (f1 * f1 * f1);
+         float f = 0.16277136F / (f4 * f4 * f4);
+         float f5;
          if (data.isLastOnGroundPacket()) {
-            f2 = data.getWalkSpeed();
+            f5 = data.getWalkSpeed();
             if (sprint) {
-               f2 += f2 * 0.3F;
+               f5 += f5 * 0.3F;
             }
 
-            f2 *= f3;
+            f5 *= f;
          } else {
-            f2 = sprint ? 0.025999999F : 0.02F;
+            f5 = sprint ? 0.025999999F : 0.02F;
          }
 
-         return new Pair(f1, f2);
+         return new Pair<>(f4, f5);
       } else {
-         f1 = data.isSprinting() && data.isNewerThan12() ? 0.9F : 0.8F;
-         f2 = 0.02F;
+         float f1 = data.isSprinting() && data.isNewerThan12() ? 0.9F : 0.8F;
+         float f2 = 0.02F;
+         float f3;
          if (data.getDepthStriderLevel() > 0) {
             f3 = (float)data.getDepthStriderLevel();
          } else {
@@ -197,7 +210,7 @@ public final class NMSValueParser {
             f1 = 0.96F;
          }
 
-         return new Pair(f1, f2);
+         return new Pair<>(f1, f2);
       }
    }
 
@@ -218,33 +231,19 @@ public final class NMSValueParser {
       return maxSpeed;
    }
 
-   public static Pair loopKeysGetKeys(KarhuPlayer data, double kbX, double kbZ) {
-      Map dataAssessments = new HashMap();
+   public static Pair<Double, Double> loopKeysGetKeys(KarhuPlayer data, double kbX, double kbZ) {
+      Map<Double, Pair<Double, Double>> dataAssessments = new HashMap<>();
       double x = kbX;
       double z = kbZ;
-      Iterator var10 = KEY_COMBOS.iterator();
 
-      while(var10.hasNext()) {
-         float[] floats = (float[])var10.next();
-         boolean[] var12 = BOOLEANS;
-         int var13 = var12.length;
-
-         for(int var14 = 0; var14 < var13; ++var14) {
-            boolean sprint = var12[var14];
-            boolean[] var16 = BOOLEANS_REVERSED;
-            int var17 = var16.length;
-
-            for(int var18 = 0; var18 < var17; ++var18) {
-               boolean blocking = var16[var18];
-               boolean[] var20 = BOOLEANS_REVERSED;
-               int var21 = var20.length;
-
-               for(int var22 = 0; var22 < var21; ++var22) {
-                  boolean jumped = var20[var22];
+      for(float[] floats : KEY_COMBOS) {
+         for(boolean sprint : BOOLEANS) {
+            for(boolean blocking : BOOLEANS_REVERSED) {
+               for(boolean jumped : BOOLEANS_REVERSED) {
                   float strafe = floats[0];
                   float forward = floats[1];
                   if (jumped && sprint) {
-                     float f = data.getLocation().getYaw() * 0.017453292F;
+                     float f = data.getLocation().getYaw() * (float) (Math.PI / 180.0);
                      kbX -= (double)(MathHelper.sin(f) * 0.2F);
                      kbZ += (double)(MathHelper.cos(f) * 0.2F);
                   }
@@ -261,20 +260,20 @@ public final class NMSValueParser {
 
                   strafe *= 0.98F;
                   forward *= 0.98F;
-                  Pair xzPair = moveFlyingPair(data, strafe, forward, sprint);
+                  Pair<Float, Float> xzPair = moveFlyingPair(data, strafe, forward, sprint);
                   if (xzPair != null) {
-                     kbX += (double)(Float)xzPair.getX();
-                     kbZ += (double)(Float)xzPair.getY();
+                     kbX += (double)xzPair.getX().floatValue();
+                     kbZ += (double)xzPair.getY().floatValue();
                   }
 
                   double deltaX = data.deltas.deltaX - kbX;
                   double deltaZ = data.deltas.deltaZ - kbZ;
                   double hypot = MathUtil.hypot(deltaX, deltaZ);
                   if (hypot <= 0.001) {
-                     return new Pair(kbX, kbZ);
+                     return new Pair<>(kbX, kbZ);
                   }
 
-                  dataAssessments.put(hypot, new Pair(kbX, kbZ));
+                  dataAssessments.put(hypot, new Pair<>(kbX, kbZ));
                   kbZ = z;
                   kbX = x;
                }
@@ -282,43 +281,34 @@ public final class NMSValueParser {
          }
       }
 
-      return (Pair)dataAssessments.get(dataAssessments.keySet().stream().mapToDouble((d) -> {
-         return (double) d;
-      }).min().orElse(3865386.0));
+      return dataAssessments.get(dataAssessments.keySet().stream().mapToDouble(d -> d).min().orElse(3865386.0));
    }
 
-   public static Pair bruteforceAttack(KarhuPlayer data, double kbX, double kbZ) {
-      Map diffs = new HashMap();
+   public static Pair<Double, Double> bruteforceAttack(KarhuPlayer data, double kbX, double kbZ) {
+      Map<Double, Pair<Double, Double>> diffs = new HashMap<>();
       double original = MathUtil.hypot(data.deltas.deltaX - kbX, data.deltas.deltaZ - kbZ);
-      diffs.put(original, new Pair(kbX, kbZ));
+      diffs.put(original, new Pair<>(kbX, kbZ));
       double min = data.getClientVersion().getProtocolVersion() > 47 ? 0.003 : 0.005;
       kbX = Math.abs(kbX) < min ? 0.0 : kbX;
       kbZ = Math.abs(kbZ) < min ? 0.0 : kbZ;
       double ogX = kbX;
       double ogZ = kbZ;
-      int j = 0;
 
-      while(true) {
-         ++j;
-         if (j > data.getAttacks()) {
-            Pair pair = (Pair)diffs.get(diffs.keySet().stream().mapToDouble((d) -> {
-               return (double) d;
-            }).min().orElse(0.0));
-            diffs.clear();
-            return pair;
-         }
-
+      for(int j = 0; ++j <= data.getAttacks(); ogZ = kbZ) {
          ogX *= 0.6;
          ogZ *= 0.6;
-         Pair dataX = loopKeysGetKeys(data, ogX, ogZ);
-         double diffMult = MathUtil.hypot(data.deltas.deltaX - (Double)dataX.getX(), data.deltas.deltaZ - (Double)dataX.getY());
+         Pair<Double, Double> dataX = loopKeysGetKeys(data, ogX, ogZ);
+         double diffMult = MathUtil.hypot(data.deltas.deltaX - dataX.getX(), data.deltas.deltaZ - dataX.getY());
          if (diffMult <= 0.001) {
-            return new Pair(dataX.getX(), dataX.getY());
+            return new Pair<>(dataX.getX(), dataX.getY());
          }
 
-         diffs.put(diffMult, new Pair(dataX.getX(), dataX.getY()));
+         diffs.put(diffMult, new Pair<>(dataX.getX(), dataX.getY()));
          ogX = kbX;
-         ogZ = kbZ;
       }
+
+      Pair<Double, Double> pair = diffs.get(diffs.keySet().stream().mapToDouble(d -> d).min().orElse(0.0));
+      diffs.clear();
+      return pair;
    }
 }

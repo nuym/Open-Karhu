@@ -22,22 +22,21 @@ public final class ScaffoldN extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent) {
          Vector pos = ((BlockPlaceEvent)packet).getBlockPos();
-         int face;
          if (pos.getX() != -1.0 && (pos.getY() != 255.0 || pos.getY() != -1.0) && pos.getZ() != -1.0) {
-            face = ((BlockPlaceEvent)packet).getFace();
+            int face = ((BlockPlaceEvent)packet).getFace();
             if (face < 0 || face > 6) {
                this.fail("* Impossible block face\n §f* face: §b" + face, this.getBanVL(), 120L);
             }
          } else if (pos.getX() == -1.0 && (pos.getY() == 255.0 || pos.getY() == -1.0) && pos.getZ() == -1.0) {
-            face = ((BlockPlaceEvent)packet).getFace();
+            int face = ((BlockPlaceEvent)packet).getFace();
             if (face >= 0 && face <= 6) {
                this.fail("* Impossible block face\n §f* face: §b" + face, this.getBanVL(), 120L);
             }
          }
       }
-
    }
 }

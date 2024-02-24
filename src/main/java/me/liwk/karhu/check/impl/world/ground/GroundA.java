@@ -24,14 +24,26 @@ public final class GroundA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent && this.data.deltas.motionY != 0.0 && this.data.deltas.deltaXZ >= 0.031) {
          if (this.data.elapsed(this.data.getLastFlyTick()) <= 20 || this.data.getGameMode() == GameMode.CREATIVE) {
             return;
          }
 
-         if (!this.data.isOnGroundServer() && !this.data.isWasOnComparator() && !this.data.isOnComparator() && !this.data.isOnLiquid() && !this.data.isPossiblyTeleporting() && !this.data.isOnGhostBlock() && !this.data.isInUnloadedChunk() && !this.data.isOnClimbable() && !this.data.isSpectating() && !this.data.isRiding() && !this.data.isCollidedHorizontally()) {
-            if (this.data.isOnGroundPacket() && this.data.elapsed(this.data.getPlaceTicks()) > Math.min(15, MathUtil.getPingInTicks(this.data.getTransactionPing() + 50L) + 6)) {
+         if (!this.data.isOnGroundServer()
+            && !this.data.isWasOnComparator()
+            && !this.data.isOnComparator()
+            && !this.data.isOnLiquid()
+            && !this.data.isPossiblyTeleporting()
+            && !this.data.isOnGhostBlock()
+            && !this.data.isInUnloadedChunk()
+            && !this.data.isOnClimbable()
+            && !this.data.isSpectating()
+            && !this.data.isRiding()
+            && !this.data.isCollidedHorizontally()) {
+            if (this.data.isOnGroundPacket()
+               && this.data.elapsed(this.data.getPlaceTicks()) > Math.min(15, MathUtil.getPingInTicks(this.data.getTransactionPing() + 50L) + 6)) {
                ++this.noGroundTicks;
             } else {
                this.noGroundTicks = Math.max(this.noGroundTicks - 5, 0);
@@ -39,13 +51,16 @@ public final class GroundA extends PacketCheck {
 
             if (this.noGroundTicks >= 10) {
                if (++this.violations > 1.0) {
-                  this.fail("ticks=" + this.noGroundTicks + " server=" + this.data.isOnGroundServer() + " client=" + this.data.isOnGroundPacket(), this.getBanVL(), 100L);
+                  this.fail(
+                     "ticks=" + this.noGroundTicks + " server=" + this.data.isOnGroundServer() + " client=" + this.data.isOnGroundPacket(),
+                     this.getBanVL(),
+                     100L
+                  );
                }
             } else {
                this.violations *= 0.95;
             }
          }
       }
-
    }
 }

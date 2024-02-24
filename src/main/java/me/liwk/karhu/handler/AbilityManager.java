@@ -22,7 +22,6 @@ public class AbilityManager {
          this.data.flying = false;
          this.badTicks = -1;
       }
-
    }
 
    public void onAbilityClient(WrapperPlayClientPlayerAbilities abilities) {
@@ -51,7 +50,7 @@ public class AbilityManager {
          this.data.setLastConfirmingState(this.data.getTotalTicks());
       }
 
-      this.data.queueToPrePing((uid) -> {
+      this.data.queueToPrePing(uid -> {
          this.data.flying = packet.isFlying();
          this.data.allowFlying = packet.isFlightAllowed();
          this.data.confirmingFlying = false;

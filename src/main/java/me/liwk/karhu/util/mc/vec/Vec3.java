@@ -43,7 +43,11 @@ public class Vec3 {
    }
 
    public Vec3 crossProduct(Vec3 vec) {
-      return new Vec3(this.yCoord * vec.zCoord - this.zCoord * vec.yCoord, this.zCoord * vec.xCoord - this.xCoord * vec.zCoord, this.xCoord * vec.yCoord - this.yCoord * vec.xCoord);
+      return new Vec3(
+         this.yCoord * vec.zCoord - this.zCoord * vec.yCoord,
+         this.zCoord * vec.xCoord - this.xCoord * vec.zCoord,
+         this.xCoord * vec.yCoord - this.yCoord * vec.xCoord
+      );
    }
 
    public Vec3 subtract(Vec3 vec) {
@@ -84,7 +88,7 @@ public class Vec3 {
       double d0 = vec.xCoord - this.xCoord;
       double d1 = vec.yCoord - this.yCoord;
       double d2 = vec.zCoord - this.zCoord;
-      if (d0 * d0 < 1.0000000116860974E-7) {
+      if (d0 * d0 < 1.0E-7F) {
          return null;
       } else {
          double d3 = (x - this.xCoord) / d0;
@@ -96,7 +100,7 @@ public class Vec3 {
       double d0 = vec.xCoord - this.xCoord;
       double d1 = vec.yCoord - this.yCoord;
       double d2 = vec.zCoord - this.zCoord;
-      if (d1 * d1 < 1.0000000116860974E-7) {
+      if (d1 * d1 < 1.0E-7F) {
          return null;
       } else {
          double d3 = (y - this.yCoord) / d1;
@@ -108,7 +112,7 @@ public class Vec3 {
       double d0 = vec.xCoord - this.xCoord;
       double d1 = vec.yCoord - this.yCoord;
       double d2 = vec.zCoord - this.zCoord;
-      if (d2 * d2 < 1.0000000116860974E-7) {
+      if (d2 * d2 < 1.0E-7F) {
          return null;
       } else {
          double d3 = (z - this.zCoord) / d2;
@@ -116,6 +120,7 @@ public class Vec3 {
       }
    }
 
+   @Override
    public String toString() {
       return "(" + this.xCoord + ", " + this.yCoord + ", " + this.zCoord + ")";
    }

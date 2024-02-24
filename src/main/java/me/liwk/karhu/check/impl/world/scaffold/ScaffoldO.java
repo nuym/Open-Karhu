@@ -24,13 +24,14 @@ import org.bukkit.block.Block;
    experimental = true
 )
 public final class ScaffoldO extends PacketCheck {
-   Deque interactions = new ArrayDeque();
+   Deque<Integer> interactions = new ArrayDeque<>();
    int flying;
 
    public ScaffoldO(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent) {
          if (((FlyingEvent)packet).hasMoved() || ((FlyingEvent)packet).hasLooked()) {
@@ -46,7 +47,7 @@ public final class ScaffoldO extends PacketCheck {
          }
 
          if (this.interactions.add(this.flying) && this.interactions.size() >= 15) {
-            double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.interactions));
+            double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.interactions));
             if (std < 0.325) {
                this.fail("* Eagle\n" + String.format("std: %.2f", std), this.getBanVL(), 125L);
             } else if (std < 0.65) {
@@ -62,11 +63,12 @@ public final class ScaffoldO extends PacketCheck {
 
          this.flying = 0;
       }
-
    }
 
    public boolean isNotGroundBridging() {
-      Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
+      Block block = Karhu.getInstance()
+         .getChunkManager()
+         .getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
       if (block == null) {
          return false;
       } else {

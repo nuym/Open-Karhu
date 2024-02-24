@@ -25,13 +25,12 @@ public class Ray implements Cloneable {
          clone.direction = this.direction.clone();
          return clone;
       } catch (CloneNotSupportedException var3) {
-         CloneNotSupportedException e = var3;
-         e.printStackTrace();
+         var3.printStackTrace();
          return null;
       }
    }
 
-   public Pair closestPointsBetweenLines(Ray other) {
+   public Pair<Vector, Vector> closestPointsBetweenLines(Ray other) {
       Vector n1 = this.direction.clone().crossProduct(other.direction.clone().crossProduct(this.direction));
       Vector n2 = other.direction.clone().crossProduct(this.direction.clone().crossProduct(other.direction));
       Vector c1 = this.origin.clone().add(this.direction.clone().multiply(other.origin.clone().subtract(this.origin).dot(n2) / this.direction.dot(n2)));
@@ -39,6 +38,7 @@ public class Ray implements Cloneable {
       return new Pair(c1, c2);
    }
 
+   @Override
    public String toString() {
       return "origin: " + this.origin + " direction: " + this.direction;
    }

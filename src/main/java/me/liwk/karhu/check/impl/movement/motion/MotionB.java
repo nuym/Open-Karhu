@@ -23,10 +23,26 @@ public final class MotionB extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       double deltaY = this.data.deltas.motionY;
       int jumpLevel = this.data.getJumpBoost();
-      if (jumpLevel < 10 && !this.data.isPossiblyTeleporting() && !this.data.isOnBed() && !this.data.isWasOnBed() && !this.data.isInBed() && !this.data.isLastInBed() && !this.data.isSpectating() && !this.data.isTakingVertical() && this.data.getGameMode() != GameMode.CREATIVE && this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.elapsed(this.data.getLastInBerry()) > 3 && this.data.elapsed(this.data.getLastInPowder()) > 6 && !this.data.isInUnloadedChunk() && this.data.levitationLevel == 0 && this.data.deltas.motionY > 0.0 && this.data.elapsed(this.data.getLastInLiquid()) > 1) {
+      if (jumpLevel < 10
+         && !this.data.isPossiblyTeleporting()
+         && !this.data.isOnBed()
+         && !this.data.isWasOnBed()
+         && !this.data.isInBed()
+         && !this.data.isLastInBed()
+         && !this.data.isSpectating()
+         && !this.data.isTakingVertical()
+         && this.data.getGameMode() != GameMode.CREATIVE
+         && this.data.elapsed(this.data.getLastFlyTick()) > 30
+         && this.data.elapsed(this.data.getLastInBerry()) > 3
+         && this.data.elapsed(this.data.getLastInPowder()) > 6
+         && !this.data.isInUnloadedChunk()
+         && this.data.levitationLevel == 0
+         && this.data.deltas.motionY > 0.0
+         && this.data.elapsed(this.data.getLastInLiquid()) > 1) {
          double jumpMax = (double)PlayerUtil.getJumpHeight(this.data, this.data.elapsed(this.data.getLastOnHalfBlock()) <= 1 ? 0.565F : 0.42F);
          double maximum = (double)PlayerUtil.getJumpHeight(this.data, 0.5F);
          double stepHeight = (double)PlayerUtil.getJumpHeight(this.data, 0.6F);
@@ -64,25 +80,40 @@ public final class MotionB extends PositionCheck {
             if (this.data.deltas.motionY > jumpMax + 0.001) {
                double addition = Math.abs(deltaY - jumpMax + 0.3);
                if (deltaY > maximum) {
-                  this.fail("* Jumping higher than expected \n §f* mY: §b" + this.format(3, deltaY) + " \n §f* mJ: §b" + maximum, this.getBanVL(), 300L);
+                  this.fail(
+                     "* Jumping higher than expected \n §f* mY: §b" + this.format(3, Double.valueOf(deltaY)) + " \n §f* mJ: §b" + maximum,
+                     this.getBanVL(),
+                     300L
+                  );
                } else if ((this.violations += addition) > 2.0) {
-                  this.fail("* Jumping higher than expected \n §f* mY: §b" + this.format(3, deltaY) + " \n §f* mJM: §b" + jumpMax, this.getBanVL(), 300L);
+                  this.fail(
+                     "* Jumping higher than expected \n §f* mY: §b" + this.format(3, Double.valueOf(deltaY)) + " \n §f* mJM: §b" + jumpMax,
+                     this.getBanVL(),
+                     300L
+                  );
                }
             } else {
                this.violations = Math.max(this.violations - 0.25, 0.0);
             }
          } else if (update.isGround()) {
             if (deltaY > stepHeight + 0.001 && this.data.isLastOnGroundPacket()) {
-               this.fail("* Stepped higher than expected on ground \n §f* mY: §b" + this.format(3, deltaY) + " \n §f* sH: §b" + stepHeight, this.getBanVL(), 300L);
-            } else if (deltaY > jumpMax + 0.001 && this.data.deltas.lastMotionY > jumpMax + 0.001 && this.data.elapsed(this.data.getLastOnHalfBlock()) > 3) {
-               if (++this.violations > 1.0) {
-                  this.fail("* Stepped higher than expected on ground \n §f* mY: §b" + this.format(3, deltaY) + " \n §f* jumpMaxFG: §b" + jumpMax, this.getBanVL(), 300L);
-               }
-            } else {
+               this.fail(
+                  "* Stepped higher than expected on ground \n §f* mY: §b" + this.format(3, Double.valueOf(deltaY)) + " \n §f* sH: §b" + stepHeight,
+                  this.getBanVL(),
+                  300L
+               );
+            } else if (!(deltaY > jumpMax + 0.001)
+               || !(this.data.deltas.lastMotionY > jumpMax + 0.001)
+               || this.data.elapsed(this.data.getLastOnHalfBlock()) <= 3) {
                this.violations = Math.max(this.violations - 0.3, 0.0);
+            } else if (++this.violations > 1.0) {
+               this.fail(
+                  "* Stepped higher than expected on ground \n §f* mY: §b" + this.format(3, Double.valueOf(deltaY)) + " \n §f* jumpMaxFG: §b" + jumpMax,
+                  this.getBanVL(),
+                  300L
+               );
             }
          }
       }
-
    }
 }

@@ -19,6 +19,7 @@ public final class BadPacketsK extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
    }
 }

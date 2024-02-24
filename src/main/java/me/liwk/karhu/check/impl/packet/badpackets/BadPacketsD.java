@@ -20,6 +20,7 @@ public final class BadPacketsD extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent) {
          if (this.data.getTotalTicks() < 300) {
@@ -34,6 +35,5 @@ public final class BadPacketsD extends PacketCheck {
             this.violations = 0.0;
          }
       }
-
    }
 }

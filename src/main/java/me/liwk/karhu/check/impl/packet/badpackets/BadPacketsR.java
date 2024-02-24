@@ -24,6 +24,7 @@ public final class BadPacketsR extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!this.data.isNewerThan8()) {
          if (packet instanceof FlyingEvent) {
@@ -41,7 +42,6 @@ public final class BadPacketsR extends PacketCheck {
                ++this.sprints;
             }
          }
-
       }
    }
 }

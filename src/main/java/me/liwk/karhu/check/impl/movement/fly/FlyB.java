@@ -24,6 +24,7 @@ public final class FlyB extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       double limit = 0.0;
       if (this.data.isOnSlime() && this.data.deltas.lastMotionY < -0.4) {
@@ -49,16 +50,51 @@ public final class FlyB extends PositionCheck {
       double maxVL = 7.5;
       double accel = Math.abs(this.data.deltas.lastMotionY - this.data.deltas.motionY);
       int jumpTicks = (int)(this.data.getJumpBoost() > 0 ? (float)this.data.getJumpBoost() * 10.6F : 0.0F);
-      boolean valid = !this.data.isTakingVertical() && this.data.getLocation().y > -100.0 && this.data.elapsed(this.data.getLastOnClimbable()) > 35 && !this.data.isNearClimbable() && this.data.elapsed(this.data.getLastVelocityYReset()) > 2 && !this.data.isOnWeb() && !this.data.isSpectating() && this.data.elapsed(this.data.getLastInLiquid()) > 2 && !this.data.isInUnloadedChunk() && this.data.elapsed(this.data.getPlaceTicks()) > Math.min(15, MathUtil.getPingInTicks(this.data.getTransactionPing() + 50L) + 3) && this.data.elapsed(this.data.getLastRiptide()) > 30 && this.data.elapsed(this.data.getLastGlide()) > 30 && !this.data.isPossiblyTeleporting() && (this.data.isHasReceivedTransaction() || this.data.getTotalTicks() > 100) && this.data.getGameMode() != GameMode.CREATIVE && !this.data.isOnGhostBlock() && !this.data.isInBed() && !this.data.isLastInBed() && !this.data.isRiding() && (this.data.getAirTicks() > 30 + jumpTicks || this.data.getClientAirTicks() > 30 + jumpTicks) && this.data.elapsed(this.data.getLastFlyTick()) > 80;
-      double addition = (MathUtil.isNearlySame(this.data.deltas.motionY, 0.33, 0.01) || MathUtil.isNearlySame(this.data.deltas.motionY, 0.24, 0.01) || MathUtil.isNearlySame(this.data.deltas.motionY, 0.16, 0.01) || MathUtil.isNearlySame(this.data.deltas.motionY, 0.08, 0.01) || MathUtil.isNearlySame(this.data.deltas.motionY, 0.0, 0.01)) && this.data.elapsed(this.data.getPlaceTicks()) <= Math.min(20, MathUtil.getPingInTicks(this.data.getTransactionPing() + 50L) + 7) ? 0.05 : 1.0;
+      boolean valid = !this.data.isTakingVertical()
+         && this.data.getLocation().y > -100.0
+         && this.data.elapsed(this.data.getLastOnClimbable()) > 35
+         && !this.data.isNearClimbable()
+         && this.data.elapsed(this.data.getLastVelocityYReset()) > 2
+         && !this.data.isOnWeb()
+         && !this.data.isSpectating()
+         && this.data.elapsed(this.data.getLastInLiquid()) > 2
+         && !this.data.isInUnloadedChunk()
+         && this.data.elapsed(this.data.getPlaceTicks()) > Math.min(15, MathUtil.getPingInTicks(this.data.getTransactionPing() + 50L) + 3)
+         && this.data.elapsed(this.data.getLastRiptide()) > 30
+         && this.data.elapsed(this.data.getLastGlide()) > 30
+         && !this.data.isPossiblyTeleporting()
+         && (this.data.isHasReceivedTransaction() || this.data.getTotalTicks() > 100)
+         && this.data.getGameMode() != GameMode.CREATIVE
+         && !this.data.isOnGhostBlock()
+         && !this.data.isInBed()
+         && !this.data.isLastInBed()
+         && !this.data.isRiding()
+         && (this.data.getAirTicks() > 30 + jumpTicks || this.data.getClientAirTicks() > 30 + jumpTicks)
+         && this.data.elapsed(this.data.getLastFlyTick()) > 80;
+      double addition = (
+               MathUtil.isNearlySame(this.data.deltas.motionY, 0.33, 0.01)
+                  || MathUtil.isNearlySame(this.data.deltas.motionY, 0.24, 0.01)
+                  || MathUtil.isNearlySame(this.data.deltas.motionY, 0.16, 0.01)
+                  || MathUtil.isNearlySame(this.data.deltas.motionY, 0.08, 0.01)
+                  || MathUtil.isNearlySame(this.data.deltas.motionY, 0.0, 0.01)
+            )
+            && this.data.elapsed(this.data.getPlaceTicks()) <= Math.min(20, MathUtil.getPingInTicks(this.data.getTransactionPing() + 50L) + 7)
+         ? 0.05
+         : 1.0;
       addition = addition == 0.05 && MathUtil.isNearlySame(this.data.deltas.motionY, this.data.deltas.lastMotionY, 0.021) ? 0.5 : addition;
-      if (this.data.deltas.motionY >= limit && valid && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
-         if ((this.violations += addition) > maxVL) {
-            this.fail("* Accelerating upwards before being on ground \n §f* D: §b" + this.data.deltas.motionY + "\n §f* ST/CT: §b" + this.data.getAirTicks() + " | " + this.data.getClientAirTicks(), this.getBanVL(), 60L);
-         }
-      } else {
+      if (!(this.data.deltas.motionY >= limit) || !valid || this.data.elapsed(this.data.getLastFlyTick()) <= 30) {
          this.violations = Math.max(this.violations - 0.375, 0.0);
+      } else if ((this.violations += addition) > maxVL) {
+         this.fail(
+            "* Accelerating upwards before being on ground \n §f* D: §b"
+               + this.data.deltas.motionY
+               + "\n §f* ST/CT: §b"
+               + this.data.getAirTicks()
+               + " | "
+               + this.data.getClientAirTicks(),
+            this.getBanVL(),
+            60L
+         );
       }
-
    }
 }

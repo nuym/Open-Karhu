@@ -20,13 +20,14 @@ import me.liwk.karhu.util.MathUtil;
    experimental = false
 )
 public final class AutoClickerC extends PacketCheck {
-   private final Deque delays = new ArrayDeque();
+   private final Deque<Integer> delays = new ArrayDeque<>();
    private int delay;
 
    public AutoClickerC(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (this.checkClick()) {
@@ -62,6 +63,5 @@ public final class AutoClickerC extends PacketCheck {
 
          ++this.delay;
       }
-
    }
 }

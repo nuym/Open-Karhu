@@ -8,7 +8,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 public class ItemUtil {
-   public static ItemStack makeItem(Material mat, int amount, String displayName, List lore) {
+   public static ItemStack makeItem(Material mat, int amount, String displayName, List<String> lore) {
       ItemStack item = new ItemStack(mat);
       ItemMeta meta = item.getItemMeta();
       meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
@@ -18,7 +18,7 @@ public class ItemUtil {
       return item;
    }
 
-   public static ItemStack makeItem(Material mat, short damage, int amount, String displayName, List lore) {
+   public static ItemStack makeItem(Material mat, short damage, int amount, String displayName, List<String> lore) {
       ItemStack item = new ItemStack(mat);
       ItemMeta meta = item.getItemMeta();
       meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
@@ -38,7 +38,7 @@ public class ItemUtil {
       return item;
    }
 
-   public static ItemStack makeSkullItem(String target, int amount, String displayName, boolean legacy, List lore) {
+   public static ItemStack makeSkullItem(String target, int amount, String displayName, boolean legacy, List<String> lore) {
       ItemStack item;
       if (legacy) {
          item = new ItemStack(Material.getMaterial("SKULL_ITEM"), amount, (short)3);
@@ -55,8 +55,7 @@ public class ItemUtil {
    }
 
    public static ItemStack makeItem(Material mat, int amount) {
-      ItemStack item = new ItemStack(mat, amount);
-      return item;
+      return new ItemStack(mat, amount);
    }
 
    public static ItemStack makeItem(Material mat) {

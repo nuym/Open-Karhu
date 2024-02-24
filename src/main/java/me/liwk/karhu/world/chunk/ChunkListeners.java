@@ -28,14 +28,10 @@ public final class ChunkListeners implements Listener {
    @EventHandler
    public void onWorldLoad(WorldLoadEvent e) {
       Karhu.getInstance().getChunkManager().addWorld(e.getWorld());
-      Chunk[] var2 = e.getWorld().getLoadedChunks();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Chunk chunk = var2[var4];
+      for(Chunk chunk : e.getWorld().getLoadedChunks()) {
          Karhu.getInstance().getChunkManager().onChunkLoad(chunk);
       }
-
    }
 
    @EventHandler(

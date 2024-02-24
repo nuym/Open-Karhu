@@ -1,7 +1,6 @@
 package me.liwk.karhu.menu;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import me.liwk.karhu.Karhu;
@@ -24,61 +23,128 @@ public class ChecksMenuLegacy {
    private static ConfigManager cfg = Karhu.getInstance().getConfigManager();
 
    public static void openCheckSettingGUI(Player opener, final SubCategory subCategory) {
-      final Gui gui = new Gui(ChatColor.translateAlternateColorCodes('&', Karhu.getInstance().getConfigManager().getAlertHoverMessageHighlight() + "&l" + Karhu.getInstance().getConfigManager().getName() + "&7 - " + subCategory.name()), subCategory.name().equals("AUTOCLICKER") ? 45 : 27);
+      final Gui gui = new Gui(
+         ChatColor.translateAlternateColorCodes(
+            '&',
+            Karhu.getInstance().getConfigManager().getAlertHoverMessageHighlight()
+               + "&l"
+               + Karhu.getInstance().getConfigManager().getName()
+               + "&7 - "
+               + subCategory.name()
+         ),
+         subCategory.name().equals("AUTOCLICKER") ? 45 : 27
+      );
       KarhuPlayer data = Karhu.getInstance().getDataManager().getPlayerData(opener);
-      List guis = (List)Arrays.stream(data.getCheckManager().getChecks()).filter((check) -> {
-         return check.getSubCategory() == subCategory;
-      }).collect(Collectors.toList());
+      List<Check> guis = Arrays.stream(data.getCheckManager().getChecks()).filter(check -> check.getSubCategory() == subCategory).collect(Collectors.toList());
       int currentSlot = 0;
-      gui.addButton(new Button(1, subCategory.name().equals("AUTOCLICKER") ? 44 : 26, ItemUtil.makeItem(Material.EMERALD, 1, cfg.getGuiHighlightColor() + "Back", Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Go back to the last menu", "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"))) {
-         public void onClick(Player clicker, ClickType clickType) {
-            gui.close(clicker);
-            MChecksMenu.openMainMenu(clicker);
+      gui.addButton(
+         new Button(
+            1,
+            subCategory.name().equals("AUTOCLICKER") ? 44 : 26,
+            ItemUtil.makeItem(
+               Material.EMERALD,
+               1,
+               cfg.getGuiHighlightColor() + "Back",
+               Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Go back to the last menu", "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤")
+            )
+         ) {
+            @Override
+            public void onClick(Player clicker, ClickType clickType) {
+               gui.close(clicker);
+               MChecksMenu.openMainMenu(clicker);
+            }
          }
-      });
-      Iterator var6 = guis.iterator();
+      );
 
-      while(var6.hasNext()) {
-         final Check checkClass = (Check)var6.next();
+      for(final Check checkClass : guis) {
          if (!checkClass.isSilent()) {
-            gui.addButton(new Button(1, currentSlot, ItemUtil.makeItem(Karhu.getInstance().getCheckState().isEnabled(checkClass.getName()) ? Material.ENCHANTED_BOOK : Material.BOOK, 1, cfg.getGuiHighlightColor() + (checkClass.isExperimental() ? checkClass.getName() + "§aΔ" : checkClass.getName()), checkClass.getCredits().equals("") ? Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Enabled: " + getCheckMark(checkClass, false), "§7Punishable: " + getCheckMark(checkClass, true), "", "§7Punish-VL: " + cfg.getGuiHighlightColor() + checkClass.getBanVL(), "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤") : Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Enabled: " + getCheckMark(checkClass, false), "§7Punishable: " + getCheckMark(checkClass, true), "", "§7Punish-VL: " + cfg.getGuiHighlightColor() + checkClass.getBanVL(), "", "" + checkClass.getCredits(), "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"))) {
-               public void onClick(Player clicker, ClickType clickType) {
-                  boolean openAgain = true;
-                  if (clickType == ClickType.LEFT) {
-                     if (Karhu.getInstance().getCheckState().isEnabled(checkClass.getName())) {
-                        ChecksMenuLegacy.updateCheckStatus(checkClass, false, false);
-                        Karhu.getInstance().getCheckState().setEnabled(checkClass.getName(), false);
-                     } else {
-                        ChecksMenuLegacy.updateCheckStatus(checkClass, false, true);
-                        Karhu.getInstance().getCheckState().setEnabled(checkClass.getName(), true);
+            gui.addButton(
+               new Button(
+                  1,
+                  currentSlot,
+                  ItemUtil.makeItem(
+                     Karhu.getInstance().getCheckState().isEnabled(checkClass.getName()) ? Material.ENCHANTED_BOOK : Material.BOOK,
+                     1,
+                     cfg.getGuiHighlightColor() + (checkClass.isExperimental() ? checkClass.getName() + "§aΔ" : checkClass.getName()),
+                     checkClass.getCredits().equals("")
+                        ? Arrays.asList(
+                           "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤",
+                           "§7Enabled: " + getCheckMark(checkClass, false),
+                           "§7Punishable: " + getCheckMark(checkClass, true),
+                           "",
+                           "§7Punish-VL: " + cfg.getGuiHighlightColor() + checkClass.getBanVL(),
+                           "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"
+                        )
+                        : Arrays.asList(
+                           "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤",
+                           "§7Enabled: " + getCheckMark(checkClass, false),
+                           "§7Punishable: " + getCheckMark(checkClass, true),
+                           "",
+                           "§7Punish-VL: " + cfg.getGuiHighlightColor() + checkClass.getBanVL(),
+                           "",
+                           "" + checkClass.getCredits(),
+                           "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"
+                        )
+                  )
+               ) {
+                  @Override
+                  public void onClick(Player clicker, ClickType clickType) {
+                     boolean openAgain = true;
+                     if (clickType == ClickType.LEFT) {
+                        if (Karhu.getInstance().getCheckState().isEnabled(checkClass.getName())) {
+                           ChecksMenuLegacy.updateCheckStatus(checkClass, false, false);
+                           Karhu.getInstance().getCheckState().setEnabled(checkClass.getName(), false);
+                        } else {
+                           ChecksMenuLegacy.updateCheckStatus(checkClass, false, true);
+                           Karhu.getInstance().getCheckState().setEnabled(checkClass.getName(), true);
+                        }
+                     } else if (clickType == ClickType.RIGHT) {
+                        if (Karhu.getInstance().getCheckState().isAutoban(checkClass.getName())) {
+                           ChecksMenuLegacy.updateCheckStatus(checkClass, true, false);
+                           Karhu.getInstance().getCheckState().setAutoban(checkClass.getName(), false);
+                        } else {
+                           ChecksMenuLegacy.updateCheckStatus(checkClass, true, true);
+                           Karhu.getInstance().getCheckState().setAutoban(checkClass.getName(), true);
+                        }
+                     } else if (clickType == ClickType.MIDDLE) {
+                        gui.close(clicker);
+                        ViolationMenu.openViolationGui(clicker, checkClass, checkClass.getCheckInfo(), subCategory);
+                        openAgain = false;
                      }
-                  } else if (clickType == ClickType.RIGHT) {
-                     if (Karhu.getInstance().getCheckState().isAutoban(checkClass.getName())) {
-                        ChecksMenuLegacy.updateCheckStatus(checkClass, true, false);
-                        Karhu.getInstance().getCheckState().setAutoban(checkClass.getName(), false);
-                     } else {
-                        ChecksMenuLegacy.updateCheckStatus(checkClass, true, true);
-                        Karhu.getInstance().getCheckState().setAutoban(checkClass.getName(), true);
+   
+                     if (openAgain) {
+                        Karhu.getInstance().getConfigManager().saveChecks();
+                        Karhu.getInstance().getConfigManager().loadChecks(Karhu.getInstance().getPlug(), true);
+                        ItemStack stack = this.item;
+                        ItemMeta meta = stack.getItemMeta();
+                        meta.setLore(
+                           checkClass.getCredits().equals("")
+                              ? Arrays.asList(
+                                 "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤",
+                                 "§7Enabled: " + ChecksMenuLegacy.getCheckMark(checkClass, false),
+                                 "§7Punishable: " + ChecksMenuLegacy.getCheckMark(checkClass, true),
+                                 "",
+                                 "§7Punish-VL: " + ChecksMenuLegacy.cfg.getGuiHighlightColor() + checkClass.getBanVL(),
+                                 "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"
+                              )
+                              : Arrays.asList(
+                                 "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤",
+                                 "§7Enabled: " + ChecksMenuLegacy.getCheckMark(checkClass, false),
+                                 "§7Punishable: " + ChecksMenuLegacy.getCheckMark(checkClass, true),
+                                 "",
+                                 "§7Punish-VL: " + ChecksMenuLegacy.cfg.getGuiHighlightColor() + checkClass.getBanVL(),
+                                 "",
+                                 "" + checkClass.getCredits(),
+                                 "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"
+                              )
+                        );
+                        stack.setItemMeta(meta);
+                        stack.setType(Karhu.getInstance().getCheckState().isEnabled(checkClass.getName()) ? Material.ENCHANTED_BOOK : Material.BOOK);
+                        this.inv.setItem(this.pos, stack);
                      }
-                  } else if (clickType == ClickType.MIDDLE) {
-                     gui.close(clicker);
-                     ViolationMenu.openViolationGui(clicker, checkClass, checkClass.getCheckInfo(), subCategory);
-                     openAgain = false;
                   }
-
-                  if (openAgain) {
-                     Karhu.getInstance().getConfigManager().saveChecks();
-                     Karhu.getInstance().getConfigManager().loadChecks(Karhu.getInstance().getPlug(), true);
-                     ItemStack stack = this.item;
-                     ItemMeta meta = stack.getItemMeta();
-                     meta.setLore(checkClass.getCredits().equals("") ? Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Enabled: " + ChecksMenuLegacy.getCheckMark(checkClass, false), "§7Punishable: " + ChecksMenuLegacy.getCheckMark(checkClass, true), "", "§7Punish-VL: " + ChecksMenuLegacy.cfg.getGuiHighlightColor() + checkClass.getBanVL(), "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤") : Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Enabled: " + ChecksMenuLegacy.getCheckMark(checkClass, false), "§7Punishable: " + ChecksMenuLegacy.getCheckMark(checkClass, true), "", "§7Punish-VL: " + ChecksMenuLegacy.cfg.getGuiHighlightColor() + checkClass.getBanVL(), "", "" + checkClass.getCredits(), "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"));
-                     stack.setItemMeta(meta);
-                     stack.setType(Karhu.getInstance().getCheckState().isEnabled(checkClass.getName()) ? Material.ENCHANTED_BOOK : Material.BOOK);
-                     this.inv.setItem(this.pos, stack);
-                  }
-
                }
-            });
+            );
             ++currentSlot;
          }
       }
@@ -114,6 +180,5 @@ public class ChecksMenuLegacy {
       } else {
          checkConfiguration.set(category + "." + realTypeName + "." + typeChars + ".enabled", status);
       }
-
    }
 }

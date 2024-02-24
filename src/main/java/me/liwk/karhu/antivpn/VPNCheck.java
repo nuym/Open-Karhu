@@ -7,23 +7,22 @@ import me.liwk.karhu.KarhuLogger;
 import me.liwk.karhu.util.json.JsonReader;
 
 public class VPNCheck {
-   private static final HashMap cachedIPs = new HashMap();
+   private static final HashMap<String, Boolean> cachedIPs = new HashMap<>();
 
    public static boolean checkAddress(InetAddress inetAddress) {
       String ip = inetAddress.getHostAddress();
       String address = inetAddress.getHostName();
       if (cachedIPs.containsKey(ip)) {
-         return (Boolean)cachedIPs.get(ip);
+         return cachedIPs.get(ip);
       } else {
          try {
             checkVPN(ip);
          } catch (Exception var4) {
-            Exception ex = var4;
-            KarhuLogger.critical("ip check services down? message: " + ex.getMessage());
-            ex.printStackTrace();
+            KarhuLogger.critical("ip check services down? message: " + var4.getMessage());
+            var4.printStackTrace();
          }
 
-         return cachedIPs.containsKey(address) && (Boolean)cachedIPs.get(address);
+         return cachedIPs.containsKey(address) && cachedIPs.get(address);
       }
    }
 

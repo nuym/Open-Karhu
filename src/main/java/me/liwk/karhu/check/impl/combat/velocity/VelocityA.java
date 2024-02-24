@@ -26,6 +26,7 @@ public final class VelocityA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent) {
          Vector tickVel = this.data.getTickedVelocity();
@@ -37,11 +38,24 @@ public final class VelocityA extends PacketCheck {
          this.kbY = Math.abs(this.kbY) < (this.data.isNewerThan8() ? 0.003 : 0.005) ? 0.0 : this.kbY;
          double dClientKb = this.data.deltas.motionY;
          if (this.kbY > 0.0) {
-            if (this.data.elapsed(this.data.getLastOnClimbable()) > 3 && this.data.elapsed(this.data.getLastInWeb()) > 3 && !this.data.isPossiblyTeleporting() && !this.data.isGliding() && !this.data.isJumped() && !this.data.isInsideBlock() && this.data.isInitialized() && this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.elapsed(this.data.getLastInLiquid()) > 3 && !this.data.isRiding() && this.data.elapsed(this.data.getLastPistonPush()) > 3 && this.data.elapsed(this.data.getLastOnBoat()) > 1 && this.data.elapsed(this.data.getLastOnSlime()) > 10 && this.data.elapsed(this.data.getLastInLiquid()) > 10) {
+            if (this.data.elapsed(this.data.getLastOnClimbable()) > 3
+               && this.data.elapsed(this.data.getLastInWeb()) > 3
+               && !this.data.isPossiblyTeleporting()
+               && !this.data.isGliding()
+               && !this.data.isJumped()
+               && !this.data.isInsideBlock()
+               && this.data.isInitialized()
+               && this.data.elapsed(this.data.getLastFlyTick()) > 30
+               && this.data.elapsed(this.data.getLastInLiquid()) > 3
+               && !this.data.isRiding()
+               && this.data.elapsed(this.data.getLastPistonPush()) > 3
+               && this.data.elapsed(this.data.getLastOnBoat()) > 1
+               && this.data.elapsed(this.data.getLastOnSlime()) > 10
+               && this.data.elapsed(this.data.getLastInLiquid()) > 10) {
                double tempKbY = this.kbY;
                tempKbY -= 0.08;
-               tempKbY *= 0.9800000190734863;
-               if (Math.abs(dClientKb - tempKbY) < 9.999999747378752E-5) {
+               tempKbY *= 0.98F;
+               if (Math.abs(dClientKb - tempKbY) < 1.0E-4F) {
                   if (this.posDesyncStreak < 10) {
                      this.kbY = tempKbY;
                   }
@@ -61,7 +75,8 @@ public final class VelocityA extends PacketCheck {
                   return;
                }
 
-               if ((this.data.elapsed(this.data.getLastCollidedV()) < 1 || this.data.elapsed(this.data.getLastCollidedVGhost()) < 1) && this.data.deltas.motionY >= 0.0) {
+               if ((this.data.elapsed(this.data.getLastCollidedV()) < 1 || this.data.elapsed(this.data.getLastCollidedVGhost()) < 1)
+                  && this.data.deltas.motionY >= 0.0) {
                   this.resetState(dClientKb, 4);
                   return;
                }
@@ -90,7 +105,18 @@ public final class VelocityA extends PacketCheck {
                double addition = 1.0 + Math.min(2.0, Math.abs((dKb - dClientKb) * 1.5));
                if ((ptc < minPtc || ptc > maxPtc) && diff >= allowance) {
                   if ((this.violations += addition) > 3.5) {
-                     this.fail("* Vertical Modification\n §f* approx pct: §b" + this.format(2, ptc) + "\n §f* client: §b" + dClientKb + "\n §f* server: §b" + dKb + "\n §f* tick: §b" + this.tick, this.getBanVL(), 300L);
+                     this.fail(
+                        "* Vertical Modification\n §f* approx pct: §b"
+                           + this.format(2, Double.valueOf(ptc))
+                           + "\n §f* client: §b"
+                           + dClientKb
+                           + "\n §f* server: §b"
+                           + dKb
+                           + "\n §f* tick: §b"
+                           + this.tick,
+                        this.getBanVL(),
+                        300L
+                     );
                   }
 
                   if (this.violations > 2.0) {
@@ -103,7 +129,7 @@ public final class VelocityA extends PacketCheck {
                }
 
                this.kbY -= 0.08;
-               this.kbY *= 0.9800000190734863;
+               this.kbY *= 0.98F;
                if (this.data.isOnGroundPacket() || this.kbY == 0.0) {
                   this.resetState(dClientKb, 420);
                }
@@ -112,7 +138,6 @@ public final class VelocityA extends PacketCheck {
             }
          }
       }
-
    }
 
    public boolean checkHori() {

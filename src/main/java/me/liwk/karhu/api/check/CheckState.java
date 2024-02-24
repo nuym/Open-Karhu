@@ -1,7 +1,6 @@
 package me.liwk.karhu.api.check;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,15 +131,15 @@ import me.liwk.karhu.manager.ConfigManager;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class CheckState {
-   private final Set checkClasses = new HashSet();
-   private final Map enabledMap = new ConcurrentHashMap();
-   private final Map autobanMap = new ConcurrentHashMap();
-   private final Map banwaveMap = new ConcurrentHashMap();
-   private final Map vlMap = new ConcurrentHashMap();
-   private final Map banwaveVlMap = new ConcurrentHashMap();
-   private final Map pullbackVlMap = new ConcurrentHashMap();
+   private final Set<Class<? extends Check>> checkClasses = new HashSet<>();
+   private final Map<String, Boolean> enabledMap = new ConcurrentHashMap<>();
+   private final Map<String, Boolean> autobanMap = new ConcurrentHashMap<>();
+   private final Map<String, Boolean> banwaveMap = new ConcurrentHashMap<>();
+   private final Map<String, Integer> vlMap = new ConcurrentHashMap<>();
+   private final Map<String, Integer> banwaveVlMap = new ConcurrentHashMap<>();
+   private final Map<String, Integer> pullbackVlMap = new ConcurrentHashMap<>();
 
-   public Set loadOrGetClasses() {
+   public Set<Class<? extends Check>> loadOrGetClasses() {
       if (this.checkClasses.isEmpty()) {
          this.checkClasses.add(AimAssistA.class);
          this.checkClasses.add(AimAssistB.class);
@@ -269,31 +268,28 @@ public class CheckState {
    }
 
    public int getCheckVl(String name) {
-      return (Integer)this.vlMap.getOrDefault(name, 20);
+      return this.vlMap.getOrDefault(name, 20);
    }
 
    public int getBanwaveVl(String name) {
-      return (Integer)this.banwaveVlMap.getOrDefault(name, 10);
+      return this.banwaveVlMap.getOrDefault(name, 10);
    }
 
    public boolean isAutoban(String name) {
-      return (Boolean)this.autobanMap.getOrDefault(name, true);
+      return this.autobanMap.getOrDefault(name, true);
    }
 
    public boolean isBanwave(String name) {
-      return (Boolean)this.banwaveMap.getOrDefault(name, false);
+      return this.banwaveMap.getOrDefault(name, false);
    }
 
    public boolean isEnabled(String name) {
-      return (Boolean)this.enabledMap.getOrDefault(name, true);
+      return this.enabledMap.getOrDefault(name, true);
    }
 
    public void initConfig(FileConfiguration checkConfiguration) {
-      Iterator var2 = this.checkClasses.iterator();
-
-      while(var2.hasNext()) {
-         Class chs = (Class)var2.next();
-         CheckInfo annotation = (CheckInfo)chs.getAnnotation(CheckInfo.class);
+      for(Class<? extends Check> chs : this.checkClasses) {
+         CheckInfo annotation = chs.getAnnotation(CheckInfo.class);
          if (!annotation.silent()) {
             String name = annotation.name();
             String category = annotation.category().name();
@@ -359,7 +355,6 @@ public class CheckState {
             this.banwaveVlMap.put(name, banwaveVL);
          }
       }
-
    }
 
    public boolean isBanning(Check check) {
@@ -382,11 +377,9 @@ public class CheckState {
    public void updateChecks() {
       ConfigManager checkConfig = Karhu.getInstance().getConfigManager();
       FileConfiguration checkConfiguration = checkConfig.getChecks();
-      Iterator var3 = this.checkClasses.iterator();
 
-      while(var3.hasNext()) {
-         Class chs = (Class)var3.next();
-         CheckInfo annotation = (CheckInfo)chs.getAnnotation(CheckInfo.class);
+      for(Class<? extends Check> chs : this.checkClasses) {
+         CheckInfo annotation = chs.getAnnotation(CheckInfo.class);
          String name = annotation.name();
          String category = annotation.category().name();
          String[] idk;
@@ -406,7 +399,6 @@ public class CheckState {
          this.banwaveMap.put(name, banwave);
          this.updateVls(name, category);
       }
-
    }
 
    public void setAutoban(String name, boolean b) {
@@ -445,31 +437,31 @@ public class CheckState {
       this.banwaveVlMap.put(name, banwaveVL);
    }
 
-   public Set getCheckClasses() {
+   public Set<Class<? extends Check>> getCheckClasses() {
       return this.checkClasses;
    }
 
-   public Map getEnabledMap() {
+   public Map<String, Boolean> getEnabledMap() {
       return this.enabledMap;
    }
 
-   public Map getAutobanMap() {
+   public Map<String, Boolean> getAutobanMap() {
       return this.autobanMap;
    }
 
-   public Map getBanwaveMap() {
+   public Map<String, Boolean> getBanwaveMap() {
       return this.banwaveMap;
    }
 
-   public Map getVlMap() {
+   public Map<String, Integer> getVlMap() {
       return this.vlMap;
    }
 
-   public Map getBanwaveVlMap() {
+   public Map<String, Integer> getBanwaveVlMap() {
       return this.banwaveVlMap;
    }
 
-   public Map getPullbackVlMap() {
+   public Map<String, Integer> getPullbackVlMap() {
       return this.pullbackVlMap;
    }
 }

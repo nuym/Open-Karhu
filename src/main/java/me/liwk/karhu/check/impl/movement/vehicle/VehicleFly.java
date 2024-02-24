@@ -29,6 +29,7 @@ public final class VehicleFly extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event event) {
       if (event instanceof VehicleEvent) {
          double deltaX = Math.abs(this.data.getVehicleX() - this.lastX);
@@ -78,7 +79,6 @@ public final class VehicleFly extends PacketCheck {
       if (this.data.getVehicleId() == -1) {
          this.ticks = 0;
       }
-
    }
 
    private void setLast(boolean ground) {

@@ -22,12 +22,17 @@ public final class CrashHandler implements ICrashHandler {
    private int lastSlot;
    private boolean logged;
 
+   @Override
    public void handleFlying(boolean moved, boolean looked, CustomLocation location, CustomLocation lastLocation) {
       if (++this.fPackets > (double)(this.data.getClientVersion().isOlderThan(ClientVersion.V_1_9) ? 300 : 900) && this.shouldPunish("Move spam")) {
          this.handleKickAlert("Move spam");
       }
 
-      if (moved && !this.data.isPossiblyTeleporting() && !this.data.recentlyTeleported(3) && (this.data.deltas.deltaXZ > 100.0 || Math.abs(this.data.deltas.motionY) + (double)((float)this.data.getJumpBoost() * 0.1F) > 100000.0) && this.shouldPunish("Large move")) {
+      if (moved
+         && !this.data.isPossiblyTeleporting()
+         && !this.data.recentlyTeleported(3)
+         && (this.data.deltas.deltaXZ > 100.0 || Math.abs(this.data.deltas.motionY) + (double)((float)this.data.getJumpBoost() * 0.1F) > 100000.0)
+         && this.shouldPunish("Large move")) {
          this.handleKickAlert("Large move");
       }
 
@@ -39,48 +44,50 @@ public final class CrashHandler implements ICrashHandler {
       this.places = 0;
    }
 
+   @Override
    public void handleArm() {
       if (++this.armAnimations > 200 && this.shouldPunish("Arm")) {
          this.handleKickAlert("Arm");
       }
-
    }
 
+   @Override
    public void handleSlot() {
       if (++this.slotPackets > 200 && this.shouldPunish("Slot")) {
          this.handleKickAlert("Slot");
       }
-
    }
 
+   @Override
    public void handleWindowClick(int slot, int mode, int id, int button) {
-      if ((Math.abs(slot - this.lastSlot) == 1 && id == 0 && ++this.windowClicks > 50 || ++this.windowClicks2 > (this.data.isNewerThan8() ? 125 : 5)) && this.shouldPunish("Window")) {
+      if ((Math.abs(slot - this.lastSlot) == 1 && id == 0 && ++this.windowClicks > 50 || ++this.windowClicks2 > (this.data.isNewerThan8() ? 125 : 5))
+         && this.shouldPunish("Window")) {
          this.handleKickAlert("Window");
       }
-
    }
 
+   @Override
    public void handleClientKeepAlive() {
       this.fPackets = 0.0;
    }
 
+   @Override
    public void handleCustomPayload() {
       if (++this.customPayloads > 30 && this.shouldPunish("Payload")) {
          this.handleKickAlert("Payload");
       }
-
    }
 
+   @Override
    public void handlePlace() {
       if (++this.places > 200 && this.shouldPunish("Place")) {
          this.handleKickAlert("Place");
       }
-
    }
 
    public boolean shouldPunish(String type) {
       if (Karhu.getInstance().getConfigManager().isAnticrash()) {
-         switch (type) {
+         switch(type) {
             case "Place":
                if (!Karhu.getInstance().getConfigManager().isPlaceSpam()) {
                   return true;
@@ -128,14 +135,17 @@ public final class CrashHandler implements ICrashHandler {
       if (!this.logged) {
          this.data.getUser().sendPacket(new WrapperPlayServerDisconnect(this.fixMessage(Karhu.getInstance().getConfigManager().getAnticrashKickMsg())));
          this.data.getUser().closeConnection();
-         MiscellaneousAlertPoster.postMisc(Karhu.getInstance().getConfigManager().getAntiCrashMessage().replaceAll("%debug%", type).replaceAll("%player%", this.data.getName()), this.data, "Crash");
+         MiscellaneousAlertPoster.postMisc(
+            Karhu.getInstance().getConfigManager().getAntiCrashMessage().replaceAll("%debug%", type).replaceAll("%player%", this.data.getName()),
+            this.data,
+            "Crash"
+         );
          Karhu.getInstance().getPlug().getLogger().warning("-----------------Karhu Anticrash-----------------");
          Karhu.getInstance().getPlug().getLogger().warning(this.data.getName() + " was kicked for suspicious packets (" + type + ")");
          Karhu.getInstance().getPlug().getLogger().warning("Keep an eye on the player!");
          Karhu.getInstance().getPlug().getLogger().warning("-----------------Karhu Anticrash-----------------");
          this.logged = true;
       }
-
    }
 
    public Component fixMessage(String msg) {

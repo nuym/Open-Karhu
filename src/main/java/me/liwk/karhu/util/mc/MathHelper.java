@@ -9,13 +9,13 @@ public class MathHelper {
    private static final int SIN_BITS = 12;
    private static final int SIN_MASK = 4095;
    private static final int SIN_COUNT = 4096;
-   public static final float PI = 3.1415927F;
-   public static final float PI2 = 6.2831855F;
-   public static final float PId2 = 1.5707964F;
-   private static final float radFull = 6.2831855F;
+   public static final float PI = (float) Math.PI;
+   public static final float PI2 = (float) (Math.PI * 2);
+   public static final float PId2 = (float) (Math.PI / 2);
+   private static final float radFull = (float) (Math.PI * 2);
    private static final float degFull = 360.0F;
    private static final float degToIndex = 11.377778F;
-   public static final float deg2Rad = 0.017453292F;
+   public static final float deg2Rad = (float) (Math.PI / 180.0);
    private static final float[] SIN_TABLE_FAST = new float[4096];
    private static final float[] SIN_TABLE_FAST_NEW = new float[4096];
    private static final float radToIndex = roundToFloat(651.8986469044033);
@@ -28,19 +28,19 @@ public class MathHelper {
    private static final String __OBFID = "CL_00001496";
 
    public static float sin(float value) {
-      return fastMath ? SIN_TABLE_FAST[(int)(value * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F) & '\uffff'];
+      return fastMath ? SIN_TABLE_FAST[(int)(value * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F) & 65535];
    }
 
    public static float cos(float value) {
-      return fastMath ? SIN_TABLE_FAST[(int)((value + 1.5707964F) * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F + 16384.0F) & '\uffff'];
+      return fastMath ? SIN_TABLE_FAST[(int)((value + (float) (Math.PI / 2)) * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F + 16384.0F) & 65535];
    }
 
    public static float sin(boolean fastMath, float value) {
-      return fastMath ? SIN_TABLE_FAST[(int)(value * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F) & '\uffff'];
+      return fastMath ? SIN_TABLE_FAST[(int)(value * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F) & 65535];
    }
 
    public static float cos(boolean fastMath, float value) {
-      return fastMath ? SIN_TABLE_FAST[(int)((value + 1.5707964F) * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F + 16384.0F) & '\uffff'];
+      return fastMath ? SIN_TABLE_FAST[(int)((value + (float) (Math.PI / 2)) * 651.8986F) & 4095] : SIN_TABLE[(int)(value * 10430.378F + 16384.0F) & 65535];
    }
 
    public static float sqrt_float(float value) {
@@ -147,11 +147,8 @@ public class MathHelper {
 
    public static double average(long[] values) {
       long i = 0L;
-      long[] var3 = values;
-      int var4 = values.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         long j = var3[var5];
+      for(long j : values) {
          i += j;
       }
 
@@ -260,21 +257,20 @@ public class MathHelper {
 
    public static int func_180181_b(int p_180181_0_, int p_180181_1_, int p_180181_2_) {
       int i = (p_180181_0_ << 8) + p_180181_1_;
-      i = (i << 8) + p_180181_2_;
-      return i;
+      return (i << 8) + p_180181_2_;
    }
 
    public static int func_180188_d(int p_180188_0_, int p_180188_1_) {
-      int i = (p_180188_0_ & 16711680) >> 16;
-      int j = (p_180188_1_ & 16711680) >> 16;
-      int k = (p_180188_0_ & '\uff00') >> 8;
-      int l = (p_180188_1_ & '\uff00') >> 8;
-      int i1 = (p_180188_0_ & 255) >> 0;
-      int j1 = (p_180188_1_ & 255) >> 0;
+      int i = (p_180188_0_ & 0xFF0000) >> 16;
+      int j = (p_180188_1_ & 0xFF0000) >> 16;
+      int k = (p_180188_0_ & 0xFF00) >> 8;
+      int l = (p_180188_1_ & 0xFF00) >> 8;
+      int i1 = (p_180188_0_ & 0xFF) >> 0;
+      int j1 = (p_180188_1_ & 0xFF) >> 0;
       int k1 = (int)((float)i * (float)j / 255.0F);
       int l1 = (int)((float)k * (float)l / 255.0F);
       int i2 = (int)((float)i1 * (float)j1 / 255.0F);
-      return p_180188_0_ & -16777216 | k1 << 16 | l1 << 8 | i2;
+      return p_180188_0_ & 0xFF000000 | k1 << 16 | l1 << 8 | i2;
    }
 
    public static double func_181162_h(double p_181162_0_) {
@@ -287,8 +283,7 @@ public class MathHelper {
 
    public static long getCoordinateRandom(int x, int y, int z) {
       long i = (long)(x * 3129871) ^ (long)z * 116129781L ^ (long)y;
-      i = i * i * 42317861L + i * 11L;
-      return i;
+      return i * i * 42317861L + i * 11L;
    }
 
    public static UUID getRandomUuid(Random rand) {
@@ -317,14 +312,13 @@ public class MathHelper {
          }
 
          boolean flag2 = p_181159_0_ > p_181159_2_;
-         double d9;
          if (flag2) {
-            d9 = p_181159_2_;
+            double d1 = p_181159_2_;
             p_181159_2_ = p_181159_0_;
-            p_181159_0_ = d9;
+            p_181159_0_ = d1;
          }
 
-         d9 = func_181161_i(d0);
+         double d9 = func_181161_i(d0);
          p_181159_2_ *= d9;
          p_181159_0_ *= d9;
          double d2 = field_181163_d + p_181159_0_;
@@ -336,7 +330,7 @@ public class MathHelper {
          double d7 = (6.0 + d6 * d6) * d6 * 0.16666666666666666;
          double d8 = d3 + d7;
          if (flag2) {
-            d8 = 1.5707963267948966 - d8;
+            d8 = (Math.PI / 2) - d8;
          }
 
          if (flag1) {
@@ -356,8 +350,7 @@ public class MathHelper {
       long i = Double.doubleToRawLongBits(p_181161_0_);
       i = 6910469410427058090L - (i >> 1);
       p_181161_0_ = Double.longBitsToDouble(i);
-      p_181161_0_ *= 1.5 - d0 * p_181161_0_ * p_181161_0_;
-      return p_181161_0_;
+      return p_181161_0_ * (1.5 - d0 * p_181161_0_ * p_181161_0_);
    }
 
    public static int func_181758_c(float p_181758_0_, float p_181758_1_, float p_181758_2_) {
@@ -369,7 +362,7 @@ public class MathHelper {
       float f4;
       float f5;
       float f6;
-      switch (i) {
+      switch(i) {
          case 0:
             f4 = p_181758_2_;
             f5 = f3;
@@ -401,7 +394,9 @@ public class MathHelper {
             f6 = f2;
             break;
          default:
-            throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + p_181758_0_ + ", " + p_181758_1_ + ", " + p_181758_2_);
+            throw new RuntimeException(
+               "Something went wrong when converting from HSV to RGB. Input was " + p_181758_0_ + ", " + p_181758_1_ + ", " + p_181758_2_
+            );
       }
 
       int j = clamp_int((int)(f4 * 255.0F), 0, 255);
@@ -415,30 +410,30 @@ public class MathHelper {
    }
 
    static {
-      int k;
-      for(k = 0; k < 65536; ++k) {
-         SIN_TABLE[k] = (float)Math.sin((double)k * Math.PI * 2.0 / 65536.0);
+      for(int i = 0; i < 65536; ++i) {
+         SIN_TABLE[i] = (float)Math.sin((double)i * Math.PI * 2.0 / 65536.0);
       }
 
-      for(k = 0; k < 4096; ++k) {
-         SIN_TABLE_FAST[k] = (float)Math.sin((double)(((float)k + 0.5F) / 4096.0F * 6.2831855F));
+      for(int j = 0; j < 4096; ++j) {
+         SIN_TABLE_FAST[j] = (float)Math.sin((double)(((float)j + 0.5F) / 4096.0F * (float) (Math.PI * 2)));
       }
 
-      for(k = 0; k < 360; k += 90) {
-         SIN_TABLE_FAST[(int)((float)k * 11.377778F) & 4095] = (float)Math.sin((double)((float)k * 0.017453292F));
+      for(int l = 0; l < 360; l += 90) {
+         SIN_TABLE_FAST[(int)((float)l * 11.377778F) & 4095] = (float)Math.sin((double)((float)l * (float) (Math.PI / 180.0)));
       }
 
-      multiplyDeBruijnBitPosition = new int[]{0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
+      multiplyDeBruijnBitPosition = new int[]{
+         0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+      };
       field_181163_d = Double.longBitsToDouble(4805340802404319232L);
       field_181164_e = new double[257];
       field_181165_f = new double[257];
 
-      for(k = 0; k < 257; ++k) {
+      for(int k = 0; k < 257; ++k) {
          double d1 = (double)k / 256.0;
          double d0 = Math.asin(d1);
          field_181165_f[k] = Math.cos(d0);
          field_181164_e[k] = d0;
       }
-
    }
 }

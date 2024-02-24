@@ -3,15 +3,14 @@ package me.liwk.karhu.util.player;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPing;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes.PropertyModifier;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.data.KarhuPlayer;
-import me.liwk.karhu.util.player.PlayerUtil;
+import me.liwk.karhu.util.player.PlayerUtil.1;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 
@@ -46,32 +45,28 @@ public final class PlayerUtil {
       return f5;
    }
 
-   public static double getMovementSpeed(List collection, double base) {
-      WrapperPlayServerUpdateAttributes.PropertyModifier modifier;
-      for(Iterator var3 = getModifiers(PlayerUtil.Operation.ADDITION, collection).iterator(); var3.hasNext(); base += modifier.getAmount()) {
-         modifier = (WrapperPlayServerUpdateAttributes.PropertyModifier)var3.next();
+   public static double getMovementSpeed(List<PropertyModifier> collection, double base) {
+      for(PropertyModifier modifier : getModifiers(PlayerUtil.Operation.ADDITION, collection)) {
+         base += modifier.getAmount();
       }
 
       double moveSpeed = base;
 
-      Iterator var5;
-      for(var5 = getModifiers(PlayerUtil.Operation.MULTIPLY_BASE, collection).iterator(); var5.hasNext(); moveSpeed += base * modifier.getAmount()) {
-         modifier = (WrapperPlayServerUpdateAttributes.PropertyModifier)var5.next();
+      for(PropertyModifier modifier : getModifiers(PlayerUtil.Operation.MULTIPLY_BASE, collection)) {
+         moveSpeed += base * modifier.getAmount();
       }
 
-      for(var5 = getModifiers(PlayerUtil.Operation.MULTIPLY_TOTAL, collection).iterator(); var5.hasNext(); moveSpeed *= 1.0 + modifier.getAmount()) {
-         modifier = (WrapperPlayServerUpdateAttributes.PropertyModifier)var5.next();
+      for(PropertyModifier modifier : getModifiers(PlayerUtil.Operation.MULTIPLY_TOTAL, collection)) {
+         moveSpeed *= 1.0 + modifier.getAmount();
       }
 
       return moveSpeed;
    }
 
-   private static List getModifiers(Operation operation, List modifiers) {
-      List results = new ArrayList();
-      Iterator var3 = modifiers.iterator();
+   private static List<PropertyModifier> getModifiers(PlayerUtil.Operation operation, List<PropertyModifier> modifiers) {
+      List<PropertyModifier> results = new ArrayList();
 
-      while(var3.hasNext()) {
-         WrapperPlayServerUpdateAttributes.PropertyModifier modifier = (WrapperPlayServerUpdateAttributes.PropertyModifier)var3.next();
+      for(PropertyModifier modifier : modifiers) {
          if (!modifier.getUUID().equals(SPRINTING_SPEED_BOOST) && getOperation(modifier.getOperation()) == operation) {
             results.add(modifier);
          }
@@ -80,8 +75,14 @@ public final class PlayerUtil {
       return results;
    }
 
-   private static Operation getOperation(WrapperPlayServerUpdateAttributes.PropertyModifier.Operation operation) {
-      switch (1.$SwitchMap$com$github$retrooper$packetevents$wrapper$play$server$WrapperPlayServerUpdateAttributes$PropertyModifier$Operation[operation.ordinal()]) {
+   // $VF: Unable to simplify switch on enum
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   private static PlayerUtil.Operation getOperation(
+      com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes.PropertyModifier.Operation operation
+   ) {
+      switch(1.$SwitchMap$com$github$retrooper$packetevents$wrapper$play$server$WrapperPlayServerUpdateAttributes$PropertyModifier$Operation[operation.ordinal(
+         
+      )]) {
          case 1:
             return PlayerUtil.Operation.ADDITION;
          case 2:
@@ -125,7 +126,7 @@ public final class PlayerUtil {
       return 0.35F + data.getAttributeSpeed() * multi;
    }
 
-   public static void sendPacket(Player player, PacketWrapper wrapper) {
+   public static void sendPacket(Player player, PacketWrapper<?> wrapper) {
       PacketEvents.getAPI().getPlayerManager().sendPacket(player, wrapper);
    }
 
@@ -137,10 +138,9 @@ public final class PlayerUtil {
          WrapperPlayServerWindowConfirmation transaction = new WrapperPlayServerWindowConfirmation(0, id, false);
          PacketEvents.getAPI().getPlayerManager().sendPacket(player, transaction);
       }
-
    }
 
-   public static void sendPacket(Object channel, PacketWrapper wrapper) {
+   public static void sendPacket(Object channel, PacketWrapper<?> wrapper) {
       PacketEvents.getAPI().getPlayerManager().sendPacket(channel, wrapper);
    }
 

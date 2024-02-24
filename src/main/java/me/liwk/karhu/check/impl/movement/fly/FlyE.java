@@ -25,11 +25,34 @@ public final class FlyE extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event p) {
       if (p instanceof FlyingEvent && ((FlyingEvent)p).hasMoved()) {
-         if (this.data.elapsed(this.data.getLastRiptide()) >= 5 && !this.data.isPossiblyTeleporting() && !this.data.isInUnloadedChunk() && !this.data.isSpectating() && !this.data.isOnPiston() && !this.data.isOnFence() && !this.data.isOnLava() && !this.data.isWasOnFence() && this.data.elapsed(this.data.getLastPistonPush()) > 2 && this.data.getLevitationLevel() == 0 && this.data.getSlowFallingLevel() == 0 && this.data.elapsed(this.data.getLastOnBed()) > 5 && this.data.elapsed(this.data.getLastInBerry()) > 1 && this.data.elapsed(this.data.getLastGlide()) > 140 && !this.data.isOnScaffolding() && this.data.getGameMode() != GameMode.CREATIVE && !this.data.isInWeb() && !this.data.isWasInWeb() && !this.data.isWasWasInWeb()) {
+         if (this.data.elapsed(this.data.getLastRiptide()) >= 5
+            && !this.data.isPossiblyTeleporting()
+            && !this.data.isInUnloadedChunk()
+            && !this.data.isSpectating()
+            && !this.data.isOnPiston()
+            && !this.data.isOnFence()
+            && !this.data.isOnLava()
+            && !this.data.isWasOnFence()
+            && this.data.elapsed(this.data.getLastPistonPush()) > 2
+            && this.data.getLevitationLevel() == 0
+            && this.data.getSlowFallingLevel() == 0
+            && this.data.elapsed(this.data.getLastOnBed()) > 5
+            && this.data.elapsed(this.data.getLastInBerry()) > 1
+            && this.data.elapsed(this.data.getLastGlide()) > 140
+            && !this.data.isOnScaffolding()
+            && this.data.getGameMode() != GameMode.CREATIVE
+            && !this.data.isInWeb()
+            && !this.data.isWasInWeb()
+            && !this.data.isWasWasInWeb()) {
             boolean executePreds = true;
-            if (((this.data.elapsed(this.data.getLastCollidedV()) <= 3 || this.data.isUnderGhostBlock()) && this.data.getClientAirTicks() <= 10 || this.data.isInsideBlock()) && !this.data.isOnLadder()) {
+            if ((
+                  (this.data.elapsed(this.data.getLastCollidedV()) <= 3 || this.data.isUnderGhostBlock()) && this.data.getClientAirTicks() <= 10
+                     || this.data.isInsideBlock()
+               )
+               && !this.data.isOnLadder()) {
                executePreds = false;
             }
 
@@ -41,9 +64,8 @@ public final class FlyE extends PacketCheck {
             double maxiumViolations = !this.data.isOnLadder() && !this.data.isLastLadder() ? 4.5 : 8.0;
             boolean ignoreServerGround = false;
             boolean trappa = false;
-            double pred = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : (lastMotionY - 0.08) * 0.9800000190734863;
+            double pred = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : (lastMotionY - 0.08) * 0.98F;
             double threshold = this.data.elapsed(this.data.getLastOnSlime()) <= 30 ? 0.2 : 0.005;
-            double clampedPred;
             if (executePreds) {
                if (this.data.isOnLadder() || this.data.isLastLadder()) {
                   boolean goForward = true;
@@ -82,12 +104,12 @@ public final class FlyE extends PacketCheck {
                }
 
                if (this.data.isWasOnWater()) {
-                  clampedPred = lastMotionY;
+                  double fixedLastMotion = lastMotionY;
                   if (motionY > 0.0) {
-                     clampedPred = lastMotionY + 0.03999999910593033;
+                     fixedLastMotion = lastMotionY + 0.04F;
                   }
 
-                  pred = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : clampedPred * 0.800000011920929 - 0.02;
+                  pred = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : fixedLastMotion * 0.8F - 0.02;
                   threshold += 0.6;
                } else if (this.data.isOnWater()) {
                   threshold += 0.6;
@@ -95,12 +117,12 @@ public final class FlyE extends PacketCheck {
                }
 
                if (this.data.isWasOnLava()) {
-                  clampedPred = lastMotionY;
+                  double fixedLastMotion = lastMotionY;
                   if (motionY > 0.0) {
-                     clampedPred = lastMotionY + 0.03999999910593033;
+                     fixedLastMotion = lastMotionY + 0.04F;
                   }
 
-                  pred = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : clampedPred * 0.5 - 0.02;
+                  pred = this.data.getVelocityYTicks() == 0 ? this.data.getVelocityY() : fixedLastMotion * 0.5 - 0.02;
                   threshold += 0.6;
                } else if (this.data.isOnLava()) {
                   threshold += 0.6;
@@ -145,16 +167,44 @@ public final class FlyE extends PacketCheck {
                   threshold += 0.1;
                }
 
-               clampedPred = Math.abs(pred) < clamp ? -0.0784000015258789 : pred;
+               double clampedPred = Math.abs(pred) < clamp ? -0.0784000015258789 : pred;
                double ratio = Math.abs(motionY - clampedPred);
                double ratioAndIdcEtc = trappa ? 0.0 : Math.min(3.0, Math.ceil(ratio * 2.5));
-               if (ratio >= threshold && Math.abs(pred) > 0.03 + clamp && this.data.elapsed(this.data.getLastOnSlime()) > 1 && !this.data.isOnBoat() && this.data.getClientAirTicks() > 2 && (this.data.getAirTicks() > 2 || ignoreServerGround)) {
+               if (ratio >= threshold
+                  && Math.abs(pred) > 0.03 + clamp
+                  && this.data.elapsed(this.data.getLastOnSlime()) > 1
+                  && !this.data.isOnBoat()
+                  && this.data.getClientAirTicks() > 2
+                  && (this.data.getAirTicks() > 2 || ignoreServerGround)) {
                   if ((this.violations += 1.0 + ratioAndIdcEtc) > maxiumViolations) {
                      if (this.data.elapsed(this.data.getLastFlyTick()) <= 6) {
-                        if (this.data.isConfirmingFlying() && !this.data.getBukkitPlayer().getAllowFlight() && this.data.elapsed(this.data.getLastConfirmingState()) > 3) {
+                        if (this.data.isConfirmingFlying()
+                           && !this.data.getBukkitPlayer().getAllowFlight()
+                           && this.data.elapsed(this.data.getLastConfirmingState()) > 3) {
                         }
                      } else {
-                        this.fail("* Generic gravity modification \n §f* PRED §b" + pred + " \n §f* MOTION §b" + motionY + "/" + this.format(3, this.data.deltas.deltaXZ) + " \n §f* RAT §b" + ratio + " \n §f* TR §b" + threshold + " \n §f* IGS §b" + ignoreServerGround + " \n §f* F: §b" + this.data.elapsed(this.data.getLastFlyTick()) + " \n §f* ST/CT: §b" + this.data.getAirTicks() + " | " + this.data.getClientAirTicks(), this.getBanVL(), 325L);
+                        this.fail(
+                           "* Generic gravity modification \n §f* PRED §b"
+                              + pred
+                              + " \n §f* MOTION §b"
+                              + motionY
+                              + "/"
+                              + this.format(3, Double.valueOf(this.data.deltas.deltaXZ))
+                              + " \n §f* RAT §b"
+                              + ratio
+                              + " \n §f* TR §b"
+                              + threshold
+                              + " \n §f* IGS §b"
+                              + ignoreServerGround
+                              + " \n §f* F: §b"
+                              + this.data.elapsed(this.data.getLastFlyTick())
+                              + " \n §f* ST/CT: §b"
+                              + this.data.getAirTicks()
+                              + " | "
+                              + this.data.getClientAirTicks(),
+                           this.getBanVL(),
+                           325L
+                        );
                      }
                   }
                } else {
@@ -163,15 +213,29 @@ public final class FlyE extends PacketCheck {
             }
 
             if (this.data.isWasSlimeLand() && this.data.elapsed(this.data.getLastPistonPush()) >= 5 && !this.data.isOnPiston()) {
-               clampedPred = Math.max(Math.abs(lastMotionY), Math.abs(lastLastMotionY) + 0.2);
-               if (motionY >= clampedPred + Math.abs(this.data.getVelocityY()) && motionY > jumpHeight + 0.20000000298023224) {
-                  this.fail("* Generic gravity modification (slime) \n §f* PRED §b" + pred + " \n §f* MOTION §b" + motionY + "/" + clampedPred + " \n §f* TR §b" + threshold + " \n §f* ST/CT: §b" + this.data.getAirTicks() + " | " + this.data.getClientAirTicks(), this.getBanVL(), 325L);
+               double maxSlime = Math.max(Math.abs(lastMotionY), Math.abs(lastLastMotionY) + 0.2);
+               if (motionY >= maxSlime + Math.abs(this.data.getVelocityY()) && motionY > jumpHeight + 0.2F) {
+                  this.fail(
+                     "* Generic gravity modification (slime) \n §f* PRED §b"
+                        + pred
+                        + " \n §f* MOTION §b"
+                        + motionY
+                        + "/"
+                        + maxSlime
+                        + " \n §f* TR §b"
+                        + threshold
+                        + " \n §f* ST/CT: §b"
+                        + this.data.getAirTicks()
+                        + " | "
+                        + this.data.getClientAirTicks(),
+                     this.getBanVL(),
+                     325L
+                  );
                }
             }
          } else {
             this.violations = Math.max(this.violations - 0.0075, 0.0);
          }
       }
-
    }
 }

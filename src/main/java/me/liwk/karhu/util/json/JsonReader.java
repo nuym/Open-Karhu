@@ -12,9 +12,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import javax.net.ssl.HttpsURLConnection;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.api.ViolationX;
@@ -40,7 +39,7 @@ public class JsonReader {
 
    public static JsonObject sendBan(BanData ban) throws IOException {
       String sURL = "https://karhu.cc/api/bandata";
-      HttpsURLConnection request = (HttpsURLConnection)(new URL(sURL)).openConnection();
+      HttpsURLConnection request = (HttpsURLConnection)new URL(sURL).openConnection();
       request.setDoOutput(true);
       request.setRequestMethod("POST");
       request.addRequestProperty("User-Agent", "KarhuAC");
@@ -69,8 +68,7 @@ public class JsonReader {
                json.addProperty("logs", "Couldn't paste logs, maybe the file is too big?");
             }
          } catch (Exception var19) {
-            Exception e = var19;
-            json.addProperty("logs", "Couldn't paste logs, maybe the file is too big? (" + e.getMessage() + ")");
+            json.addProperty("logs", "Couldn't paste logs, maybe the file is too big? (" + var19.getMessage() + ")");
          }
       } else {
          json.addProperty("logs", paska[1]);
@@ -78,33 +76,11 @@ public class JsonReader {
 
       byte[] out = json.toString().getBytes(StandardCharsets.UTF_8);
 
-      try {
-         OutputStream os = request.getOutputStream();
-         Throwable var7 = null;
-
-         try {
-            os.write(out);
-            os.flush();
-         } catch (Throwable var18) {
-            var7 = var18;
-            throw var18;
-         } finally {
-            if (os != null) {
-               if (var7 != null) {
-                  try {
-                     os.close();
-                  } catch (Throwable var17) {
-                     var7.addSuppressed(var17);
-                  }
-               } else {
-                  os.close();
-               }
-            }
-
-         }
+      try (OutputStream os = request.getOutputStream()) {
+         os.write(out);
+         os.flush();
       } catch (Exception var21) {
-         Exception e = var21;
-         e.printStackTrace();
+         var21.printStackTrace();
       }
 
       Gson gson = new Gson();
@@ -114,11 +90,8 @@ public class JsonReader {
    public static String[] getData(String address) throws IOException {
       JsonObject object = readIp(address);
       if (object.entrySet() != null) {
-         Iterator var5 = object.entrySet().iterator();
-
-         while(var5.hasNext()) {
-            Map.Entry obj = (Map.Entry)var5.next();
-            if (((String)obj.getKey()).equalsIgnoreCase(address)) {
+         for(Entry<String, JsonElement> obj : object.entrySet()) {
+            if (obj.getKey().equalsIgnoreCase(address)) {
                JsonObject data = ((JsonElement)obj.getValue()).getAsJsonObject();
                String proxy = data.get("proxy").getAsString().equalsIgnoreCase("yes") ? "true" : "false";
                String geoLocation = data.get("country").getAsString();
@@ -135,16 +108,15 @@ public class JsonReader {
 
    private static String[] getHaste(BanData data) {
       String uuid;
-      Player target;
       if (Karhu.getInstance().getConfigManager().isCrackedServer()) {
-         target = data.playerObj;
+         Player target = data.playerObj;
          if (target != null) {
             uuid = target.getName();
          } else {
             uuid = data.player;
          }
       } else {
-         target = data.playerObj;
+         Player target = data.playerObj;
          if (target != null) {
             uuid = target.getUniqueId().toString();
          } else {
@@ -152,25 +124,32 @@ public class JsonReader {
          }
       }
 
-      List vls = Karhu.storage.getAllViolations(uuid);
+      List<ViolationX> vls = Karhu.storage.getAllViolations(uuid);
       if (vls.isEmpty()) {
          return new String[]{"", "Player has no logs!"};
       } else {
-         StringBuilder end = new StringBuilder("Anticheat logs for player " + data.player + " pasted with " + Karhu.getInstance().getConfigManager().getName() + " " + Karhu.getInstance().getVersion());
+         StringBuilder end = new StringBuilder(
+            "Anticheat logs for player "
+               + data.player
+               + " pasted with "
+               + Karhu.getInstance().getConfigManager().getName()
+               + " "
+               + Karhu.getInstance().getVersion()
+         );
 
          try {
-            Iterator var9 = vls.iterator();
-
-            while(var9.hasNext()) {
-               ViolationX v = (ViolationX)var9.next();
-               String logline = TextUtils.formatMillis(System.currentTimeMillis() - v.time) + " ago | " + ChatColor.stripColor(v.type).replaceAll("\n", " ") + " [" + ChatColor.stripColor(v.data.replaceAll("\n", " ") + "] [" + v.ping + "ms]/[" + v.TPS + " TPS] (x" + v.vl + ")");
+            for(ViolationX v : vls) {
+               String logline = TextUtils.formatMillis(System.currentTimeMillis() - v.time)
+                  + " ago | "
+                  + ChatColor.stripColor(v.type).replaceAll("\n", " ")
+                  + " ["
+                  + ChatColor.stripColor(v.data.replaceAll("\n", " ") + "] [" + v.ping + "ms]/[" + v.TPS + " TPS] (x" + v.vl + ")");
                end.append("\n").append(logline);
             }
 
             return new String[]{end.toString(), "Pasted logs to: "};
          } catch (Exception var7) {
-            Exception ex = var7;
-            return new String[]{"", "Couldn't paste logs, maybe the file is too big? (" + ex.getMessage() + ")"};
+            return new String[]{"", "Couldn't paste logs, maybe the file is too big? (" + var7.getMessage() + ")"};
          }
       }
    }

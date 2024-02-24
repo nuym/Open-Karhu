@@ -20,10 +20,10 @@ public final class KillauraF extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof AttackEvent && (this.data.isPlacing() || this.data.isBlocking() && this.data.getBukkitPlayer().isBlocking())) {
          this.fail("* Illegal sword blocking order\n §f* P: §b" + this.data.isPlacing() + "\n §f* B: §b" + this.data.isBlocking(), this.getBanVL(), 600L);
       }
-
    }
 }

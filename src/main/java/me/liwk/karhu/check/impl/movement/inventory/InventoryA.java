@@ -23,6 +23,7 @@ public final class InventoryA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof WindowEvent) {
          if (this.data.elapsed(this.data.getLastPistonPush()) <= 3) {
@@ -31,21 +32,22 @@ public final class InventoryA extends PacketCheck {
 
          double offsetH = this.data.deltas.deltaXZ;
          double lastOffsetH = this.data.deltas.lastDXZ;
-         if (offsetH - lastOffsetH >= 0.0 && offsetH > 0.1 && !this.data.isAllowFlying() && !this.data.isPossiblyTeleporting() && this.data.getVelocityHorizontal() == 0.0) {
-            if (++this.violations > (double)(this.data.isSprinting() ? 2 : 4)) {
-               this.fail("* Moving while clicking inventory slots\n §f* deltaXZ §b" + offsetH, this.getBanVL(), 300L);
-               if (this.violations > (double)(this.data.isSprinting() ? 3 : 5)) {
-                  Player player = this.data.getBukkitPlayer();
-                  if (player != null) {
-                     Tasker.run(player::closeInventory);
-                     MiscellaneousAlertPoster.postMitigation(this.data.getName() + " -> inventory closed (A)");
-                  }
+         if (!(offsetH - lastOffsetH >= 0.0)
+            || !(offsetH > 0.1)
+            || this.data.isAllowFlying()
+            || this.data.isPossiblyTeleporting()
+            || this.data.getVelocityHorizontal() != 0.0) {
+            this.violations = Math.max(this.violations - 0.5, 0.0);
+         } else if (++this.violations > (double)(this.data.isSprinting() ? 2 : 4)) {
+            this.fail("* Moving while clicking inventory slots\n §f* deltaXZ §b" + offsetH, this.getBanVL(), 300L);
+            if (this.violations > (double)(this.data.isSprinting() ? 3 : 5)) {
+               Player player = this.data.getBukkitPlayer();
+               if (player != null) {
+                  Tasker.run(player::closeInventory);
+                  MiscellaneousAlertPoster.postMitigation(this.data.getName() + " -> inventory closed (A)");
                }
             }
-         } else {
-            this.violations = Math.max(this.violations - 0.5, 0.0);
          }
       }
-
    }
 }

@@ -2,7 +2,6 @@ package me.liwk.karhu.handler.global;
 
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
-import java.util.Iterator;
 import java.util.LinkedList;
 import me.liwk.karhu.data.KarhuPlayer;
 import me.liwk.karhu.util.Teleport;
@@ -10,7 +9,7 @@ import org.bukkit.util.Vector;
 
 public final class TeleportManager {
    private final KarhuPlayer data;
-   public final LinkedList locations = new LinkedList();
+   public final LinkedList<Teleport> locations = new LinkedList<>();
    public int teleportAmount;
    public int zeroAmount;
    public int teleportTicks;
@@ -25,10 +24,8 @@ public final class TeleportManager {
       Location location = packet.getLocation();
       if (!this.locations.isEmpty()) {
          Vector position = new Vector(location.getX(), location.getY(), location.getZ());
-         Iterator var8 = this.locations.iterator();
 
-         while(var8.hasNext()) {
-            Teleport teleport = (Teleport)var8.next();
+         for(Teleport teleport : this.locations) {
             double distance = teleport.position.distance(position);
             if (distance <= 1.0E-7 && moving && rotating && !ground) {
                this.teleportTicks = 0;

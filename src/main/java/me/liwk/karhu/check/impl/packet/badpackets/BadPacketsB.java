@@ -25,20 +25,18 @@ public final class BadPacketsB extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof HeldItemSlotEvent) {
-         if (this.placing && this.data.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
-            if (++this.violations > 1.0) {
-               this.fail("* Placing while changing slot", this.getBanVL(), 110L);
-            }
-         } else {
+         if (!this.placing || !this.data.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
             this.violations = Math.max(this.violations - 0.3, 0.0);
+         } else if (++this.violations > 1.0) {
+            this.fail("* Placing while changing slot", this.getBanVL(), 110L);
          }
       } else if (packet instanceof FlyingEvent) {
          this.placing = false;
       } else if (packet instanceof BlockPlaceEvent) {
          this.placing = true;
       }
-
    }
 }

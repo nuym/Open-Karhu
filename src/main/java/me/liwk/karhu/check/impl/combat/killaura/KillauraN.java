@@ -25,6 +25,7 @@ public final class KillauraN extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof AttackEvent) {
          int currentTarget = ((AttackEvent)packet).getEntityId();
@@ -40,17 +41,24 @@ public final class KillauraN extends PacketCheck {
          }
 
          if (this.data.getClientVersion().getProtocolVersion() <= 47 && this.targetAmount > 1) {
-            this.fail("* Multiaura\n §f* targets: §b" + this.targetAmount + "\n §f* cps: §b" + this.format(3, this.data.getCps()), this.getBanVL(), 300L);
+            this.fail(
+               "* Multiaura\n §f* targets: §b" + this.targetAmount + "\n §f* cps: §b" + this.format(3, Double.valueOf(this.data.getCps())),
+               this.getBanVL(),
+               300L
+            );
          }
 
          this.targetAmount = 0;
       } else if (packet instanceof TransactionEvent && this.data.getClientVersion().getProtocolVersion() > 47) {
          if (this.targetAmount > 1) {
-            this.fail("* hMultiaura (1.9)\n §f* targets: §b" + this.targetAmount + "\n §f* cps: §b" + this.format(3, this.data.getCps()), this.getBanVL(), 300L);
+            this.fail(
+               "* hMultiaura (1.9)\n §f* targets: §b" + this.targetAmount + "\n §f* cps: §b" + this.format(3, Double.valueOf(this.data.getCps())),
+               this.getBanVL(),
+               300L
+            );
          }
 
          this.targetAmount = 0;
       }
-
    }
 }

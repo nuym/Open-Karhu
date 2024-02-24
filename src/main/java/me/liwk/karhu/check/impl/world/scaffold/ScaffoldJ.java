@@ -21,6 +21,7 @@ public final class ScaffoldJ extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent) {
          Vector pos = ((BlockPlaceEvent)packet).getBlockPos();
@@ -34,6 +35,5 @@ public final class ScaffoldJ extends PacketCheck {
             }
          }
       }
-
    }
 }

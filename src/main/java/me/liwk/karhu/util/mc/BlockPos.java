@@ -1,5 +1,7 @@
 package me.liwk.karhu.util.mc;
 
+import me.liwk.karhu.util.mc.BlockPos.1;
+import me.liwk.karhu.util.mc.BlockPos.2;
 import me.liwk.karhu.util.mc.facing.EnumFacing;
 import me.liwk.karhu.util.mc.vec.Vec3;
 import me.liwk.karhu.util.mc.vec.Vec3i;
@@ -7,13 +9,13 @@ import me.liwk.karhu.util.mc.vec.Vec3i;
 public class BlockPos extends Vec3i {
    public static final BlockPos ORIGIN = new BlockPos(0, 0, 0);
    private static final int NUM_X_BITS = 1 + MathHelper.calculateLogBaseTwo(MathHelper.roundUpToPowerOfTwo(30000000));
-   private static final int NUM_Z_BITS;
-   private static final int NUM_Y_BITS;
-   private static final int Y_SHIFT;
-   private static final int X_SHIFT;
-   private static final long X_MASK;
-   private static final long Y_MASK;
-   private static final long Z_MASK;
+   private static final int NUM_Z_BITS = NUM_X_BITS;
+   private static final int NUM_Y_BITS = 64 - NUM_X_BITS - NUM_Z_BITS;
+   private static final int Y_SHIFT = 0 + NUM_Z_BITS;
+   private static final int X_SHIFT = Y_SHIFT + NUM_Y_BITS;
+   private static final long X_MASK = (1L << NUM_X_BITS) - 1L;
+   private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
+   private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
    public BlockPos(int x, int y, int z) {
       super(x, y, z);
@@ -40,11 +42,15 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos add(Vec3i vec) {
-      return vec.getX() == 0 && vec.getY() == 0 && vec.getZ() == 0 ? this : new BlockPos(this.getX() + vec.getX(), this.getY() + vec.getY(), this.getZ() + vec.getZ());
+      return vec.getX() == 0 && vec.getY() == 0 && vec.getZ() == 0
+         ? this
+         : new BlockPos(this.getX() + vec.getX(), this.getY() + vec.getY(), this.getZ() + vec.getZ());
    }
 
    public BlockPos subtract(Vec3i vec) {
-      return vec.getX() == 0 && vec.getY() == 0 && vec.getZ() == 0 ? this : new BlockPos(this.getX() - vec.getX(), this.getY() - vec.getY(), this.getZ() - vec.getZ());
+      return vec.getX() == 0 && vec.getY() == 0 && vec.getZ() == 0
+         ? this
+         : new BlockPos(this.getX() - vec.getX(), this.getY() - vec.getY(), this.getZ() - vec.getZ());
    }
 
    public BlockPos up() {
@@ -100,11 +106,17 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos offset(EnumFacing facing, int n) {
-      return n == 0 ? this : new BlockPos(this.getX() + facing.getFrontOffsetX() * n, this.getY() + facing.getFrontOffsetY() * n, this.getZ() + facing.getFrontOffsetZ() * n);
+      return n == 0
+         ? this
+         : new BlockPos(this.getX() + facing.getFrontOffsetX() * n, this.getY() + facing.getFrontOffsetY() * n, this.getZ() + facing.getFrontOffsetZ() * n);
    }
 
    public BlockPos crossProduct(Vec3i vec) {
-      return new BlockPos(this.getY() * vec.getZ() - this.getZ() * vec.getY(), this.getZ() * vec.getX() - this.getX() * vec.getZ(), this.getX() * vec.getY() - this.getY() * vec.getX());
+      return new BlockPos(
+         this.getY() * vec.getZ() - this.getZ() * vec.getY(),
+         this.getZ() * vec.getX() - this.getX() * vec.getZ(),
+         this.getX() * vec.getY() - this.getY() * vec.getX()
+      );
    }
 
    public long toLong() {
@@ -118,26 +130,16 @@ public class BlockPos extends Vec3i {
       return new BlockPos(i, j, k);
    }
 
-   public static Iterable getAllInBox(BlockPos from, BlockPos to) {
+   public static Iterable<BlockPos> getAllInBox(BlockPos from, BlockPos to) {
       BlockPos blockpos = new BlockPos(Math.min(from.getX(), to.getX()), Math.min(from.getY(), to.getY()), Math.min(from.getZ(), to.getZ()));
       BlockPos blockpos1 = new BlockPos(Math.max(from.getX(), to.getX()), Math.max(from.getY(), to.getY()), Math.max(from.getZ(), to.getZ()));
       return new 1(blockpos, blockpos1);
    }
 
-   public static Iterable getAllInBoxMutable(BlockPos from, BlockPos to) {
+   public static Iterable<BlockPos.MutableBlockPos> getAllInBoxMutable(BlockPos from, BlockPos to) {
       BlockPos blockpos = new BlockPos(Math.min(from.getX(), to.getX()), Math.min(from.getY(), to.getY()), Math.min(from.getZ(), to.getZ()));
       BlockPos blockpos1 = new BlockPos(Math.max(from.getX(), to.getX()), Math.max(from.getY(), to.getY()), Math.max(from.getZ(), to.getZ()));
       return new 2(blockpos, blockpos1);
-   }
-
-   static {
-      NUM_Z_BITS = NUM_X_BITS;
-      NUM_Y_BITS = 64 - NUM_X_BITS - NUM_Z_BITS;
-      Y_SHIFT = 0 + NUM_Z_BITS;
-      X_SHIFT = Y_SHIFT + NUM_Y_BITS;
-      X_MASK = (1L << NUM_X_BITS) - 1L;
-      Y_MASK = (1L << NUM_Y_BITS) - 1L;
-      Z_MASK = (1L << NUM_Z_BITS) - 1L;
    }
 
    public static final class MutableBlockPos extends BlockPos {
@@ -156,38 +158,26 @@ public class BlockPos extends Vec3i {
          this.z = z_;
       }
 
+      @Override
       public int getX() {
          return this.x;
       }
 
+      @Override
       public int getY() {
          return this.y;
       }
 
+      @Override
       public int getZ() {
          return this.z;
       }
 
-      public MutableBlockPos func_181079_c(int p_181079_1_, int p_181079_2_, int p_181079_3_) {
+      public BlockPos.MutableBlockPos func_181079_c(int p_181079_1_, int p_181079_2_, int p_181079_3_) {
          this.x = p_181079_1_;
          this.y = p_181079_2_;
          this.z = p_181079_3_;
          return this;
-      }
-
-      // $FF: synthetic method
-      static int access$002(MutableBlockPos x0, int x1) {
-         return x0.x = x1;
-      }
-
-      // $FF: synthetic method
-      static int access$102(MutableBlockPos x0, int x1) {
-         return x0.y = x1;
-      }
-
-      // $FF: synthetic method
-      static int access$202(MutableBlockPos x0, int x1) {
-         return x0.z = x1;
       }
    }
 }

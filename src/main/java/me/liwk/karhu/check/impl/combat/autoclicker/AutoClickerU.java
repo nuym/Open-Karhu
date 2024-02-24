@@ -25,12 +25,13 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 public final class AutoClickerU extends PacketCheck {
    int flying;
    double lastSTD;
-   Deque samples = new ArrayDeque();
+   Deque<Integer> samples = new ArrayDeque<>();
 
    public AutoClickerU(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (!this.data.isHasDig() && !this.data.isPlacing() && !this.data.isUsingItem() && this.data.elapsed(this.data.getDigTicks()) > 5) {
@@ -45,11 +46,15 @@ public final class AutoClickerU extends PacketCheck {
             if (this.samples.size() == 300) {
                int outliers = MathUtil.getOutliers(this.samples);
                double cps = 20.0 / MathUtil.average(this.samples);
-               double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.samples));
-               double kur = (new Kurtosis()).evaluate(MathUtil.dequeTranslator(this.samples));
-               double ske = (new Skewness()).evaluate(MathUtil.dequeTranslator(this.samples));
+               double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.samples));
+               double kur = new Kurtosis().evaluate(MathUtil.dequeTranslator(this.samples));
+               double ske = new Skewness().evaluate(MathUtil.dequeTranslator(this.samples));
                if (kur < 0.0 && ske < -0.5 && outliers <= 3) {
-                  this.fail("* Weird randomization\n§f* §b" + String.format("std %.3f : sk %.3f : o %s : ku %s : cps %.1f", std, ske, outliers, kur, cps), this.getBanVL(), 600L);
+                  this.fail(
+                     "* Weird randomization\n§f* §b" + String.format("std %.3f : sk %.3f : o %s : ku %s : cps %.1f", std, ske, outliers, kur, cps),
+                     this.getBanVL(),
+                     600L
+                  );
                }
 
                this.samples.clear();
@@ -61,6 +66,5 @@ public final class AutoClickerU extends PacketCheck {
       } else if (packet instanceof FlyingEvent && !((FlyingEvent)packet).isTeleport()) {
          ++this.flying;
       }
-
    }
 }

@@ -21,6 +21,7 @@ public final class MotionF extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
    }
 }

@@ -31,6 +31,7 @@ public final class Mouse extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
@@ -48,7 +49,10 @@ public final class Mouse extends RotationCheck {
       float[] angles = this.getAngles(f2, f3 * (float)b0);
       this.data.setPredictYaw(angles[0]);
       this.data.setPredictPitch(angles[1]);
-      if (!this.isNearlySame(this.deltaY, (double)this.lastPitch) && !this.isNearlySame(deltaYAccel, (double)this.lastPitchAccel) && !this.isNearlySame(this.deltaX, deltaXAccel) && !this.isNearlySame(deltaXAccel, (double)this.lastYawAccel)) {
+      if (!this.isNearlySame(this.deltaY, (double)this.lastPitch)
+         && !this.isNearlySame(deltaYAccel, (double)this.lastPitchAccel)
+         && !this.isNearlySame(this.deltaX, deltaXAccel)
+         && !this.isNearlySame(deltaXAccel, (double)this.lastYawAccel)) {
          this.ticks = Math.max(this.ticks - 1, 0);
          if (this.ticks <= 1) {
             this.data.setCinematic(false);
@@ -68,7 +72,9 @@ public final class Mouse extends RotationCheck {
    }
 
    public boolean isNearlySame(double d1, double d2) {
-      double max = this.data.getSensitivity() >= 100 ? 0.0425 * (double)this.data.getSensitivityY() * 3.1 : (this.data.getSensitivity() >= 160 ? 0.07 * (double)this.data.getSensitivityY() * 3.2 : 0.0325);
+      double max = this.data.getSensitivity() >= 100
+         ? 0.0425 * (double)this.data.getSensitivityY() * 3.1
+         : (this.data.getSensitivity() >= 160 ? 0.07 * (double)this.data.getSensitivityY() * 3.2 : 0.0325);
       if (this.data.getSensitivity() >= 160 && Math.abs(d1 - d2) > 1.0 && Math.abs(d1 - d2) < 8.0) {
          return true;
       } else {

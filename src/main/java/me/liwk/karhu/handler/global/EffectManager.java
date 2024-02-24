@@ -8,7 +8,7 @@ import me.liwk.karhu.data.potion.PotionEffect;
 
 public class EffectManager {
    private final KarhuPlayer data;
-   private final Map effects = new HashMap();
+   private final Map<Integer, PotionData> effects = new HashMap<>();
 
    public void addPotionEffect(int id, int amp) {
       PotionEffect potionEffect = PotionEffect.values()[id - 1];
@@ -20,11 +20,11 @@ public class EffectManager {
    }
 
    public PotionData getEffect(PotionEffect potionEffect) {
-      return (PotionData)this.effects.get(potionEffect.getId());
+      return this.effects.get(potionEffect.getId());
    }
 
    public int getEffectStrenght(PotionEffect potionEffect) {
-      return !this.hasEffect(potionEffect) ? 0 : ((PotionData)this.effects.get(potionEffect.getId())).getAmplifier();
+      return !this.hasEffect(potionEffect) ? 0 : this.effects.get(potionEffect.getId()).getAmplifier();
    }
 
    public boolean hasEffect(PotionEffect potionEffect) {
@@ -35,7 +35,7 @@ public class EffectManager {
       this.data = data;
    }
 
-   public Map getEffects() {
+   public Map<Integer, PotionData> getEffects() {
       return this.effects;
    }
 }

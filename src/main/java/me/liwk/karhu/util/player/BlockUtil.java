@@ -1,5 +1,6 @@
 package me.liwk.karhu.util.player;
 
+import java.util.List;
 import java.util.function.Consumer;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.handler.collision.type.MaterialChecks;
@@ -9,13 +10,12 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
 public final class BlockUtil {
-   public static void getTileEntitiesSync(BoundingBox box, Consumer listConsumer) {
-      Tasker.run(() -> {
-         listConsumer.accept(box.getCollidingAir());
-      });
+   public static void getTileEntitiesSync(BoundingBox box, Consumer<List<Block>> listConsumer) {
+      Tasker.run(() -> listConsumer.accept(box.getCollidingAir()));
    }
 
    public static boolean chunkLoaded(World w, int x, int z) {
@@ -40,6 +40,24 @@ public final class BlockUtil {
    }
 
    public static Vector getBlockBounds(Material material) {
-      return MaterialChecks.BED.contains(material) ? new Vector(1.0F, 0.5625F, 1.0F) : (MaterialChecks.FENCES.contains(material) ? new Vector(1.0F, 1.5F, 1.0F) : (MaterialChecks.CLIMBABLE.contains(material) ? new Vector(0.8625F, 1.0F, 0.8625F) : (MaterialChecks.CARPETS.contains(material) ? new Vector(1.0F, 0.0625F, 1.0F) : (MaterialChecks.HALFS.contains(material) ? new Vector(1.0F, 0.5F, 1.0F) : (MaterialChecks.PORTAL.contains(material) ? new Vector(1.0F, 0.8125F, 1.0F) : new Vector(1.0F, 1.0F, 1.0F))))));
+      return MaterialChecks.BED.contains(material)
+         ? new Vector(1.0F, 0.5625F, 1.0F)
+         : (
+            MaterialChecks.FENCES.contains(material)
+               ? new Vector(1.0F, 1.5F, 1.0F)
+               : (
+                  MaterialChecks.CLIMBABLE.contains(material)
+                     ? new Vector(0.8625F, 1.0F, 0.8625F)
+                     : (
+                        MaterialChecks.CARPETS.contains(material)
+                           ? new Vector(1.0F, 0.0625F, 1.0F)
+                           : (
+                              MaterialChecks.HALFS.contains(material)
+                                 ? new Vector(1.0F, 0.5F, 1.0F)
+                                 : (MaterialChecks.PORTAL.contains(material) ? new Vector(1.0F, 0.8125F, 1.0F) : new Vector(1.0F, 1.0F, 1.0F))
+                           )
+                     )
+               )
+         );
    }
 }

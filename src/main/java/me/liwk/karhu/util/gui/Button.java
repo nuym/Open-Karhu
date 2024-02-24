@@ -11,7 +11,6 @@ public abstract class Button {
    public ItemStack item;
    public int page;
 
-   /** @deprecated */
    @Deprecated
    public Button(Inventory inv, int pos, ItemStack item) {
       this.inv = inv;

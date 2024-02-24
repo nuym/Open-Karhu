@@ -1,56 +1,56 @@
 package me.liwk.karhu.util.pair;
 
-public class VelocityData5 {
-   private Object a;
-   private Object x;
-   private Object y;
-   private Object o;
-   private Object p;
+public class VelocityData5<A, X, Y, O, P> {
+   private A a;
+   private X x;
+   private Y y;
+   private O o;
+   private P p;
 
-   public Object getA() {
+   public A getA() {
       return this.a;
    }
 
-   public Object getX() {
+   public X getX() {
       return this.x;
    }
 
-   public Object getY() {
+   public Y getY() {
       return this.y;
    }
 
-   public Object getO() {
+   public O getO() {
       return this.o;
    }
 
-   public Object getP() {
+   public P getP() {
       return this.p;
    }
 
-   public void setA(Object a) {
+   public void setA(A a) {
       this.a = a;
    }
 
-   public void setX(Object x) {
+   public void setX(X x) {
       this.x = x;
    }
 
-   public void setY(Object y) {
+   public void setY(Y y) {
       this.y = y;
    }
 
-   public void setO(Object o) {
+   public void setO(O o) {
       this.o = o;
    }
 
-   public void setP(Object p) {
+   public void setP(P p) {
       this.p = p;
    }
 
    public VelocityData5() {
    }
 
-   public VelocityData5(Object a, Object x, Object y, Object o, Object p) {
+   public VelocityData5(A a, X x, Y y, O o, P p) {
       this.a = a;
       this.x = x;
       this.y = y;

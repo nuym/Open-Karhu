@@ -25,6 +25,7 @@ public final class FastBreakB extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (this.blockHitDelay > 0) {
@@ -32,7 +33,7 @@ public final class FastBreakB extends PacketCheck {
          }
       } else if (packet instanceof DigEvent) {
          DiggingAction digType = ((DigEvent)packet).getDigType();
-         switch (digType) {
+         switch(digType) {
             case START_DIGGING:
                this.blockHitDelay = 5;
                break;
@@ -42,6 +43,5 @@ public final class FastBreakB extends PacketCheck {
       } else if (packet instanceof RespawnEvent) {
          this.blockHitDelay = 0;
       }
-
    }
 }

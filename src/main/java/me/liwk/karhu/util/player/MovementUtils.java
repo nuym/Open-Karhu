@@ -1,6 +1,5 @@
 package me.liwk.karhu.util.player;
 
-import java.util.ListIterator;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -25,11 +24,11 @@ public class MovementUtils {
          Enchantment enchLegacy = Enchantment.getByName("DEPTH_STRIDER");
          Enchantment enchModern = Enchantment.getByName("depth_strider");
          if (enchLegacy != null && hasEnchantment(player.getInventory().getBoots(), enchLegacy)) {
-            return (Integer)player.getInventory().getBoots().getEnchantments().get(enchLegacy);
+            return player.getInventory().getBoots().getEnchantments().get(enchLegacy);
          }
 
          if (enchModern != null && hasEnchantment(player.getInventory().getBoots(), enchModern)) {
-            return (Integer)player.getInventory().getBoots().getEnchantments().get(enchModern);
+            return player.getInventory().getBoots().getEnchantments().get(enchModern);
          }
       }
 
@@ -37,7 +36,9 @@ public class MovementUtils {
    }
 
    public static int getSoulSpeedLevel(Player player) {
-      return player.getInventory().getBoots() != null && hasEnchantment(player.getInventory().getBoots(), Enchantment.getByName("SOUL_SPEED")) ? (Integer)player.getInventory().getBoots().getEnchantments().get(Enchantment.getByName("SOUL_SPEED")) : 0;
+      return player.getInventory().getBoots() != null && hasEnchantment(player.getInventory().getBoots(), Enchantment.getByName("SOUL_SPEED"))
+         ? player.getInventory().getBoots().getEnchantments().get(Enchantment.getByName("SOUL_SPEED"))
+         : 0;
    }
 
    public static boolean hasEnchantment(ItemStack item, Enchantment enchantment) {
@@ -45,18 +46,13 @@ public class MovementUtils {
    }
 
    public static boolean searchEnchant(Player player, Enchantment enchantment) {
-      ListIterator var2 = player.getInventory().iterator();
-
-      ItemStack stack;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(ItemStack stack : player.getInventory()) {
+         if (stack != null && !stack.getEnchantments().isEmpty() && stack.getEnchantments().containsKey(enchantment)) {
+            return true;
          }
+      }
 
-         stack = (ItemStack)var2.next();
-      } while(stack == null || stack.getEnchantments().isEmpty() || !stack.getEnchantments().containsKey(enchantment));
-
-      return true;
+      return false;
    }
 
    public static int getEnchantmentLevel(ItemStack item, Enchantment enchantment) {

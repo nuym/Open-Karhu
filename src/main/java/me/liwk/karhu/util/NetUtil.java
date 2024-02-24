@@ -10,25 +10,29 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import me.kassq.client.ClientPlugin;
 import me.liwk.karhu.Karhu;
+import me.liwk.karhu.util.file.KarhuClassLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class NetUtil {
+   public static ClassLoader injectorClassLoader = ClientPlugin.class.getClassLoader();
 
    public static void download(File file, String from) throws Exception {
       FileOutputStream out = new FileOutputStream(file);
-      out.getChannel().transferFrom(Channels.newChannel((new URL(from)).openStream()), 0L, Long.MAX_VALUE);
+      out.getChannel().transferFrom(Channels.newChannel(new URL(from).openStream()), 0L, Long.MAX_VALUE);
    }
 
    public static void injectURL(URL url) {
-
+      KarhuClassLoader loader = new KarhuClassLoader(url, ClientPlugin.getInstance().getClass().getClassLoader());
+      loader.addURL(url);
    }
 
    public static int accessFile() {
       try {
          String resource = "LICENSE.md";
-         String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
+         String acname = Karhu.getInstance().getConfigManager().getLicense().equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
          JavaPlugin plugin = (JavaPlugin)Bukkit.getServer().getPluginManager().getPlugin(acname);
          Method getFileMethod = JavaPlugin.class.getDeclaredMethod("getFile");
          getFileMethod.setAccessible(true);
@@ -70,20 +74,14 @@ public class NetUtil {
 
    public static void close(AutoCloseable... closeables) {
       try {
-         AutoCloseable[] var6 = closeables;
-         int var2 = closeables.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            AutoCloseable closeable = var6[var3];
+         for(AutoCloseable closeable : closeables) {
             if (closeable != null) {
                closeable.close();
             }
          }
       } catch (Exception var5) {
-         Exception e = var5;
-         e.printStackTrace();
+         var5.printStackTrace();
       }
-
    }
 
    public static void sleep(long time) {
@@ -91,6 +89,5 @@ public class NetUtil {
          Thread.sleep(time);
       } catch (Throwable var3) {
       }
-
    }
 }

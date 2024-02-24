@@ -22,7 +22,7 @@ public class BlockReachListener implements Listener {
       Player p = e.getPlayer();
       KarhuPlayer data = Karhu.getInstance().getDataManager().getPlayerData(p.getUniqueId());
       if (data != null) {
-         BlockReach check = (BlockReach)data.getCheckManager().getCheck(BlockReach.class);
+         BlockReach check = data.getCheckManager().getCheck(BlockReach.class);
          if (Karhu.getInstance().getCheckState().isEnabled(check.getName())) {
             Block block = e.getBlock();
             Location playerLoc = p.getLocation();
@@ -32,7 +32,9 @@ public class BlockReachListener implements Listener {
 
             Location loc = block.getLocation();
             float sneakAmount1_8 = !data.isWasSneaking() && !data.isWasWasSneaking() ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F)) : 1.54F;
-            float sneakAmount1_13 = !data.isWasSneaking() && !data.isWasWasSneaking() ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F)) : 1.27F;
+            float sneakAmount1_13 = !data.isWasSneaking() && !data.isWasWasSneaking()
+               ? (data.isGliding() ? 0.4F : (data.isRiptiding() ? 0.4F : 1.62F))
+               : 1.27F;
             Vector eyeLocation = playerLoc.toVector().clone().add(new Vector(0.0F, !data.isNewerThan12() ? sneakAmount1_8 : sneakAmount1_13, 0.0F));
             AxisAlignedBB targetAABB = new AxisAlignedBB(loc.toVector(), loc.toVector(), true);
             targetAABB = targetAABB.addCoord(1.0, 1.0, 1.0);
@@ -43,6 +45,5 @@ public class BlockReachListener implements Listener {
             }
          }
       }
-
    }
 }

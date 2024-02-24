@@ -21,8 +21,8 @@ import me.liwk.karhu.util.update.MovementUpdate;
    silent = true
 )
 public final class Sensitivity extends RotationCheck {
-   private final Deque pitchGcdList = new ConcurrentEvictingList(50);
-   private final Deque pitchGcdList2 = new ConcurrentEvictingList(50);
+   private final Deque<Float> pitchGcdList = new ConcurrentEvictingList<>(50);
+   private final Deque<Float> pitchGcdList2 = new ConcurrentEvictingList<>(50);
    private float lastDeltaPitch;
    public float pitchMode;
    public double sensPercent;
@@ -32,18 +32,18 @@ public final class Sensitivity extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
       float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
       if (!this.data.isPossiblyTeleporting() && deltaPitch < 4.0F) {
          float pitchGcd = MathUtil.getGcd(deltaPitch, this.lastDeltaPitch);
-         float test1;
          if ((double)pitchGcd > 0.009 && (double)Math.abs(to.pitch) < 0.6 && (double)Math.abs(from.pitch) < 0.6) {
             this.pitchGcdList.add(pitchGcd);
             if (this.pitchGcdList.size() == 5) {
-               this.pitchMode = (Float)MathUtil.getMode(this.pitchGcdList);
-               test1 = this.convertToMouseDelta(this.pitchMode);
+               this.pitchMode = MathUtil.getMode(this.pitchGcdList);
+               float test1 = this.convertToMouseDelta(this.pitchMode);
                this.sensPercent = (double)MathHelper.floor_double((double)test1 * 200.0);
                this.data.setSensitivity((int)this.sensPercent);
                this.data.setSensitivityY(test1);
@@ -56,8 +56,8 @@ public final class Sensitivity extends RotationCheck {
          if ((double)pitchGcd > 0.009) {
             this.pitchGcdList2.add(pitchGcd);
             if (this.pitchGcdList2.size() > 40) {
-               this.pitchMode = (Float)MathUtil.getMode(this.pitchGcdList2);
-               test1 = this.convertToMouseDelta(this.pitchMode);
+               this.pitchMode = MathUtil.getMode(this.pitchGcdList2);
+               float test1 = this.convertToMouseDelta(this.pitchMode);
                this.sensPercent = (double)MathHelper.floor_double((double)test1 * 200.0);
                this.data.setSensitivity((int)this.sensPercent);
                this.data.setSmallestRotationGCD(this.pitchMode);

@@ -21,6 +21,7 @@ public class AimAssistJ extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       if (this.data.getSensitivityY() != -1.0F && this.data.getLastAttackTick() <= 1 && !this.data.recentlyTeleported(5)) {
@@ -34,7 +35,6 @@ public class AimAssistJ extends RotationCheck {
             this.fail("* Round gcd patch\n §f* diffYaw: §b" + diffYaw + "\n §f* diffPitch: §b" + diffPitch, this.getBanVL(), 300L);
          }
       }
-
    }
 
    private float fixedSensitivity(float sensitivity, float angle) {

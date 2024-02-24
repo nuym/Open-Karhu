@@ -23,6 +23,7 @@ public final class BadPacketsG extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof HeldItemSlotEvent) {
          ++this.slots;
@@ -34,6 +35,5 @@ public final class BadPacketsG extends PacketCheck {
 
          this.slots = 0;
       }
-
    }
 }

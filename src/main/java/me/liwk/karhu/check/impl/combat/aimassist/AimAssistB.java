@@ -23,6 +23,7 @@ public class AimAssistB extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
@@ -37,10 +38,15 @@ public class AimAssistB extends RotationCheck {
          float moduloPitch2 = deltaPitch % 0.1F;
          float moduloPitch3 = deltaPitch % 0.05F;
          float roundPitch = (float)Math.round(to.pitch);
-         if (!(Math.abs(to.pitch) < 90.0F) || !(to.pitch > 0.0F) || !((double)deltaPitch > 0.0) || moduloPitch != 0.0F && moduloPitch2 != 0.0F && moduloPitch3 != 0.0F && to.pitch != roundPitch) {
+         if (Math.abs(to.pitch) < 90.0F
+            && to.pitch > 0.0F
+            && (double)deltaPitch > 0.0
+            && (moduloPitch == 0.0F || moduloPitch2 == 0.0F || moduloPitch3 == 0.0F || to.pitch == roundPitch)) {
+            if (++this.bufferP > 10.0) {
+               this.fail("* Rounded pitch\n §f* deltaPitch: §b" + deltaPitch + "\n §f* moduloPitch: §b" + moduloPitch, this.getBanVL(), 300L);
+            }
+         } else {
             this.bufferP = Math.max(this.bufferP - 0.8, 0.0);
-         } else if (++this.bufferP > 10.0) {
-            this.fail("* Rounded pitch\n §f* deltaPitch: §b" + deltaPitch + "\n §f* moduloPitch: §b" + moduloPitch, this.getBanVL(), 300L);
          }
 
          if ((double)deltaYaw > 0.0 && (moduloYaw == 0.0F || moduloYaw2 == 0.0F || moduloYaw3 == 0.0F || to.yaw == roundYaw)) {
@@ -50,7 +56,6 @@ public class AimAssistB extends RotationCheck {
          } else {
             this.bufferY = Math.max(this.bufferY - 1.0, 0.0);
          }
-
       }
    }
 }

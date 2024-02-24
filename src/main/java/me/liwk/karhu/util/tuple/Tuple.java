@@ -1,19 +1,19 @@
 package me.liwk.karhu.util.tuple;
 
-public class Tuple {
-   private Object a;
-   private Object b;
+public class Tuple<A, B> {
+   private A a;
+   private B b;
 
-   public Tuple(Object var1, Object var2) {
+   public Tuple(A var1, B var2) {
       this.a = var1;
       this.b = var2;
    }
 
-   public Object a() {
+   public A a() {
       return this.a;
    }
 
-   public Object b() {
+   public B b() {
       return this.b;
    }
 }

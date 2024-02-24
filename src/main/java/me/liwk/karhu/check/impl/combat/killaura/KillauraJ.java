@@ -27,6 +27,7 @@ public final class KillauraJ extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!this.data.isNewerThan8()) {
          if (!(packet instanceof AttackEvent) && !(packet instanceof InteractEvent)) {
@@ -42,6 +43,5 @@ public final class KillauraJ extends PacketCheck {
             this.fail("* Illegal block order", this.getBanVL(), 90L);
          }
       }
-
    }
 }

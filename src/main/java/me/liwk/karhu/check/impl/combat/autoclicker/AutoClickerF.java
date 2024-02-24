@@ -25,13 +25,14 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 public final class AutoClickerF extends PacketCheck {
    private int flying;
    private double lastSTD;
-   private final Deque samples = new ArrayDeque();
+   private final Deque<Integer> samples = new ArrayDeque<>();
    private boolean lastSet;
 
    public AutoClickerF(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (this.flying < 10 && !this.data.isHasDig() && !this.data.isPlacing() && !this.data.isUsingItem()) {
@@ -40,13 +41,24 @@ public final class AutoClickerF extends PacketCheck {
 
          if (this.samples.size() == 1000) {
             int outliers = MathUtil.getOutliers(this.samples);
-            double kur = (new Kurtosis()).evaluate(MathUtil.dequeTranslator(this.samples));
-            double std = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.samples));
+            double kur = new Kurtosis().evaluate(MathUtil.dequeTranslator(this.samples));
+            double std = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.samples));
             double sdd = Math.abs(std - this.lastSTD);
             double cps = 20.0 / MathUtil.average(this.samples);
             if (std < 0.75 && sdd < 0.1 && outliers <= 30 && kur < 0.4) {
                if (++this.violations > 1.0) {
-                  this.fail("* Standard consistency\n §f* STD/D: §b" + this.format(3, std) + "/" + this.format(4, sdd) + "\n §f* O: §b" + outliers + "\n §f* CPS: §b" + cps, this.getBanVL(), 450L);
+                  this.fail(
+                     "* Standard consistency\n §f* STD/D: §b"
+                        + this.format(3, Double.valueOf(std))
+                        + "/"
+                        + this.format(4, Double.valueOf(sdd))
+                        + "\n §f* O: §b"
+                        + outliers
+                        + "\n §f* CPS: §b"
+                        + cps,
+                     this.getBanVL(),
+                     450L
+                  );
                }
             } else {
                this.decrease(0.25);
@@ -57,7 +69,7 @@ public final class AutoClickerF extends PacketCheck {
          }
 
          if (!this.lastSet && this.samples.size() == 500) {
-            this.lastSTD = (new StandardDeviation()).evaluate(MathUtil.dequeTranslator(this.samples));
+            this.lastSTD = new StandardDeviation().evaluate(MathUtil.dequeTranslator(this.samples));
             this.lastSet = true;
          }
 
@@ -65,6 +77,5 @@ public final class AutoClickerF extends PacketCheck {
       } else if (packet instanceof FlyingEvent && !((FlyingEvent)packet).isTeleport()) {
          ++this.flying;
       }
-
    }
 }

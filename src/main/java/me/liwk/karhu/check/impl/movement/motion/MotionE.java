@@ -30,6 +30,7 @@ public final class MotionE extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate e) {
       double deltaX = this.data.deltas.deltaX;
       double deltaZ = this.data.deltas.deltaZ;
@@ -37,7 +38,7 @@ public final class MotionE extends PositionCheck {
       boolean velocity = false;
       if (!e.to.ground) {
          float movementSpeed = 0.0263F;
-         List tags = new ArrayList();
+         List<String> tags = new ArrayList<>();
          tags.add("air");
          if (this.data.elapsed(this.data.getLastSprintTick()) <= 3) {
             tags.add("sprinting");
@@ -62,17 +63,19 @@ public final class MotionE extends PositionCheck {
          }
 
          float friction = !e.from.ground ? 0.91F : this.data.getCurrentFriction();
-         movementSpeed = (float)((double)movementSpeed + (this.data.getSoulSpeedLevel() > 0 ? ((double)((float)this.data.getSoulSpeedLevel() * 0.65F) + 0.5) * (double)movementSpeed : 0.0));
+         movementSpeed = (float)(
+            (double)movementSpeed
+               + (this.data.getSoulSpeedLevel() > 0 ? ((double)((float)this.data.getSoulSpeedLevel() * 0.65F) + 0.5) * (double)movementSpeed : 0.0)
+         );
          if (this.data.getSoulSpeedLevel() > 0) {
             tags.add("soulspeed");
          }
 
-         double movementSpeedX;
          if (this.data.isWasOnWater()) {
             tags.add("water");
-            movementSpeedX = (double)this.data.getWalkSpeed();
+            double attributeSpeed = (double)this.data.getWalkSpeed();
             if (this.data.isSprinting()) {
-               movementSpeedX *= 1.2999999523162842;
+               attributeSpeed *= 1.3F;
             }
 
             movementSpeed = 0.02F;
@@ -88,7 +91,7 @@ public final class MotionE extends PositionCheck {
 
             if (f3 > 0.0F) {
                f9 += (0.54600006F - f9) * f3 / 3.0F;
-               movementSpeed = (float)((double)movementSpeed + (movementSpeedX - (double)movementSpeed) * (double)f3 / 3.0);
+               movementSpeed = (float)((double)movementSpeed + (attributeSpeed - (double)movementSpeed) * (double)f3 / 3.0);
             }
 
             if (this.data.getDolphinLevel() > 0) {
@@ -113,7 +116,7 @@ public final class MotionE extends PositionCheck {
             movementSpeed = (float)((double)movementSpeed + 0.1);
          }
 
-         movementSpeedX = (double)movementSpeed + (velocity ? Math.abs(this.data.getVelocityX() + 0.3) : 0.0);
+         double movementSpeedX = (double)movementSpeed + (velocity ? Math.abs(this.data.getVelocityX() + 0.3) : 0.0);
          double movementSpeedZ = (double)movementSpeed + (velocity ? Math.abs(this.data.getVelocityZ() + 0.3) : 0.0);
          if (this.data.getLastAttackTick() <= 1) {
             ItemStack s = this.data.getStackInHand();
@@ -126,18 +129,10 @@ public final class MotionE extends PositionCheck {
             if (entity != null) {
                boolean flag5 = !VersionBridgeHelper.isInvulnerable(entity) && entity instanceof Player;
                if (flag5 && i > 0) {
-                  int j = 0;
-
-                  while(true) {
-                     ++j;
-                     if (j > this.data.getAttacks()) {
-                        break;
-                     }
-
+                  for(int j = 0; ++j <= this.data.getAttacks(); movementSpeedZ += 0.1) {
                      this.lastDeltaX *= 0.6;
                      this.lastDeltaZ *= 0.6;
                      movementSpeedX += 0.1;
-                     movementSpeedZ += 0.1;
                   }
                }
             }
@@ -150,17 +145,51 @@ public final class MotionE extends PositionCheck {
          double combinedPred = MathUtil.hypot(predX, predZ);
          double combinedSpeed = MathUtil.hypot(movementSpeedX, movementSpeedZ);
          double speedup = combinedPred - combinedSpeed;
-         if (this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.isRiding() && !this.data.isSpectating() && !this.data.isPossiblyTeleporting() && this.data.getClientAirTicks() > 3 && this.data.elapsed(this.data.getLastCollided()) > 2 && this.data.elapsed(this.data.getLastSlimePistonPush()) > 10 && !this.data.isOnPiston() && this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.elapsed(this.data.getLastRiptide()) > 15 && this.data.elapsed(this.data.getLastGlide()) > 150 && !this.data.isWasOnLava() && !this.data.isOnLava() && !this.data.isRiptiding() && !this.data.isGliding() && deltaXZ > 0.15) {
-            if (!(diffX > movementSpeedX * 1.02) && !(diffZ > movementSpeedZ * 1.02)) {
-               this.violations = Math.max(this.violations - 0.1525, 0.0);
-            } else {
-               this.violations += 1.0 + Math.min(1.0, speedup * 1.5);
-               if (this.violations > 6.0) {
-                  this.fail("* Moving faster than possible in air\n §f* speed §b" + this.format(3, speedup) + "\n §f* diff §b" + this.format(4, diffX - movementSpeedX) + ", " + this.format(4, diffZ - movementSpeedX) + "\n §f* mSpeed §b" + movementSpeed + "\n §f* tags §b" + String.join("§f, §b", tags) + "\n §f* tick §b" + this.data.getClientAirTicks() + "\n §f* friction §b" + friction + "/" + this.data.getLastTickFriction() + "\n §f* dXZ §b" + deltaXZ, this.getBanVL(), 300L);
-               }
-            }
-         } else {
+         if (this.data.elapsed(this.data.getLastFlyTick()) <= 30
+            || !this.data.isRiding()
+            || this.data.isSpectating()
+            || this.data.isPossiblyTeleporting()
+            || this.data.getClientAirTicks() <= 3
+            || this.data.elapsed(this.data.getLastCollided()) <= 2
+            || this.data.elapsed(this.data.getLastSlimePistonPush()) <= 10
+            || this.data.isOnPiston()
+            || this.data.elapsed(this.data.getLastFlyTick()) <= 30
+            || this.data.elapsed(this.data.getLastRiptide()) <= 15
+            || this.data.elapsed(this.data.getLastGlide()) <= 150
+            || this.data.isWasOnLava()
+            || this.data.isOnLava()
+            || this.data.isRiptiding()
+            || this.data.isGliding()
+            || !(deltaXZ > 0.15)) {
             this.violations = Math.max(this.violations - 0.005, 0.0);
+         } else if (!(diffX > movementSpeedX * 1.02) && !(diffZ > movementSpeedZ * 1.02)) {
+            this.violations = Math.max(this.violations - 0.1525, 0.0);
+         } else {
+            this.violations += 1.0 + Math.min(1.0, speedup * 1.5);
+            if (this.violations > 6.0) {
+               this.fail(
+                  "* Moving faster than possible in air\n §f* speed §b"
+                     + this.format(3, Double.valueOf(speedup))
+                     + "\n §f* diff §b"
+                     + this.format(4, Double.valueOf(diffX - movementSpeedX))
+                     + ", "
+                     + this.format(4, Double.valueOf(diffZ - movementSpeedX))
+                     + "\n §f* mSpeed §b"
+                     + movementSpeed
+                     + "\n §f* tags §b"
+                     + String.join("§f, §b", tags)
+                     + "\n §f* tick §b"
+                     + this.data.getClientAirTicks()
+                     + "\n §f* friction §b"
+                     + friction
+                     + "/"
+                     + this.data.getLastTickFriction()
+                     + "\n §f* dXZ §b"
+                     + deltaXZ,
+                  this.getBanVL(),
+                  300L
+               );
+            }
          }
       }
 

@@ -9,7 +9,7 @@ import me.liwk.karhu.data.KarhuPlayer;
 import org.bukkit.entity.Player;
 
 public final class PlayerDataManager {
-   private final Map playerDataMap = new ConcurrentHashMap();
+   private final Map<UUID, KarhuPlayer> playerDataMap = new ConcurrentHashMap<>();
    private final Karhu karhu;
 
    public PlayerDataManager(Karhu karhu) {
@@ -17,15 +17,15 @@ public final class PlayerDataManager {
    }
 
    public KarhuPlayer getPlayerData(Player player) {
-      return (KarhuPlayer)this.playerDataMap.get(player.getUniqueId());
+      return this.playerDataMap.get(player.getUniqueId());
    }
 
    public KarhuPlayer getPlayerData(User user) {
-      return (KarhuPlayer)this.playerDataMap.get(user.getUUID());
+      return this.playerDataMap.get(user.getUUID());
    }
 
    public KarhuPlayer getPlayerData(UUID uuid) {
-      return (KarhuPlayer)this.playerDataMap.get(uuid);
+      return this.playerDataMap.get(uuid);
    }
 
    public KarhuPlayer remove(UUID uuid) {
@@ -35,14 +35,14 @@ public final class PlayerDataManager {
          Karhu.getInstance().getThreadManager().shutdownThread(data);
       }
 
-      return (KarhuPlayer)this.playerDataMap.remove(uuid);
+      return this.playerDataMap.remove(uuid);
    }
 
    public KarhuPlayer add(UUID uuid, long now) {
-      return (KarhuPlayer)this.playerDataMap.put(uuid, new KarhuPlayer(uuid, this.karhu, now));
+      return this.playerDataMap.put(uuid, new KarhuPlayer(uuid, this.karhu, now));
    }
 
-   public Map getPlayerDataMap() {
+   public Map<UUID, KarhuPlayer> getPlayerDataMap() {
       return this.playerDataMap;
    }
 }

@@ -1,15 +1,15 @@
 package me.liwk.karhu.event;
 
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction.Action;
 
 public class ActionEvent extends Event {
-   private final WrapperPlayClientEntityAction.Action action;
+   private final Action action;
 
-   public ActionEvent(WrapperPlayClientEntityAction.Action action) {
+   public ActionEvent(Action action) {
       this.action = action;
    }
 
-   public WrapperPlayClientEntityAction.Action getAction() {
+   public Action getAction() {
       return this.action;
    }
 }

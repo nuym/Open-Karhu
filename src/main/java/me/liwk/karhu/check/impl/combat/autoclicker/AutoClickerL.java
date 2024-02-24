@@ -1,7 +1,6 @@
 package me.liwk.karhu.check.impl.combat.autoclicker;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Deque;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.api.check.Category;
@@ -21,13 +20,14 @@ import me.liwk.karhu.util.MathUtil;
    experimental = false
 )
 public final class AutoClickerL extends PacketCheck {
-   private final Deque delays = new ArrayDeque();
+   private final Deque<Integer> delays = new ArrayDeque<>();
    private int delay;
 
    public AutoClickerL(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          boolean valid = !this.data.isPlacing() && !this.data.isHasDig() && !this.data.isUsingItem() && this.data.elapsed(this.data.getDigTicks()) > 5;
@@ -41,11 +41,11 @@ public final class AutoClickerL extends PacketCheck {
             }
 
             if (this.delays.size() == 150) {
-               double std = MathUtil.getStandardDeviation((Collection)this.delays);
+               double std = MathUtil.getStandardDeviation(this.delays);
                double cps = 20.0 / MathUtil.average(this.delays);
                if (std < 0.445) {
                   if (++this.violations > 3.0) {
-                     this.fail("* Poor randomization\n§f* STD §b" + MathUtil.getStandardDeviation((Collection)this.delays) + "\n§f* CPS §b" + cps, this.getBanVL(), 200L);
+                     this.fail("* Poor randomization\n§f* STD §b" + MathUtil.getStandardDeviation(this.delays) + "\n§f* CPS §b" + cps, this.getBanVL(), 200L);
                   }
                } else {
                   this.decrease(0.65);
@@ -59,6 +59,5 @@ public final class AutoClickerL extends PacketCheck {
       } else if (packet instanceof FlyingEvent) {
          ++this.delay;
       }
-
    }
 }

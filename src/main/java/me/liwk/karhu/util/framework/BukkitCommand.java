@@ -26,16 +26,11 @@ public class BukkitCommand extends org.bukkit.command.Command {
          try {
             success = this.executor.onCommand(sender, this, commandLabel, args);
          } catch (Throwable var9) {
-            Throwable ex = var9;
-            throw new CommandException("Error while executing '" + commandLabel + "' in plugin " + this.owningPlugin.getDescription().getFullName(), ex);
+            throw new CommandException("Error while executing '" + commandLabel + "' in plugin " + this.owningPlugin.getDescription().getFullName(), var9);
          }
 
          if (!success && this.usageMessage.length() > 0) {
-            String[] var10 = this.usageMessage.replace("<command>", commandLabel).split("\n");
-            int var6 = var10.length;
-
-            for(int var7 = 0; var7 < var6; ++var7) {
-               String line = var10[var7];
+            for(String line : this.usageMessage.replace("<command>", commandLabel).split("\n")) {
                sender.sendMessage(line);
             }
          }

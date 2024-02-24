@@ -19,15 +19,20 @@ import me.liwk.karhu.util.update.MovementUpdate;
    experimental = true
 )
 public class AimAssistM extends RotationCheck {
-   private final Deque pitchList = new LinkedList();
+   private final Deque<Float> pitchList = new LinkedList<>();
 
    public AimAssistM(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
-      if (this.data.deltas.deltaYaw > 2.5F && Math.abs(to.pitch) <= 80.0F && !this.data.isCinematic() && this.data.getLastAttackTick() <= 3 && this.data.getSensitivity() != -1) {
+      if (this.data.deltas.deltaYaw > 2.5F
+         && Math.abs(to.pitch) <= 80.0F
+         && !this.data.isCinematic()
+         && this.data.getLastAttackTick() <= 3
+         && this.data.getSensitivity() != -1) {
          this.pitchList.add(this.data.deltas.deltaPitch);
       }
 
@@ -36,11 +41,17 @@ public class AimAssistM extends RotationCheck {
          double max = MathUtil.highest(this.pitchList);
          double difference = Math.abs(max - min);
          if (difference < (double)this.data.getPitchGCD() * 1.25) {
-            this.fail("* Weird change\n §f* d: §b" + this.format(4, difference) + "\n §f* e: §b" + this.format(4, (double)this.data.getPitchGCD() * 1.5), this.getBanVL(), 300L);
+            this.fail(
+               "* Weird change\n §f* d: §b"
+                  + this.format(4, Double.valueOf(difference))
+                  + "\n §f* e: §b"
+                  + this.format(4, Double.valueOf((double)this.data.getPitchGCD() * 1.5)),
+               this.getBanVL(),
+               300L
+            );
          }
 
          this.pitchList.clear();
       }
-
    }
 }

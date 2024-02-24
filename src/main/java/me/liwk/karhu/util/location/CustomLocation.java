@@ -101,12 +101,7 @@ public class CustomLocation implements Cloneable {
       try {
          return (CustomLocation)super.clone();
       } catch (Throwable var2) {
-         Throwable $ex = var2;
-          try {
-              throw $ex;
-          } catch (Throwable e) {
-              throw new RuntimeException(e);
-          }
+         throw var2;
       }
    }
 
@@ -178,6 +173,7 @@ public class CustomLocation implements Cloneable {
       this.timeStamp = timeStamp;
    }
 
+   @Override
    public String toString() {
       return String.format("%.2f", this.x) + ", " + String.format("%.2f", this.y) + ", " + String.format("%.2f", this.z);
    }

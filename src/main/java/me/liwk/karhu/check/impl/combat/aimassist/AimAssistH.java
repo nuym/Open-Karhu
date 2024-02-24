@@ -20,19 +20,17 @@ public class AimAssistH extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
       float deltaYaw = Math.abs(to.getYaw() - from.getYaw());
       if (this.data.getLastAttackTick() < 20 && !this.data.isPossiblyTeleporting()) {
-         if (to.getPitch() == 0.0F && from.getPitch() == 0.0F && deltaYaw > 2.0F) {
-            if (++this.violations > 3.0) {
-               this.fail("* Weird rotation\n §f* p: §b" + to.getPitch() + "\n §f* lp: §b" + from.getPitch(), this.getBanVL(), 300L);
-            }
-         } else {
+         if (to.getPitch() != 0.0F || from.getPitch() != 0.0F || !(deltaYaw > 2.0F)) {
             this.violations *= 0.8;
+         } else if (++this.violations > 3.0) {
+            this.fail("* Weird rotation\n §f* p: §b" + to.getPitch() + "\n §f* lp: §b" + from.getPitch(), this.getBanVL(), 300L);
          }
-
       }
    }
 }

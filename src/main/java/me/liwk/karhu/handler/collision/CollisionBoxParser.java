@@ -12,7 +12,7 @@ public final class CollisionBoxParser {
    public static AxisAlignedBB from(Entity e) {
       Location l = e.getLocation();
       AxisAlignedBB b;
-      switch (e.getType()) {
+      switch(e.getType()) {
          case BOAT:
             b = fromBoxEnum(l, Boxes.BOAT);
             break;
@@ -31,6 +31,13 @@ public final class CollisionBoxParser {
    }
 
    private static AxisAlignedBB fromBoxEnum(Location l, Boxes e) {
-      return new AxisAlignedBB(l.getX() - (double)e.getWidth(), l.getY(), l.getZ() - (double)e.getWidth(), l.getX() + (double)e.getWidth(), l.getY() + (double)e.getHeight(), l.getZ() + (double)e.getWidth());
+      return new AxisAlignedBB(
+         l.getX() - (double)e.getWidth(),
+         l.getY(),
+         l.getZ() - (double)e.getWidth(),
+         l.getX() + (double)e.getWidth(),
+         l.getY() + (double)e.getHeight(),
+         l.getZ() + (double)e.getWidth()
+      );
    }
 }

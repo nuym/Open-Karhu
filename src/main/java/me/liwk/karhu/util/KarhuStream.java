@@ -1,63 +1,47 @@
 package me.liwk.karhu.util;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public final class KarhuStream {
-   private Collection c;
+public final class KarhuStream<T> {
+   private Collection<T> c;
 
-   public KarhuStream(Collection l) {
+   public KarhuStream(Collection<T> l) {
       this.c = l;
    }
 
-   public boolean any(Predicate p) {
-      Iterator var2 = this.c.iterator();
-
-      Object t;
-      do {
-         if (!var2.hasNext()) {
-            return false;
-         }
-
-         t = var2.next();
-      } while(!p.test(t));
-
-      return true;
-   }
-
-   public boolean all(Predicate p) {
-      Iterator var2 = this.c.iterator();
-
-      Object t;
-      do {
-         if (!var2.hasNext()) {
+   public boolean any(Predicate<T> p) {
+      for(T t : this.c) {
+         if (p.test(t)) {
             return true;
          }
-
-         t = var2.next();
-      } while(p.test(t));
+      }
 
       return false;
    }
 
-   public Object find(Predicate p) {
-      Iterator var2 = this.c.iterator();
-
-      Object t;
-      do {
-         if (!var2.hasNext()) {
-            return null;
+   public boolean all(Predicate<T> p) {
+      for(T t : this.c) {
+         if (!p.test(t)) {
+            return false;
          }
+      }
 
-         t = var2.next();
-      } while(!p.test(t));
-
-      return t;
+      return true;
    }
 
-   public void setCollection(Collection c) {
+   public T find(Predicate<T> p) {
+      for(T t : this.c) {
+         if (p.test(t)) {
+            return t;
+         }
+      }
+
+      return null;
+   }
+
+   public void setCollection(Collection<T> c) {
       this.c = c;
    }
 
@@ -65,7 +49,7 @@ public final class KarhuStream {
       return this.c.isEmpty();
    }
 
-   public void forEach(Consumer consumer) {
+   public void forEach(Consumer<? super T> consumer) {
       this.c.forEach(consumer);
    }
 }

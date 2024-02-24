@@ -6,7 +6,7 @@ import org.bukkit.entity.Entity;
 
 public class MovingObjectPosition {
    private BlockPos blockPos;
-   public MovingObjectType typeOfHit;
+   public MovingObjectPosition.MovingObjectType typeOfHit;
    public EnumFacing sideHit;
    public Vec3 hitVec;
    public Entity entityHit;
@@ -19,7 +19,7 @@ public class MovingObjectPosition {
       this(MovingObjectPosition.MovingObjectType.BLOCK, p_i45552_1_, facing, BlockPos.ORIGIN);
    }
 
-   public MovingObjectPosition(MovingObjectType typeOfHitIn, Vec3 hitVecIn, EnumFacing sideHitIn, BlockPos blockPosIn) {
+   public MovingObjectPosition(MovingObjectPosition.MovingObjectType typeOfHitIn, Vec3 hitVecIn, EnumFacing sideHitIn, BlockPos blockPosIn) {
       this.typeOfHit = typeOfHitIn;
       this.blockPos = blockPosIn;
       this.sideHit = sideHitIn;
@@ -36,8 +36,19 @@ public class MovingObjectPosition {
       return this.blockPos;
    }
 
+   @Override
    public String toString() {
-      return "HitResult{type=" + this.typeOfHit + ", blockpos=" + this.blockPos + ", f=" + this.sideHit + ", pos=" + this.hitVec + ", entity=" + this.entityHit + '}';
+      return "HitResult{type="
+         + this.typeOfHit
+         + ", blockpos="
+         + this.blockPos
+         + ", f="
+         + this.sideHit
+         + ", pos="
+         + this.hitVec
+         + ", entity="
+         + this.entityHit
+         + '}';
    }
 
    public static enum MovingObjectType {

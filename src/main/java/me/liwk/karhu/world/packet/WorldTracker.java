@@ -1,17 +1,15 @@
 package me.liwk.karhu.world.packet;
 
 import com.github.retrooper.packetevents.protocol.stream.NetStreamInput;
-import com.github.retrooper.packetevents.protocol.world.Dimension;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.impl.v_1_18.Chunk_v1_18;
-import com.github.retrooper.packetevents.protocol.world.chunk.palette.DataPalette;
 import com.github.retrooper.packetevents.protocol.world.chunk.reader.impl.ChunkReader_v1_18;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkData;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMultiBlockChange;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMultiBlockChange.EncodedBlock;
 import java.io.ByteArrayInputStream;
-import java.util.BitSet;
 import me.liwk.karhu.data.KarhuPlayer;
 
 public class WorldTracker {
@@ -20,35 +18,30 @@ public class WorldTracker {
    public void handleData(WrapperPlayServerChunkData packet) {
       int x = packet.getColumn().getX();
       int z = packet.getColumn().getZ();
-      BaseChunk[] chunks = (new ChunkReader_v1_18()).read((Dimension)null, (BitSet)null, (BitSet)null, true, false, false, 69, (byte[])null, new NetStreamInput(new ByteArrayInputStream(packet.getColumn().getBiomeDataBytes())));
+      BaseChunk[] chunks = new ChunkReader_v1_18()
+         .read(null, null, null, true, false, false, 69, null, new NetStreamInput(new ByteArrayInputStream(packet.getColumn().getBiomeDataBytes())));
 
       for(int i = 0; i < chunks.length; ++i) {
          Chunk_v1_18 chunk = (Chunk_v1_18)chunks[i];
          if (chunk != null) {
-            chunks[i] = new Chunk_v1_18(chunk.getBlockCount(), chunk.getChunkData(), (DataPalette)null);
+            chunks[i] = new Chunk_v1_18(chunk.getBlockCount(), chunk.getChunkData(), null);
          }
       }
-
    }
 
    public void handleBlock(WrapperPlayServerBlockChange packet) {
       Vector3i blockPosition = packet.getBlockPosition();
-      this.data.queueToPrePing((uid) -> {
-         this.data.getKarhuWorld().updateBlock(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ(), packet.getBlockId());
-      });
+      this.data
+         .queueToPrePing(uid -> this.data.getKarhuWorld().updateBlock(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ(), packet.getBlockId()));
    }
 
    public void handleMultiBlock(WrapperPlayServerMultiBlockChange packet) {
-      WrapperPlayServerMultiBlockChange.EncodedBlock[] var2 = packet.getBlocks();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         WrapperPlayServerMultiBlockChange.EncodedBlock encodedBlock = var2[var4];
-         this.data.queueToPrePing((uid) -> {
-            this.data.getKarhuWorld().updateBlock(encodedBlock.getX(), encodedBlock.getY(), encodedBlock.getZ(), encodedBlock.getBlockId());
-         });
+      for(EncodedBlock encodedBlock : packet.getBlocks()) {
+         this.data
+            .queueToPrePing(
+               uid -> this.data.getKarhuWorld().updateBlock(encodedBlock.getX(), encodedBlock.getY(), encodedBlock.getZ(), encodedBlock.getBlockId())
+            );
       }
-
    }
 
    public void handleUnload(long position) {

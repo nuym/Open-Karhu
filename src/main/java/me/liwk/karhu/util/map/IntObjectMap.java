@@ -1,15 +1,16 @@
 package me.liwk.karhu.util.map;
 
 import java.util.Map;
+import me.liwk.karhu.util.map.IntObjectMap.PrimitiveEntry;
 
-public interface IntObjectMap extends Map {
-   Object get(int var1);
+public interface IntObjectMap<V> extends Map<Integer, V> {
+   V get(int var1);
 
-   Object put(int var1, Object var2);
+   V put(int var1, V var2);
 
-   Object remove(int var1);
+   V remove(int var1);
 
-   Iterable entries();
+   Iterable<PrimitiveEntry<V>> entries();
 
    boolean containsKey(int var1);
 }

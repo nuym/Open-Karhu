@@ -20,10 +20,10 @@ public final class BadPacketsJ extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof HeldItemSlotEvent && ((HeldItemSlotEvent)packet).getSlot() < 0) {
          this.fail("* Negative slot packet", this.getBanVL(), 1L);
       }
-
    }
 }

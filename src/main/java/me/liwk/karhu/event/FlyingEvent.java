@@ -13,7 +13,19 @@ public class FlyingEvent extends Event {
    private final long nanoTime;
    private final long currentTimeMillis;
 
-   public FlyingEvent(double x, double y, double z, float yaw, float pitch, boolean hasMoved, boolean hasLooked, boolean isOnGround, boolean isTeleport, long nanoTime, long currentTimeMillis) {
+   public FlyingEvent(
+      double x,
+      double y,
+      double z,
+      float yaw,
+      float pitch,
+      boolean hasMoved,
+      boolean hasLooked,
+      boolean isOnGround,
+      boolean isTeleport,
+      long nanoTime,
+      long currentTimeMillis
+   ) {
       this.x = x;
       this.y = y;
       this.z = z;

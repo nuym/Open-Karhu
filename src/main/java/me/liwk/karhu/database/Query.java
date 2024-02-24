@@ -10,21 +10,19 @@ public class Query {
       Query.conn = conn;
    }
 
-   public static ExecutableStatement prepare(@Language("MySQL") String query) throws Throwable {
+   public static ExecutableStatement prepare(@Language("MySQL") String query) {
       try {
          return new ExecutableStatement(conn.prepareStatement(query));
       } catch (Throwable var2) {
-         Throwable $ex = var2;
-         throw $ex;
+         throw var2;
       }
    }
 
-   public static ExecutableStatement prepare(@Language("MySQL") String query, Connection con) throws Throwable {
+   public static ExecutableStatement prepare(@Language("MySQL") String query, Connection con) {
       try {
          return new ExecutableStatement(con.prepareStatement(query));
       } catch (Throwable var3) {
-         Throwable $ex = var3;
-         throw $ex;
+         throw var3;
       }
    }
 }

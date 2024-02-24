@@ -1,29 +1,29 @@
 package me.liwk.karhu.util.pair;
 
-public class Pair {
-   private Object x;
-   private Object y;
+public class Pair<X, Y> {
+   private X x;
+   private Y y;
 
-   public Object getX() {
+   public X getX() {
       return this.x;
    }
 
-   public Object getY() {
+   public Y getY() {
       return this.y;
    }
 
-   public void setX(Object x) {
+   public void setX(X x) {
       this.x = x;
    }
 
-   public void setY(Object y) {
+   public void setY(Y y) {
       this.y = y;
    }
 
    public Pair() {
    }
 
-   public Pair(Object x, Object y) {
+   public Pair(X x, Y y) {
       this.x = x;
       this.y = y;
    }

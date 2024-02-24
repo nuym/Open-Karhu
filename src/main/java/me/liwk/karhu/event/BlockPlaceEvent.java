@@ -20,7 +20,19 @@ public class BlockPlaceEvent extends Event {
    private final double blockZ;
    private final World world;
 
-   public BlockPlaceEvent(Vector blockPos, Vector origin, ItemStack itemStack, double blockX, double blockY, double blockZ, BlockFace direction, int face, long nanoTime, long timeMillis, World world) {
+   public BlockPlaceEvent(
+      Vector blockPos,
+      Vector origin,
+      ItemStack itemStack,
+      double blockX,
+      double blockY,
+      double blockZ,
+      BlockFace direction,
+      int face,
+      long nanoTime,
+      long timeMillis,
+      World world
+   ) {
       this.blockPos = blockPos;
       this.origin = origin;
       this.itemStack = itemStack;
@@ -39,11 +51,15 @@ public class BlockPlaceEvent extends Event {
    }
 
    public boolean isUsableItem() {
-      return this.itemStack != null && this.origin.getX() == -1.0 && (this.origin.getY() == -1.0 || this.origin.getY() == 255.0 || this.origin.getY() == 4095.0) && this.origin.getZ() == -1.0 && this.face == 255;
+      return this.itemStack != null
+         && this.origin.getX() == -1.0
+         && (this.origin.getY() == -1.0 || this.origin.getY() == 255.0 || this.origin.getY() == 4095.0)
+         && this.origin.getZ() == -1.0
+         && this.face == 255;
    }
 
    public Location getTargetedBlockLocation() {
-      switch (this.face) {
+      switch(this.face) {
          case 0:
             return new Location(this.world, (double)this.origin.getBlockX(), (double)(this.origin.getBlockY() - 1), (double)this.origin.getBlockZ());
          case 1:
@@ -62,7 +78,7 @@ public class BlockPlaceEvent extends Event {
    }
 
    public Location get420Johannes() {
-      switch (this.face) {
+      switch(this.face) {
          case 0:
             return new Location(this.world, (double)this.origin.getBlockX(), (double)(this.origin.getBlockY() + 1), (double)this.origin.getBlockZ());
          case 1:
@@ -81,7 +97,7 @@ public class BlockPlaceEvent extends Event {
    }
 
    public Vector3i getBlockFacePosition() {
-      switch (this.face) {
+      switch(this.face) {
          case 0:
             return new Vector3i(0, -1, 0);
          case 1:

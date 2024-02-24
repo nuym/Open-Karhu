@@ -1,9 +1,8 @@
 package me.liwk.karhu.util.mc.vec;
 
 import me.liwk.karhu.util.mc.MathHelper;
-import org.jetbrains.annotations.NotNull;
 
-public class Vec3i implements Comparable {
+public class Vec3i implements Comparable<Vec3i> {
    public static final Vec3i NULL_VECTOR = new Vec3i(0, 0, 0);
    private final int x;
    private final int y;
@@ -19,6 +18,7 @@ public class Vec3i implements Comparable {
       this(MathHelper.floor_double(xIn), MathHelper.floor_double(yIn), MathHelper.floor_double(zIn));
    }
 
+   @Override
    public boolean equals(Object p_equals_1_) {
       if (this == p_equals_1_) {
          return true;
@@ -30,12 +30,15 @@ public class Vec3i implements Comparable {
       }
    }
 
+   @Override
    public int hashCode() {
       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
    }
 
    public int compareTo(Vec3i p_compareTo_1_) {
-      return this.getY() == p_compareTo_1_.getY() ? (this.getZ() == p_compareTo_1_.getZ() ? this.getX() - p_compareTo_1_.getX() : this.getZ() - p_compareTo_1_.getZ()) : this.getY() - p_compareTo_1_.getY();
+      return this.getY() == p_compareTo_1_.getY()
+         ? (this.getZ() == p_compareTo_1_.getZ() ? this.getX() - p_compareTo_1_.getX() : this.getZ() - p_compareTo_1_.getZ())
+         : this.getY() - p_compareTo_1_.getY();
    }
 
    public int getX() {
@@ -51,7 +54,11 @@ public class Vec3i implements Comparable {
    }
 
    public Vec3i crossProduct(Vec3i vec) {
-      return new Vec3i(this.getY() * vec.getZ() - this.getZ() * vec.getY(), this.getZ() * vec.getX() - this.getX() * vec.getZ(), this.getX() * vec.getY() - this.getY() * vec.getX());
+      return new Vec3i(
+         this.getY() * vec.getZ() - this.getZ() * vec.getY(),
+         this.getZ() * vec.getX() - this.getX() * vec.getZ(),
+         this.getX() * vec.getY() - this.getY() * vec.getX()
+      );
    }
 
    public double distanceSq(double toX, double toY, double toZ) {
@@ -71,5 +78,4 @@ public class Vec3i implements Comparable {
    public double distanceSq(Vec3i to) {
       return this.distanceSq((double)to.getX(), (double)to.getY(), (double)to.getZ());
    }
-
 }

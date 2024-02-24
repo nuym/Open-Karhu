@@ -27,7 +27,6 @@ public final class PlayerHandler {
          if (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16)) {
             data.setSoulSpeedLevel(MovementUtils.getSoulSpeedLevel(data.getBukkitPlayer()));
          }
-
       }
    }
 

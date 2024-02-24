@@ -23,6 +23,7 @@ public final class InventoryB extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof WindowEvent) {
          if (this.data.getLastAttackTick() <= 1) {
@@ -40,6 +41,5 @@ public final class InventoryB extends PacketCheck {
             this.violations = Math.max(this.violations - 0.5, 0.0);
          }
       }
-
    }
 }

@@ -27,9 +27,9 @@ public final class ConfigManager {
    private String alertHoverMessageHighlight = null;
    private String guiHighlightColor = null;
    private String punishMsg;
-   private List banCommand = null;
-   private List punishmentsBan;
-   private List punishmentsKick;
+   private List<String> banCommand = null;
+   private List<String> punishmentsBan;
+   private List<String> punishmentsKick;
    private long commandDelay;
    private boolean autoban;
    private boolean punishBroadcast;
@@ -106,7 +106,7 @@ public final class ConfigManager {
    private boolean proxycheck;
    private boolean maliciouscheck;
    private boolean clientCheck;
-   private List antiVpnBypass;
+   private List<String> antiVpnBypass;
    private double reachToFlag;
    private double reachBuffer;
    private double reachDecayPerMiss;
@@ -129,7 +129,7 @@ public final class ConfigManager {
    private boolean fixAsyncKb;
    private boolean firstTime = true;
 
-   public ConfigManager(Plugin karhu) {
+   public ConfigManager(ClientPlugin karhu) {
       this.loadConfig(karhu, false);
       this.loadChecks(karhu, false);
    }
@@ -187,39 +187,38 @@ public final class ConfigManager {
          this.config.set("reset-violations-on-leave", true);
       }
 
-      ArrayList l;
       if (!this.config.isSet("PunishCommand")) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add("kick %player% Hacked client");
          this.config.set("PunishCommand", l);
       }
 
       if (this.config.getStringList("PunishCommand").isEmpty()) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add(this.config.get("PunishCommand").toString());
          this.config.set("PunishCommand", l);
       }
 
       if (!this.config.isSet("Punishments.banCommand")) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add("ban %player% Hacked client");
          this.config.set("Punishments.banCommand", l);
       }
 
       if (this.config.getStringList("Punishments.banCommand").isEmpty()) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add(this.config.get("PunishCommand").toString());
          this.config.set("Punishments.banCommand", l);
       }
 
       if (!this.config.isSet("Punishments.kickCommand")) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add("kick %player% Hacked client");
          this.config.set("Punishments.kickCommand", l);
       }
 
       if (this.config.getStringList("Punishments.kickCommand").isEmpty()) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add(this.config.get("Punishments.kickCommand").toString());
          this.config.set("Punishments.kickCommand", l);
       }
@@ -457,7 +456,7 @@ public final class ConfigManager {
       }
 
       if (!this.config.isSet("anti-vpn.bypass")) {
-         l = new ArrayList();
+         List<String> l = new ArrayList<>();
          l.add("UUID1");
          this.config.set("anti-vpn.bypass", l);
       }
@@ -563,8 +562,12 @@ public final class ConfigManager {
       }
 
       this.banwavePunish = this.config.getString("banwaves.punish", "configurethis %player%");
-      this.banwaveCaught = ChatColor.translateAlternateColorCodes('&', this.config.getString("banwaves.messages.caught", "&b%player% &3has been caught in the &bBan Wave!"));
-      this.banwaveComplete = ChatColor.translateAlternateColorCodes('&', this.config.getString("banwaves.messages.complete", "&bKarhu &3has finished the banwave. A total of &b%bans% players &3were banned."));
+      this.banwaveCaught = ChatColor.translateAlternateColorCodes(
+         '&', this.config.getString("banwaves.messages.caught", "&b%player% &3has been caught in the &bBan Wave!")
+      );
+      this.banwaveComplete = ChatColor.translateAlternateColorCodes(
+         '&', this.config.getString("banwaves.messages.complete", "&bKarhu &3has finished the banwave. A total of &b%bans% players &3were banned.")
+      );
       this.brComplete = this.config.getBoolean("banwaves.broadcast-complete");
       this.brCaught = this.config.getBoolean("banwaves.broadcast-caught");
       this.bungeeCommand = this.config.getBoolean("bungee.execute-ban-command-in-bungee");
@@ -653,11 +656,11 @@ public final class ConfigManager {
       this.fixAsyncKb = this.config.getBoolean("async-kb-fix");
       this.crackedServer = this.config.getBoolean("cracked-server");
       this.exemptTicksJoin = (long)this.config.getInt("join-exempt-ticks");
-      String acname = this.license.equals(" ") ? "VengeanceLoader" : "KarhuLoader";
+      String acname = this.license.equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
       this.save();
    }
 
-   public void loadChecks(Plugin karhu, boolean silent) {
+   public void loadChecks(ClientPlugin karhu, boolean silent) {
       this.checkFile = new File(karhu.getDataFolder(), "checks.yml");
       if (!this.checkFile.exists()) {
          karhu.saveResource("checks.yml", false);
@@ -762,20 +765,16 @@ public final class ConfigManager {
       try {
          this.config.save(this.configFile);
       } catch (IOException var2) {
-         IOException ex = var2;
-         ex.printStackTrace();
+         var2.printStackTrace();
       }
-
    }
 
    public void saveChecks() {
       try {
          this.checks.save(this.checkFile);
       } catch (IOException var2) {
-         IOException ex = var2;
-         ex.printStackTrace();
+         var2.printStackTrace();
       }
-
    }
 
    public FileConfiguration getConfig() {
@@ -838,15 +837,15 @@ public final class ConfigManager {
       return this.punishMsg;
    }
 
-   public List getBanCommand() {
+   public List<String> getBanCommand() {
       return this.banCommand;
    }
 
-   public List getPunishmentsBan() {
+   public List<String> getPunishmentsBan() {
       return this.punishmentsBan;
    }
 
-   public List getPunishmentsKick() {
+   public List<String> getPunishmentsKick() {
       return this.punishmentsKick;
    }
 
@@ -1154,7 +1153,7 @@ public final class ConfigManager {
       return this.clientCheck;
    }
 
-   public List getAntiVpnBypass() {
+   public List<String> getAntiVpnBypass() {
       return this.antiVpnBypass;
    }
 

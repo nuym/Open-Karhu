@@ -28,6 +28,7 @@ public final class ScaffoldR extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (!this.data.isNewerThan16()) {
          if (packet instanceof BlockPlaceEvent) {
@@ -41,7 +42,11 @@ public final class ScaffoldR extends PacketCheck {
                return;
             }
 
-            Vector eyeLocation = new Vector(this.data.getLocation().x, this.data.getLocation().y + (double)(!this.data.isNewerThan12() ? sneakAmount1_8 : sneakAmount1_13), this.data.getLocation().z);
+            Vector eyeLocation = new Vector(
+               this.data.getLocation().x,
+               this.data.getLocation().y + (double)(!this.data.isNewerThan12() ? sneakAmount1_8 : sneakAmount1_13),
+               this.data.getLocation().z
+            );
             Vector dir = MathUtil.getDirection(this.data.getLocation().getYaw(), this.data.getLocation().getPitch());
             Vector extraDir = MathUtil.getDirection(this.data.getLastLastLocation().getYaw(), this.data.getLastLastLocation().getPitch());
             Vector extraDir2 = MathUtil.getDirection(this.data.getLastLocation().getYaw(), this.data.getLastLocation().getPitch());
@@ -60,12 +65,13 @@ public final class ScaffoldR extends PacketCheck {
                }
             }
          }
-
       }
    }
 
    public boolean isNotGroundBridging() {
-      Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
+      Block block = Karhu.getInstance()
+         .getChunkManager()
+         .getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
       if (block == null) {
          return false;
       } else {

@@ -1,7 +1,6 @@
 package me.liwk.karhu.check.impl.combat.autoclicker;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Deque;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.api.check.Category;
@@ -23,12 +22,13 @@ import org.apache.commons.math3.stat.descriptive.moment.SemiVariance;
 )
 public final class AutoClickerK extends PacketCheck {
    private int flying;
-   private Deque samples = new ArrayDeque();
+   private Deque<Integer> samples = new ArrayDeque<>();
 
    public AutoClickerK(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SwingEvent) {
          if (this.data.isNewerThan8()) {
@@ -40,13 +40,17 @@ public final class AutoClickerK extends PacketCheck {
          }
 
          if (this.samples.size() == 500) {
-            double std = MathUtil.getStandardDeviation((Collection)this.samples);
+            double std = MathUtil.getStandardDeviation(this.samples);
             double cps = 20.0 / MathUtil.getAverage(this.samples);
-            double semiVar = (new SemiVariance()).evaluate(MathUtil.dequeTranslator(this.samples));
+            double semiVar = new SemiVariance().evaluate(MathUtil.dequeTranslator(this.samples));
             double divided = semiVar / std;
             if (cps > 8.0 && divided < 0.06 && std < 0.75) {
                if (this.increase(1.0) > 1.0) {
-                  this.fail("* Low variation\n §f* STD: §b" + std + "\n §f* DIVIDED: §b" + divided + "\n §f* SEMIV: §b" + semiVar + "\n §f* CPS: §b" + cps, this.getBanVL(), 450L);
+                  this.fail(
+                     "* Low variation\n §f* STD: §b" + std + "\n §f* DIVIDED: §b" + divided + "\n §f* SEMIV: §b" + semiVar + "\n §f* CPS: §b" + cps,
+                     this.getBanVL(),
+                     450L
+                  );
                }
             } else {
                this.decrease(0.25);
@@ -59,6 +63,5 @@ public final class AutoClickerK extends PacketCheck {
       } else if (packet instanceof FlyingEvent && !((FlyingEvent)packet).isTeleport()) {
          ++this.flying;
       }
-
    }
 }

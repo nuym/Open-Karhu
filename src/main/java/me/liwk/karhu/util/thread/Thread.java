@@ -6,7 +6,9 @@ import java.util.concurrent.Executors;
 import me.liwk.karhu.Karhu;
 
 public class Thread {
-   private final ExecutorService executorService = Executors.newSingleThreadExecutor((new ThreadFactoryBuilder()).setNameFormat("karhu-user-thread-" + Karhu.getInstance().getThreadManager().getUserThreads().size()).build());
+   private final ExecutorService executorService = Executors.newSingleThreadExecutor(
+      new ThreadFactoryBuilder().setNameFormat("karhu-user-thread-" + Karhu.getInstance().getThreadManager().getUserThreads().size()).build()
+   );
    public int count;
 
    public ExecutorService getExecutorService() {

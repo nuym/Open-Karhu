@@ -5,7 +5,7 @@ import me.liwk.karhu.check.api.Check;
 import me.liwk.karhu.data.KarhuPlayer;
 import me.liwk.karhu.util.update.MovementUpdate;
 
-public abstract class RotationCheck extends Check {
+public abstract class RotationCheck extends Check<MovementUpdate> {
    public RotationCheck(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }

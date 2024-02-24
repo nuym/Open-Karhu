@@ -5,7 +5,6 @@ import me.liwk.karhu.api.check.Category;
 import me.liwk.karhu.api.check.CheckInfo;
 import me.liwk.karhu.api.check.SubCategory;
 import me.liwk.karhu.check.type.PacketCheck;
-import me.liwk.karhu.data.Deltas;
 import me.liwk.karhu.data.KarhuPlayer;
 import me.liwk.karhu.event.AttackEvent;
 import me.liwk.karhu.event.Event;
@@ -27,14 +26,19 @@ public final class KillauraE extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent) {
          if (this.attacks > 0) {
-            if (!this.data.isRiding() && this.data.deltas.deltaXZ > 0.1 && this.data.elapsed(this.data.getLastOnIce()) > 2 && this.data.getVelocityXZTicks() > 1 && this.data.getLastTarget() instanceof Player && !this.data.isSpectating() && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
-               Deltas var10000 = this.data.deltas;
-               double deltaX = var10000.lastDX *= this.data.isLastLastOnGroundPacket() ? (double)this.data.getLastTickFriction() : 0.9100000262260437;
-               var10000 = this.data.deltas;
-               double deltaZ = var10000.lastDZ *= this.data.isLastLastOnGroundPacket() ? (double)this.data.getLastTickFriction() : 0.9100000262260437;
+            if (!this.data.isRiding()
+               && this.data.deltas.deltaXZ > 0.1
+               && this.data.elapsed(this.data.getLastOnIce()) > 2
+               && this.data.getVelocityXZTicks() > 1
+               && this.data.getLastTarget() instanceof Player
+               && !this.data.isSpectating()
+               && this.data.elapsed(this.data.getLastFlyTick()) > 30) {
+               double deltaX = this.data.deltas.lastDX *= this.data.isLastLastOnGroundPacket() ? (double)this.data.getLastTickFriction() : 0.91F;
+               double deltaZ = this.data.deltas.lastDZ *= this.data.isLastLastOnGroundPacket() ? (double)this.data.getLastTickFriction() : 0.91F;
                deltaX *= 0.6;
                deltaZ *= 0.6;
                double deltaXZ = MathUtil.hypot(deltaX, deltaZ);
@@ -43,14 +47,32 @@ public final class KillauraE extends PacketCheck {
                double extrabuffer = this.data.isSprinting() ? 1.0 : 0.0;
                double moveSpeed = (double)this.data.getWalkSpeed();
                moveSpeed += (double)(this.data.getWalkSpeed() * 0.3F);
-               if (attackMotion > moveSpeed && acceleration < 0.005) {
-                  if ((this.violations += 0.5 + extrabuffer) > 6.0) {
-                     this.fail("* Invalid motion when attacking\n §f* motion: §b" + attackMotion + "/" + moveSpeed + "\n §f* acceleration: §b" + acceleration + "\n §f* attacks: §b" + this.attacks, this.getBanVL(), 600L);
-                  } else {
-                     this.debug("* Invalid motion when attacking\n §f* motion: §b" + attackMotion + "/" + moveSpeed + "\n §f* acceleration: §b" + acceleration + "\n §f* attacks: §b" + this.attacks);
-                  }
-               } else {
+               if (!(attackMotion > moveSpeed) || !(acceleration < 0.005)) {
                   this.decrease(0.4);
+               } else if ((this.violations += 0.5 + extrabuffer) > 6.0) {
+                  this.fail(
+                     "* Invalid motion when attacking\n §f* motion: §b"
+                        + attackMotion
+                        + "/"
+                        + moveSpeed
+                        + "\n §f* acceleration: §b"
+                        + acceleration
+                        + "\n §f* attacks: §b"
+                        + this.attacks,
+                     this.getBanVL(),
+                     600L
+                  );
+               } else {
+                  this.debug(
+                     "* Invalid motion when attacking\n §f* motion: §b"
+                        + attackMotion
+                        + "/"
+                        + moveSpeed
+                        + "\n §f* acceleration: §b"
+                        + acceleration
+                        + "\n §f* attacks: §b"
+                        + this.attacks
+                  );
                }
             } else {
                this.decrease(0.2);
@@ -67,6 +89,5 @@ public final class KillauraE extends PacketCheck {
             ++this.attacks;
          }
       }
-
    }
 }

@@ -23,6 +23,7 @@ public class AimAssistN extends RotationCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       CustomLocation to = update.getTo();
       CustomLocation from = update.getFrom();
@@ -32,12 +33,17 @@ public class AimAssistN extends RotationCheck {
       float changeX = Math.abs(this.yaw - yaw);
       double differenceYX = (double)Math.abs(changeY - changeX);
       if (this.data.getLastAttackTick() <= 3 && !this.data.isPossiblyTeleporting()) {
-         if (differenceYX > 2.5 && (double)yaw < 0.001 && (double)this.yaw < 0.001) {
-            if (++this.violations > 8.0) {
-               this.fail("* Weird X/Y changes\n §f* difference: §b" + this.format(4, differenceYX) + "\n §f* change: §b" + this.format(4, changeY), this.getBanVL(), 300L);
-            }
-         } else {
+         if (!(differenceYX > 2.5) || !((double)yaw < 0.001) || !((double)this.yaw < 0.001)) {
             this.decrease(0.5);
+         } else if (++this.violations > 8.0) {
+            this.fail(
+               "* Weird X/Y changes\n §f* difference: §b"
+                  + this.format(4, Double.valueOf(differenceYX))
+                  + "\n §f* change: §b"
+                  + this.format(4, Float.valueOf(changeY)),
+               this.getBanVL(),
+               300L
+            );
          }
       }
 

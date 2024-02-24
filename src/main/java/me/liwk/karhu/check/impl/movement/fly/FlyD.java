@@ -19,17 +19,28 @@ public final class FlyD extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       if (this.data.getVelocityYTicks() == 0) {
          double excepted = this.data.getVelocityY();
          if (excepted < this.data.deltas.motionY - 1.0 && !this.data.isGroundNearBox()) {
             if (++this.violations > 3.0) {
-               this.fail("* Not taking fall damage velocity\n §f* EXP: §b" + excepted + "\n §f* RES: §b" + this.data.deltas.motionY + "\n §f* TICK: §b" + this.data.getAirTicks() + " | " + this.data.getClientAirTicks(), this.getBanVL(), 300L);
+               this.fail(
+                  "* Not taking fall damage velocity\n §f* EXP: §b"
+                     + excepted
+                     + "\n §f* RES: §b"
+                     + this.data.deltas.motionY
+                     + "\n §f* TICK: §b"
+                     + this.data.getAirTicks()
+                     + " | "
+                     + this.data.getClientAirTicks(),
+                  this.getBanVL(),
+                  300L
+               );
             }
          } else {
             this.violations = Math.max(this.violations - 0.25, 0.0);
          }
       }
-
    }
 }

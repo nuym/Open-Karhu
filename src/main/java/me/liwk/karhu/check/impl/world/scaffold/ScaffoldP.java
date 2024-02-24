@@ -24,7 +24,7 @@ import org.bukkit.inventory.ItemStack;
    experimental = false
 )
 public final class ScaffoldP extends PacketCheck {
-   private final Queue delays = new LinkedList();
+   private final Queue<Integer> delays = new LinkedList<>();
    public int placed;
    public int movements;
 
@@ -32,14 +32,21 @@ public final class ScaffoldP extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent) {
          BlockPlaceEvent place = (BlockPlaceEvent)packet;
          int face = place.getFace();
          Location blockPos = place.get420Johannes();
          ItemStack stack = place.getItemStack() == null ? new ItemStack(Material.AIR) : place.getItemStack();
-         boolean validPlace = Math.abs(blockPos.getX() - this.data.getLocation().x) <= 1.5 && Math.abs(blockPos.getY() - this.data.getLocation().y) <= 2.5 && Math.abs(blockPos.getZ() - this.data.getLocation().z) <= 1.5;
-         boolean canProcess = !this.data.isCollidedHorizontally() && !place.isUsableItem() && this.data.elapsed(this.data.getLastFlyTick()) > 10 && stack.getType().isSolid() && stack.getType().isBlock();
+         boolean validPlace = Math.abs(blockPos.getX() - this.data.getLocation().x) <= 1.5
+            && Math.abs(blockPos.getY() - this.data.getLocation().y) <= 2.5
+            && Math.abs(blockPos.getZ() - this.data.getLocation().z) <= 1.5;
+         boolean canProcess = !this.data.isCollidedHorizontally()
+            && !place.isUsableItem()
+            && this.data.elapsed(this.data.getLastFlyTick()) > 10
+            && stack.getType().isSolid()
+            && stack.getType().isBlock();
          double offsetH = this.data.deltas.deltaXZ;
          double lastOffsetH = this.data.deltas.lastDXZ;
          if (this.movements < 10 && this.delays.add(this.movements) && this.delays.size() >= 50 && this.placed <= 2) {
@@ -54,7 +61,20 @@ public final class ScaffoldP extends PacketCheck {
                   if (additionable && ++this.placed >= 10) {
                      double avg = MathUtil.getAverage(this.delays);
                      double cps = 20.0 / avg;
-                     this.fail("* Impossible bridging\n §f* balance: §b" + this.placed + "\n §f* oH | lOH: §b" + this.format(3, offsetH) + " | " + this.format(3, lastOffsetH) + "\n §f* cps: §b" + this.format(3, cps) + "\n §f* avg: §b" + this.format(3, avg), this.getBanVL(), 120L);
+                     this.fail(
+                        "* Impossible bridging\n §f* balance: §b"
+                           + this.placed
+                           + "\n §f* oH | lOH: §b"
+                           + this.format(3, Double.valueOf(offsetH))
+                           + " | "
+                           + this.format(3, Double.valueOf(lastOffsetH))
+                           + "\n §f* cps: §b"
+                           + this.format(3, Double.valueOf(cps))
+                           + "\n §f* avg: §b"
+                           + this.format(3, Double.valueOf(avg)),
+                        this.getBanVL(),
+                        120L
+                     );
                      this.delays.clear();
                      this.placed = 2;
                   }
@@ -68,11 +88,12 @@ public final class ScaffoldP extends PacketCheck {
       } else if (packet instanceof FlyingEvent) {
          ++this.movements;
       }
-
    }
 
    public boolean isNotGroundBridging() {
-      Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
+      Block block = Karhu.getInstance()
+         .getChunkManager()
+         .getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
       if (block == null) {
          return false;
       } else {

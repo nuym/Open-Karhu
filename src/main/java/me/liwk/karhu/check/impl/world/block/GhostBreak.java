@@ -20,6 +20,7 @@ public final class GhostBreak extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
    }
 }

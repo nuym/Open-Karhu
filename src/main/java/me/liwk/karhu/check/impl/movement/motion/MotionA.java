@@ -20,12 +20,37 @@ public final class MotionA extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate update) {
       float jumpHeight = PlayerUtil.getJumpBooster(this.data);
-      if (this.data.getJumpBoost() < 10 && !this.data.isOnSlime() && this.data.isInitialized() && this.data.deltas.motionY > 0.0 && this.data.elapsed(this.data.getLastRiptide()) > 15 && this.data.elapsed(this.data.getLastGlide()) > 100 && !this.data.isRiptiding() && !this.data.isOnClimbable() && !this.data.isGliding() && !this.data.isOnBed() && !this.data.isWasOnBed() && !this.data.isInsideBlock() && !this.data.isOnPiston() && this.data.elapsed(this.data.getLastInBerry()) > 3 && this.data.elapsed(this.data.getLastPistonPush()) > 2 && this.data.elapsed(this.data.getPredictionTicks()) > 3 && this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.getClientAirTicks() == 1 && this.data.elapsed(this.data.getLastInLiquid()) > 4 && this.data.elapsed(this.data.getPlaceTicks()) > 10 && !this.data.isInWeb() && !this.data.isUnderGhostBlock() && !this.data.isPossiblyTeleporting()) {
+      if (this.data.getJumpBoost() < 10
+         && !this.data.isOnSlime()
+         && this.data.isInitialized()
+         && this.data.deltas.motionY > 0.0
+         && this.data.elapsed(this.data.getLastRiptide()) > 15
+         && this.data.elapsed(this.data.getLastGlide()) > 100
+         && !this.data.isRiptiding()
+         && !this.data.isOnClimbable()
+         && !this.data.isGliding()
+         && !this.data.isOnBed()
+         && !this.data.isWasOnBed()
+         && !this.data.isInsideBlock()
+         && !this.data.isOnPiston()
+         && this.data.elapsed(this.data.getLastInBerry()) > 3
+         && this.data.elapsed(this.data.getLastPistonPush()) > 2
+         && this.data.elapsed(this.data.getPredictionTicks()) > 3
+         && this.data.elapsed(this.data.getLastFlyTick()) > 30
+         && this.data.getClientAirTicks() == 1
+         && this.data.elapsed(this.data.getLastInLiquid()) > 4
+         && this.data.elapsed(this.data.getPlaceTicks()) > 10
+         && !this.data.isInWeb()
+         && !this.data.isUnderGhostBlock()
+         && !this.data.isPossiblyTeleporting()) {
          float min = !this.data.isOnHoney() && !this.data.isWasOnHoney() ? jumpHeight : jumpHeight * 0.5F;
          min = this.data.isTakingVertical() ? (float)this.data.getVelocityY() - 0.25F : min;
-         if (this.data.deltas.motionY < (double)min && Math.abs(this.data.getConfirmingY() - this.data.deltas.motionY) <= 0.005 && !this.data.isTakingVertical()) {
+         if (this.data.deltas.motionY < (double)min
+            && Math.abs(this.data.getConfirmingY() - this.data.deltas.motionY) <= 0.005
+            && !this.data.isTakingVertical()) {
             min = (float)this.data.getConfirmingY();
          }
 
@@ -42,12 +67,20 @@ public final class MotionA extends PositionCheck {
          double maxVL = this.data.elapsed(this.data.getLastVelocityTaken()) <= 12 ? 7.0 : 4.8;
          if (this.data.deltas.motionY < (double)min - 0.005) {
             if (++this.violations > maxVL) {
-               this.fail("* Jumping lower than expected\n §f* M: §b" + min + "\n §f* D: §b" + this.format(3, this.data.deltas.motionY) + " tk " + this.data.isTakingVertical(), this.getBanVL(), 150L);
+               this.fail(
+                  "* Jumping lower than expected\n §f* M: §b"
+                     + min
+                     + "\n §f* D: §b"
+                     + this.format(3, Double.valueOf(this.data.deltas.motionY))
+                     + " tk "
+                     + this.data.isTakingVertical(),
+                  this.getBanVL(),
+                  150L
+               );
             }
          } else {
             this.violations = Math.max(this.violations - 0.2, 0.0);
          }
       }
-
    }
 }

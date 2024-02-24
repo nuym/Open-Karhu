@@ -19,7 +19,7 @@ import me.liwk.karhu.util.task.Tasker;
    experimental = false
 )
 public final class TimerA extends PacketCheck {
-   private long lastFlyingPacket;
+   private long lastFlyingPacket = this.data.getTransactionClock();
    private long balance;
    private boolean capped;
    private static final long TELEPORT_OFFSET = 50000000L;
@@ -27,9 +27,9 @@ public final class TimerA extends PacketCheck {
 
    public TimerA(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
-      this.lastFlyingPacket = this.data.getTransactionClock();
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent) {
          if (this.data.getTransactionClock() == 0L && this.lastFlyingPacket == 0L) {
@@ -49,7 +49,16 @@ public final class TimerA extends PacketCheck {
             if (this.ready()) {
                if (++this.violations > 1.0) {
                   if (!this.capped) {
-                     this.fail("* Timer\n§f* BL §b" + this.balance / 1000000L + "\n§f* RATE §b" + Math.min(50000000L / diff, 10L) + "\n§f* EXISTED §b" + this.data.getTotalTicks(), this.getBanVL(), 120L);
+                     this.fail(
+                        "* Timer\n§f* BL §b"
+                           + this.balance / 1000000L
+                           + "\n§f* RATE §b"
+                           + Math.min(50000000L / diff, 10L)
+                           + "\n§f* EXISTED §b"
+                           + this.data.getTotalTicks(),
+                        this.getBanVL(),
+                        120L
+                     );
                   } else {
                      this.kickTimer();
                   }
@@ -71,7 +80,6 @@ public final class TimerA extends PacketCheck {
       } else if (packet instanceof PositionEvent) {
          this.balance -= 50000000L;
       }
-
    }
 
    private boolean ready() {
@@ -80,11 +88,8 @@ public final class TimerA extends PacketCheck {
 
    private void kickTimer() {
       if (!this.data.isTimerKicked()) {
-         Tasker.run(() -> {
-            this.data.getBukkitPlayer().kickPlayer("Timed out (T.A)");
-         });
+         Tasker.run(() -> this.data.getBukkitPlayer().kickPlayer("Timed out (T.A)"));
          this.data.setTimerKicked(true);
       }
-
    }
 }

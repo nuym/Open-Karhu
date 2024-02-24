@@ -21,7 +21,7 @@ import me.liwk.karhu.util.MathUtil;
    experimental = true
 )
 public final class TimerC extends PacketCheck {
-   private final Deque packets = new LinkedList();
+   private final Deque<Long> packets = new LinkedList<>();
    private Long lastFlyingPacket = null;
    private long lastFlag;
 
@@ -30,6 +30,7 @@ public final class TimerC extends PacketCheck {
       this.violations = -1.0;
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent && !this.data.recentlyTeleported(5)) {
          long now = ((FlyingEvent)packet).getCurrentTimeMillis();
@@ -42,9 +43,15 @@ public final class TimerC extends PacketCheck {
                double speed = !this.data.isNewerThan8() ? 1.25 : 1.1;
                if (timer > speed && this.data.getTotalTicks() > 200) {
                   if (++this.violations > 3.0) {
-                     this.fail("* Timer\n§f* TS §b" + this.format(2, timer) + "\n§f* BADS §b" + this.packets.stream().filter((l) -> {
-                        return l < 50L;
-                     }).count() + "/50", this.getBanVL(), 300L);
+                     this.fail(
+                        "* Timer\n§f* TS §b"
+                           + this.format(2, Double.valueOf(timer))
+                           + "\n§f* BADS §b"
+                           + this.packets.stream().filter(l -> l < 50L).count()
+                           + "/50",
+                        this.getBanVL(),
+                        300L
+                     );
                   }
                } else if (now - this.lastFlag > 12500L) {
                   this.violations = Math.max(this.violations - 1.25, -2.0);
@@ -62,6 +69,5 @@ public final class TimerC extends PacketCheck {
       } else if (packet instanceof BlockPlaceEvent && this.data.getClientVersion().getProtocolVersion() > 754) {
          this.packets.add(100L);
       }
-
    }
 }

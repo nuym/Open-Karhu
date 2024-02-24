@@ -23,65 +23,62 @@ public class MChecksMenu {
       String highlight = Karhu.getInstance().getConfigManager().getAlertHoverMessageHighlight();
       String acname = Karhu.getInstance().getConfigManager().getName();
       final Gui gui = new Gui(ChatColor.translateAlternateColorCodes('&', highlight + "&l" + acname + "&7 - Checks"), 45);
-      int[] var6;
-      int var7;
-      int var8;
-      int pos;
       if (Karhu.SERVER_VERSION.isNewerThan(ServerVersion.V_1_12_2)) {
-         var6 = blueGlass;
-         var7 = blueGlass.length;
-
-         for(var8 = 0; var8 < var7; ++var8) {
-            pos = var6[var8];
+         for(int pos : blueGlass) {
             gui.addItem(1, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE), pos);
          }
 
-         var6 = whiteGlass;
-         var7 = whiteGlass.length;
-
-         for(var8 = 0; var8 < var7; ++var8) {
-            pos = var6[var8];
+         for(int pos : whiteGlass) {
             gui.addItem(1, new ItemStack(Material.WHITE_STAINED_GLASS_PANE), pos);
          }
       } else {
-         var6 = blueGlass;
-         var7 = blueGlass.length;
-
-         for(var8 = 0; var8 < var7; ++var8) {
-            pos = var6[var8];
+         for(int pos : blueGlass) {
             gui.addItem(1, new ItemStack(Material.getMaterial("STAINED_GLASS_PANE"), 1, (short)3), pos);
          }
 
-         var6 = whiteGlass;
-         var7 = whiteGlass.length;
-
-         for(var8 = 0; var8 < var7; ++var8) {
-            pos = var6[var8];
+         for(int pos : whiteGlass) {
             gui.addItem(1, new ItemStack(Material.getMaterial("STAINED_GLASS_PANE"), 1, (short)0), pos);
          }
       }
 
-      SubCategory[] var14 = SubCategory.values();
-      pos = var14.length;
-
-      for(int var10 = 0; var10 < pos; ++var10) {
-         final SubCategory categoryShit = var14[var10];
+      for(final SubCategory categoryShit : SubCategory.values()) {
          Material type = categoryShit.getItem();
          String name = categoryShit.name();
-         gui.addButton(new Button(1, categoryShit.getSlot(), ItemUtil.makeItem(type, 1, cfg.getGuiHighlightColor() + name, Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Manage checks", "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"))) {
-            public void onClick(Player clicker, ClickType clickType) {
-               gui.close(clicker);
-               ChecksMenuLegacy.openCheckSettingGUI(clicker, categoryShit);
+         gui.addButton(
+            new Button(
+               1,
+               categoryShit.getSlot(),
+               ItemUtil.makeItem(
+                  type, 1, cfg.getGuiHighlightColor() + name, Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Manage checks", "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤")
+               )
+            ) {
+               @Override
+               public void onClick(Player clicker, ClickType clickType) {
+                  gui.close(clicker);
+                  ChecksMenuLegacy.openCheckSettingGUI(clicker, categoryShit);
+               }
             }
-         });
+         );
       }
 
-      gui.addButton(new Button(1, 40, ItemUtil.makeItem(Material.EMERALD, 1, cfg.getGuiHighlightColor() + "Back", Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Go back to the last menu", "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤"))) {
-         public void onClick(Player clicker, ClickType clickType) {
-            gui.close(clicker);
-            KarhuMenu.openMenu(clicker);
+      gui.addButton(
+         new Button(
+            1,
+            40,
+            ItemUtil.makeItem(
+               Material.EMERALD,
+               1,
+               cfg.getGuiHighlightColor() + "Back",
+               Arrays.asList("§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤", "§7Go back to the last menu", "§7§m⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤")
+            )
+         ) {
+            @Override
+            public void onClick(Player clicker, ClickType clickType) {
+               gui.close(clicker);
+               KarhuMenu.openMenu(clicker);
+            }
          }
-      });
+      );
       gui.open(opener);
       opener.updateInventory();
    }

@@ -22,6 +22,7 @@ public final class BadPacketsN extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof FlyingEvent) {
          boolean collidedHorizontally = this.data.elapsed(this.data.getLastCollided()) < 10 && this.data.elapsed(this.data.getLastCollidedV()) > 10;
@@ -42,6 +43,5 @@ public final class BadPacketsN extends PacketCheck {
             this.lastMove = 0;
          }
       }
-
    }
 }

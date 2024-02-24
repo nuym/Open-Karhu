@@ -20,16 +20,14 @@ public final class BadPacketsC extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof AbilityEvent) {
-         if (this.data.elapsed(this.data.getLastFlyTick()) > 30 && this.data.getTotalTicks() > 60) {
-            if (++this.violations > 2.0) {
-               this.fail("* Sent ability packet without flying", this.getBanVL(), 110L);
-            }
-         } else {
+         if (this.data.elapsed(this.data.getLastFlyTick()) <= 30 || this.data.getTotalTicks() <= 60) {
             this.violations = 0.0;
+         } else if (++this.violations > 2.0) {
+            this.fail("* Sent ability packet without flying", this.getBanVL(), 110L);
          }
       }
-
    }
 }

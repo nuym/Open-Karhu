@@ -14,28 +14,28 @@ public class MySQL {
          if (conn == null || conn.isClosed()) {
             Class.forName("com.mysql.jdbc.Driver");
             FileConfiguration config = Karhu.getInstance().getConfigManager().getConfig();
-            conn = DriverManager.getConnection("jdbc:mysql://" + config.getString("mysql.address") + ":" + config.getString("mysql.port") + "/?useSSL=false", config.getString("mysql.user"), config.getString("mysql.password"));
+            conn = DriverManager.getConnection(
+               "jdbc:mysql://" + config.getString("mysql.address") + ":" + config.getString("mysql.port") + "/?useSSL=false",
+               config.getString("mysql.user"),
+               config.getString("mysql.password")
+            );
             conn.setAutoCommit(true);
             Query.use(conn);
             Query.prepare("CREATE DATABASE IF NOT EXISTS `" + config.getString("mysql.database") + "`").execute();
             Query.prepare("USE `" + config.getString("mysql.database") + "`").execute();
             Karhu.getInstance().printCool("&b> &aConnection to SQLite has been established.");
          }
-      } catch (Throwable var1) {
-         Exception e = (Exception) var1;
+      } catch (Exception var1) {
          Karhu.getInstance().printCool("&b> &cConnection to SQLite has failed.");
-         e.printStackTrace();
+         var1.printStackTrace();
       }
-
    }
 
    public static void use() {
       try {
          init();
       } catch (Exception var1) {
-         Exception e = var1;
-         e.printStackTrace();
+         var1.printStackTrace();
       }
-
    }
 }

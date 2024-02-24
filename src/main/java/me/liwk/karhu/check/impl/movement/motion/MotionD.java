@@ -19,6 +19,7 @@ public final class MotionD extends PositionCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(MovementUpdate e) {
    }
 }

@@ -22,6 +22,7 @@ public final class ScaffoldF extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof BlockPlaceEvent) {
          if (((BlockPlaceEvent)packet).isUsableItem()) {
@@ -30,17 +31,26 @@ public final class ScaffoldF extends PacketCheck {
 
          if ((double)this.data.deltas.deltaPitch < 0.7 && this.data.deltas.deltaYaw > 100.0F && this.data.deltas.deltaXZ > 0.2 && this.isNotGroundBridging()) {
             if (++this.violations > 5.0) {
-               this.fail("* Weird stuff\n §f* deltaPitch | deltaYaw §b" + this.data.deltas.deltaPitch + " | " + this.data.deltas.deltaYaw + "\n §f* deltaXZ: §b" + this.data.deltas.deltaXZ, 120L);
+               this.fail(
+                  "* Weird stuff\n §f* deltaPitch | deltaYaw §b"
+                     + this.data.deltas.deltaPitch
+                     + " | "
+                     + this.data.deltas.deltaYaw
+                     + "\n §f* deltaXZ: §b"
+                     + this.data.deltas.deltaXZ,
+                  120L
+               );
             }
          } else {
             this.decrease(0.25);
          }
       }
-
    }
 
    public boolean isNotGroundBridging() {
-      Block block = Karhu.getInstance().getChunkManager().getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
+      Block block = Karhu.getInstance()
+         .getChunkManager()
+         .getChunkBlockAt(this.data.getLocation().clone().subtract(0.0, 2.0, 0.0).toLocation(this.data.getWorld()));
       if (block == null) {
          return false;
       } else {

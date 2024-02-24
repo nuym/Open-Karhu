@@ -10,7 +10,7 @@ import me.liwk.karhu.util.MathUtil;
 
 public class ThreadManager {
    private final int maxThreads = Runtime.getRuntime().availableProcessors() * 2;
-   private final List userThreads = new ArrayList();
+   private final List<Thread> userThreads = new ArrayList<>();
 
    public boolean isThreadsOver() {
       return this.userThreads.size() > this.maxThreads - 1;
@@ -22,30 +22,33 @@ public class ThreadManager {
          data.getThread().getExecutorService().shutdownNow();
          this.userThreads.remove(data.getThread());
       }
-
    }
 
    public Thread generate() {
-      Thread randomThread;
-      Thread thread;
       if (this.isThreadsOver()) {
-         randomThread = (Thread)this.getUserThreads().stream().min(Comparator.comparing(Thread::getCount)).orElse(MathUtil.randomElement(this.getUserThreads()));
+         Thread randomThread = this.getUserThreads()
+            .stream()
+            .min(Comparator.comparing(Thread::getCount))
+            .orElse(MathUtil.randomElement(this.getUserThreads()));
          if (randomThread != null) {
             ++randomThread.count;
             return randomThread;
          } else {
-            thread = new Thread();
+            Thread thread = new Thread();
             ++thread.count;
             this.userThreads.add(thread);
             return thread;
          }
       } else {
-         randomThread = (Thread)this.getUserThreads().stream().min(Comparator.comparing(Thread::getCount)).orElse(MathUtil.randomElement(this.getUserThreads()));
+         Thread randomThread = this.getUserThreads()
+            .stream()
+            .min(Comparator.comparing(Thread::getCount))
+            .orElse(MathUtil.randomElement(this.getUserThreads()));
          if (randomThread != null && randomThread.getCount() < 15) {
             ++randomThread.count;
             return randomThread;
          } else {
-            thread = new Thread();
+            Thread thread = new Thread();
             ++thread.count;
             this.userThreads.add(thread);
             return thread;
@@ -61,7 +64,7 @@ public class ThreadManager {
       return this.maxThreads;
    }
 
-   public List getUserThreads() {
+   public List<Thread> getUserThreads() {
       return this.userThreads;
    }
 }

@@ -14,32 +14,16 @@ public class Hastebin {
 
    public static String uploadPaste(String contents) {
       try {
-         HttpURLConnection connection = (HttpURLConnection)(new URL("https://paste.md-5.net/documents")).openConnection();
+         HttpURLConnection connection = (HttpURLConnection)new URL("https://paste.md-5.net/documents").openConnection();
          connection.setRequestMethod("POST");
          connection.setDoInput(true);
          connection.setDoOutput(true);
-         connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
-         OutputStream os = connection.getOutputStream();
-         Throwable var3 = null;
+         connection.setRequestProperty(
+            "User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
+         );
 
-         try {
+         try (OutputStream os = connection.getOutputStream()) {
             os.write(contents.getBytes(Charsets.UTF_8));
-         } catch (Throwable var13) {
-            var3 = var13;
-            throw var13;
-         } finally {
-            if (os != null) {
-               if (var3 != null) {
-                  try {
-                     os.close();
-                  } catch (Throwable var12) {
-                     var3.addSuppressed(var12);
-                  }
-               } else {
-                  os.close();
-               }
-            }
-
          }
 
          Gson gson = new Gson();

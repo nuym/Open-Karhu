@@ -1,7 +1,6 @@
 package me.liwk.karhu.handler.global.bukkit;
 
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
-import java.util.Iterator;
 import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.antivpn.VPNCheck;
@@ -40,7 +39,8 @@ public final class BukkitHandler implements Listener {
       long now = System.nanoTime();
       Player player = event.getPlayer();
       if (!Karhu.getInstance().getConfigManager().isGeyserSupport() || !PlayerUtil.isGeyserPlayer(player.getUniqueId())) {
-         if (!Karhu.getInstance().getConfigManager().isGeyserPrefixCheck() || !player.getName().contains(Karhu.getInstance().getConfigManager().getGeyserPrefix())) {
+         if (!Karhu.getInstance().getConfigManager().isGeyserPrefixCheck()
+            || !player.getName().contains(Karhu.getInstance().getConfigManager().getGeyserPrefix())) {
             KarhuPlayer data = Karhu.getInstance().getDataManager().getPlayerData(player.getUniqueId());
             if (data == null) {
                Karhu.getInstance().getDataManager().add(player.getUniqueId(), now);
@@ -69,7 +69,6 @@ public final class BukkitHandler implements Listener {
                      Karhu.getStorage().loadActiveViolations(player.getName(), data);
                   }
                }
-
             });
          }
       }
@@ -84,7 +83,6 @@ public final class BukkitHandler implements Listener {
          Karhu.getInstance().printCool(ChatColor.RED + player.getName() + " joined using geyser");
          Karhu.getInstance().getDataManager().remove(player.getUniqueId());
       }
-
    }
 
    @EventHandler(
@@ -98,9 +96,8 @@ public final class BukkitHandler implements Listener {
 
       Karhu.getInstance().getDataManager().remove(uuid);
       if (Karhu.isAPIAvailable()) {
-         APICaller.callUnregister((Player)null);
+         APICaller.callUnregister(null);
       }
-
    }
 
    @EventHandler(
@@ -114,7 +111,6 @@ public final class BukkitHandler implements Listener {
             data.getCollisionHandler().cacheBlocks();
          }
       }
-
    }
 
    @EventHandler(
@@ -142,7 +138,6 @@ public final class BukkitHandler implements Listener {
                }
             }
          }
-
       }
    }
 
@@ -200,7 +195,6 @@ public final class BukkitHandler implements Listener {
                }
             }
          }
-
       }
    }
 
@@ -215,7 +209,6 @@ public final class BukkitHandler implements Listener {
             e.setCancelled(true);
             data.setCancelBreak(false);
          }
-
       }
    }
 
@@ -224,12 +217,13 @@ public final class BukkitHandler implements Listener {
    )
    public void onPreJoin(PlayerLoginEvent e) {
       Player player = e.getPlayer();
-      if (Karhu.getInstance().getConfigManager().isAntivpn() && (Karhu.getInstance().getConfigManager().isProxycheck() || Karhu.getInstance().getConfigManager().isMaliciouscheck()) && !Karhu.getInstance().getConfigManager().getAntiVpnBypass().contains(player.getUniqueId().toString())) {
+      if (Karhu.getInstance().getConfigManager().isAntivpn()
+         && (Karhu.getInstance().getConfigManager().isProxycheck() || Karhu.getInstance().getConfigManager().isMaliciouscheck())
+         && !Karhu.getInstance().getConfigManager().getAntiVpnBypass().contains(player.getUniqueId().toString())) {
          Karhu.getInstance().getAntiVPNThread().execute(() -> {
             if (VPNCheck.checkAddress(e.getAddress())) {
                e.disallow(Result.KICK_BANNED, Karhu.getInstance().getConfigManager().getAntivpnKickMsg());
             }
-
          });
       }
    }
@@ -241,7 +235,6 @@ public final class BukkitHandler implements Listener {
       if (data != null) {
          this.recorrectPlayerStates(data);
       }
-
    }
 
    @EventHandler
@@ -253,7 +246,6 @@ public final class BukkitHandler implements Listener {
             e.setCancelled(true);
          }
       }
-
    }
 
    @EventHandler(
@@ -263,23 +255,20 @@ public final class BukkitHandler implements Listener {
    public void onEvent(BlockPistonExtendEvent event) {
       World blockWorld = event.getBlock().getWorld();
       Location blockLocation = event.getBlock().getLocation();
-      Iterator var4 = event.getBlock().getWorld().getPlayers().iterator();
 
-      while(var4.hasNext()) {
-         Player player = (Player)var4.next();
+      for(Player player : event.getBlock().getWorld().getPlayers()) {
          if (!blockWorld.equals(player.getWorld())) {
             return;
          }
 
          if (blockLocation.distance(player.getLocation()) <= 14.0) {
             KarhuPlayer data = Karhu.getInstance().getDataManager().getPlayerData(player);
-            data.queueToPrePing((task) -> {
+            data.queueToPrePing(task -> {
                data.setLastPistonPush(data.getTotalTicks());
                data.setLastSlimePistonPush(data.getTotalTicks());
             });
          }
       }
-
    }
 
    @EventHandler(
@@ -289,23 +278,20 @@ public final class BukkitHandler implements Listener {
    public void onEvent(BlockPistonRetractEvent event) {
       Block block = event.getBlock();
       Location blockLocation = block.getLocation();
-      Iterator var4 = block.getWorld().getPlayers().iterator();
 
-      while(var4.hasNext()) {
-         Player player = (Player)var4.next();
+      for(Player player : block.getWorld().getPlayers()) {
          if (!block.getWorld().equals(player.getWorld())) {
             return;
          }
 
          if (blockLocation.distance(player.getLocation()) <= 14.0) {
             KarhuPlayer data = Karhu.getInstance().getDataManager().getPlayerData(player);
-            data.queueToPrePing((task) -> {
+            data.queueToPrePing(task -> {
                data.setLastPistonPush(data.getTotalTicks());
                data.setLastSlimePistonPush(data.getTotalTicks());
             });
          }
       }
-
    }
 
    private void recorrectPlayerStates(KarhuPlayer data) {

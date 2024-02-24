@@ -54,7 +54,6 @@ public class AxisAlignedBB {
          this.min = pos1;
          this.max = pos2;
       }
-
    }
 
    public AxisAlignedBB(Location location) {
@@ -85,19 +84,13 @@ public class AxisAlignedBB {
    }
 
    public AxisAlignedBB addCoord(double x, double y, double z) {
-      double d5;
-      double d0;
-      double d1;
-      double d2;
-      double d3;
-      double d4;
       if (this.min != null && this.max != null) {
-         d0 = this.min.getX();
-         d1 = this.min.getY();
-         d2 = this.min.getZ();
-         d3 = this.max.getX();
-         d4 = this.max.getY();
-         d5 = this.max.getZ();
+         double d0 = this.min.getX();
+         double d1 = this.min.getY();
+         double d2 = this.min.getZ();
+         double d3 = this.max.getX();
+         double d4 = this.max.getY();
+         double d5 = this.max.getZ();
          if (x < 0.0) {
             d0 += x;
          } else if (x > 0.0) {
@@ -118,12 +111,12 @@ public class AxisAlignedBB {
 
          return new AxisAlignedBB(new Vector(d0, d1, d2), new Vector(d3, d4, d5), true);
       } else {
-         d0 = this.minX;
-         d1 = this.minY;
-         d2 = this.minZ;
-         d3 = this.maxX;
-         d4 = this.maxY;
-         d5 = this.maxZ;
+         double d0 = this.minX;
+         double d1 = this.minY;
+         double d2 = this.minZ;
+         double d3 = this.maxX;
+         double d4 = this.maxY;
+         double d5 = this.maxZ;
          if (x < 0.0) {
             d0 += x;
          } else if (x > 0.0) {
@@ -147,27 +140,21 @@ public class AxisAlignedBB {
    }
 
    public AxisAlignedBB expand(double x, double y, double z) {
-      double d5;
-      double d0;
-      double d1;
-      double d2;
-      double d3;
-      double d4;
       if (this.min != null && this.max != null) {
-         d0 = this.min.getX() - x;
-         d1 = this.min.getY() - y;
-         d2 = this.min.getZ() - z;
-         d3 = this.max.getX() + x;
-         d4 = this.max.getY() + y;
-         d5 = this.max.getZ() + z;
+         double d0 = this.min.getX() - x;
+         double d1 = this.min.getY() - y;
+         double d2 = this.min.getZ() - z;
+         double d3 = this.max.getX() + x;
+         double d4 = this.max.getY() + y;
+         double d5 = this.max.getZ() + z;
          return new AxisAlignedBB(new Vector(d0, d1, d2), new Vector(d3, d4, d5), true);
       } else {
-         d0 = this.minX - x;
-         d1 = this.minY - y;
-         d2 = this.minZ - z;
-         d3 = this.maxX + x;
-         d4 = this.maxY + y;
-         d5 = this.maxZ + z;
+         double d0 = this.minX - x;
+         double d1 = this.minY - y;
+         double d2 = this.minZ - z;
+         double d3 = this.maxX + x;
+         double d4 = this.maxY + y;
+         double d5 = this.maxZ + z;
          return new AxisAlignedBB(d0, d1, d2, d3, d4, d5);
       }
    }
@@ -198,14 +185,13 @@ public class AxisAlignedBB {
 
    public double calculateXOffset(AxisAlignedBB other, double offsetX) {
       if (other.maxY > this.minY && other.minY < this.maxY && other.maxZ > this.minZ && other.minZ < this.maxZ) {
-         double d0;
          if (offsetX > 0.0 && other.maxX <= this.minX) {
-            d0 = this.minX - other.maxX;
-            if (d0 < offsetX) {
-               offsetX = d0;
+            double d1 = this.minX - other.maxX;
+            if (d1 < offsetX) {
+               offsetX = d1;
             }
          } else if (offsetX < 0.0 && other.minX >= this.maxX) {
-            d0 = this.maxX - other.minX;
+            double d0 = this.maxX - other.minX;
             if (d0 > offsetX) {
                offsetX = d0;
             }
@@ -217,14 +203,13 @@ public class AxisAlignedBB {
 
    public double calculateYOffset(AxisAlignedBB other, double offsetY) {
       if (other.maxX > this.minX && other.minX < this.maxX && other.maxZ > this.minZ && other.minZ < this.maxZ) {
-         double d0;
          if (offsetY > 0.0 && other.maxY <= this.minY) {
-            d0 = this.minY - other.maxY;
-            if (d0 < offsetY) {
-               offsetY = d0;
+            double d1 = this.minY - other.maxY;
+            if (d1 < offsetY) {
+               offsetY = d1;
             }
          } else if (offsetY < 0.0 && other.minY >= this.maxY) {
-            d0 = this.maxY - other.minY;
+            double d0 = this.maxY - other.minY;
             if (d0 > offsetY) {
                offsetY = d0;
             }
@@ -236,14 +221,13 @@ public class AxisAlignedBB {
 
    public double calculateZOffset(AxisAlignedBB other, double offsetZ) {
       if (other.maxX > this.minX && other.minX < this.maxX && other.maxY > this.minY && other.minY < this.maxY) {
-         double d0;
          if (offsetZ > 0.0 && other.maxZ <= this.minZ) {
-            d0 = this.minZ - other.maxZ;
-            if (d0 < offsetZ) {
-               offsetZ = d0;
+            double d1 = this.minZ - other.maxZ;
+            if (d1 < offsetZ) {
+               offsetZ = d1;
             }
          } else if (offsetZ < 0.0 && other.minZ >= this.maxZ) {
-            d0 = this.maxZ - other.minZ;
+            double d0 = this.maxZ - other.minZ;
             if (d0 > offsetZ) {
                offsetZ = d0;
             }
@@ -254,11 +238,21 @@ public class AxisAlignedBB {
    }
 
    public boolean intersectsWith(AxisAlignedBB other) {
-      return other.maxX > this.minX && other.minX < this.maxX && other.maxY > this.minY && other.minY < this.maxY && other.maxZ > this.minZ && other.minZ < this.maxZ;
+      return other.maxX > this.minX
+         && other.minX < this.maxX
+         && other.maxY > this.minY
+         && other.minY < this.maxY
+         && other.maxZ > this.minZ
+         && other.minZ < this.maxZ;
    }
 
    public boolean isVecInside(Vec3 vec) {
-      return vec.xCoord > this.minX && vec.xCoord < this.maxX && vec.yCoord > this.minY && vec.yCoord < this.maxY && vec.zCoord > this.minZ && vec.zCoord < this.maxZ;
+      return vec.xCoord > this.minX
+         && vec.xCoord < this.maxX
+         && vec.yCoord > this.minY
+         && vec.yCoord < this.maxY
+         && vec.zCoord > this.minZ
+         && vec.zCoord < this.maxZ;
    }
 
    public Vector intersectsRay(Ray ray, float minDist, float maxDist) {
@@ -323,11 +317,8 @@ public class AxisAlignedBB {
          boolean hitPlane = false;
          boolean above = false;
          boolean below = false;
-         Vector[] var9 = vertices;
-         int var10 = vertices.length;
 
-         for(int var11 = 0; var11 < var10; ++var11) {
-            Vector vertex = var9[var11];
+         for(Vector vertex : vertices) {
             vertex.subtract(pos);
             if (!hitPlane) {
                if (vertex.dot(planeNormal) > 0.0) {
@@ -351,11 +342,8 @@ public class AxisAlignedBB {
          boolean betweenVectors = false;
          boolean frontOfExtraDirToDir = false;
          boolean frontOfDirToExtraDir = false;
-         Vector[] var14 = vertices;
-         int var15 = vertices.length;
 
-         for(int var16 = 0; var16 < var15; ++var16) {
-            Vector vertex = var14[var16];
+         for(Vector vertex : vertices) {
             if (!frontOfExtraDirToDir && vertex.dot(extraDirToDirNormal) >= 0.0) {
                frontOfExtraDirToDir = true;
             }
@@ -478,12 +466,18 @@ public class AxisAlignedBB {
       return vec == null ? false : vec.xCoord >= this.minX && vec.xCoord <= this.maxX && vec.yCoord >= this.minY && vec.yCoord <= this.maxY;
    }
 
+   @Override
    public String toString() {
       return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + " -> " + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
    }
 
    public boolean func_181656_b() {
-      return Double.isNaN(this.minX) || Double.isNaN(this.minY) || Double.isNaN(this.minZ) || Double.isNaN(this.maxX) || Double.isNaN(this.maxY) || Double.isNaN(this.maxZ);
+      return Double.isNaN(this.minX)
+         || Double.isNaN(this.minY)
+         || Double.isNaN(this.minZ)
+         || Double.isNaN(this.maxX)
+         || Double.isNaN(this.maxY)
+         || Double.isNaN(this.maxZ);
    }
 
    public double getCenterX() {
@@ -519,7 +513,10 @@ public class AxisAlignedBB {
    }
 
    public double distance(Location location) {
-      return Math.sqrt(Math.min(FastMath.pow(location.getX() - this.minX, 2), FastMath.pow(location.getX() - this.maxX, 2)) + Math.min(FastMath.pow(location.getZ() - this.minZ, 2), FastMath.pow(location.getZ() - this.maxZ, 2)));
+      return Math.sqrt(
+         Math.min(FastMath.pow(location.getX() - this.minX, 2), FastMath.pow(location.getX() - this.maxX, 2))
+            + Math.min(FastMath.pow(location.getZ() - this.minZ, 2), FastMath.pow(location.getZ() - this.maxZ, 2))
+      );
    }
 
    public double distance(double x, double z) {
@@ -552,24 +549,30 @@ public class AxisAlignedBB {
    }
 
    public double distance(Vector vector) {
-      double dx;
-      double dy;
-      double dz;
       if (this.min != null && this.max != null) {
-         dx = Math.max(this.min.getX() - vector.getX(), Math.max(0.0, vector.getX() - this.max.getX()));
-         dy = Math.max(this.min.getY() - vector.getY(), Math.max(0.0, vector.getY() - this.max.getY()));
-         dz = Math.max(this.min.getZ() - vector.getZ(), Math.max(0.0, vector.getZ() - this.max.getZ()));
+         double dx = Math.max(this.min.getX() - vector.getX(), Math.max(0.0, vector.getX() - this.max.getX()));
+         double dy = Math.max(this.min.getY() - vector.getY(), Math.max(0.0, vector.getY() - this.max.getY()));
+         double dz = Math.max(this.min.getZ() - vector.getZ(), Math.max(0.0, vector.getZ() - this.max.getZ()));
          return Math.sqrt(dx * dx + dy * dy + dz * dz);
       } else {
-         dx = Math.max(this.minX - vector.getX(), Math.max(0.0, vector.getX() - this.maxX));
-         dy = Math.max(this.minY - vector.getY(), Math.max(0.0, vector.getY() - this.maxY));
-         dz = Math.max(this.minZ - vector.getZ(), Math.max(0.0, vector.getZ() - this.maxZ));
+         double dx = Math.max(this.minX - vector.getX(), Math.max(0.0, vector.getX() - this.maxX));
+         double dy = Math.max(this.minY - vector.getY(), Math.max(0.0, vector.getY() - this.maxY));
+         double dz = Math.max(this.minZ - vector.getZ(), Math.max(0.0, vector.getZ() - this.maxZ));
          return Math.sqrt(dx * dx + dy * dy + dz * dz);
       }
    }
 
    public Vector[] getVertices() {
-      return new Vector[]{new Vector(this.min.getX(), this.min.getY(), this.min.getZ()), new Vector(this.min.getX(), this.min.getY(), this.max.getZ()), new Vector(this.min.getX(), this.max.getY(), this.min.getZ()), new Vector(this.min.getX(), this.max.getY(), this.max.getZ()), new Vector(this.max.getX(), this.min.getY(), this.min.getZ()), new Vector(this.max.getX(), this.max.getY(), this.min.getZ()), new Vector(this.max.getX(), this.min.getY(), this.max.getZ()), new Vector(this.max.getX(), this.max.getY(), this.max.getZ())};
+      return new Vector[]{
+         new Vector(this.min.getX(), this.min.getY(), this.min.getZ()),
+         new Vector(this.min.getX(), this.min.getY(), this.max.getZ()),
+         new Vector(this.min.getX(), this.max.getY(), this.min.getZ()),
+         new Vector(this.min.getX(), this.max.getY(), this.max.getZ()),
+         new Vector(this.max.getX(), this.min.getY(), this.min.getZ()),
+         new Vector(this.max.getX(), this.max.getY(), this.min.getZ()),
+         new Vector(this.max.getX(), this.min.getY(), this.max.getZ()),
+         new Vector(this.max.getX(), this.max.getY(), this.max.getZ())
+      };
    }
 
    public double getMinX() {

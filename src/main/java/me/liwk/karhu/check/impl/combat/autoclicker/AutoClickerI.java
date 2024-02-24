@@ -20,13 +20,14 @@ import me.liwk.karhu.util.MathUtil;
    experimental = false
 )
 public final class AutoClickerI extends PacketCheck {
-   private final Deque delays = new ArrayDeque();
+   private final Deque<Integer> delays = new ArrayDeque<>();
    private int delay;
 
    public AutoClickerI(KarhuPlayer data, Karhu karhu) {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof AttackEvent) {
          boolean valid = !this.data.isPlacing() && !this.data.isHasDig() && !this.data.isUsingItem() && this.data.elapsed(this.data.getDigTicks()) > 5;
@@ -38,12 +39,10 @@ public final class AutoClickerI extends PacketCheck {
             if (this.delays.size() == 40) {
                double average = MathUtil.average(this.delays);
                double std = MathUtil.stdDev(average, this.delays);
-               if (average <= 2.0 && std < 0.15 && this.data.getCps() > 8.0) {
-                  if (++this.violations > 10.0) {
-                     this.fail("* No randomization\n§f* STD §b" + std + "\n§f* AVG §b" + average + "\n§f* CPS §b" + this.data.getCps(), this.getBanVL(), 200L);
-                     this.decrease(this.violations);
-                  }
-               } else {
+               if (!(average <= 2.0) || !(std < 0.15) || !(this.data.getCps() > 8.0)) {
+                  this.decrease(this.violations);
+               } else if (++this.violations > 10.0) {
+                  this.fail("* No randomization\n§f* STD §b" + std + "\n§f* AVG §b" + average + "\n§f* CPS §b" + this.data.getCps(), this.getBanVL(), 200L);
                   this.decrease(this.violations);
                }
 
@@ -55,6 +54,5 @@ public final class AutoClickerI extends PacketCheck {
       } else if (packet instanceof FlyingEvent) {
          ++this.delay;
       }
-
    }
 }

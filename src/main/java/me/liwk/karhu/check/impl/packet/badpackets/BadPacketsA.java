@@ -20,10 +20,13 @@ public final class BadPacketsA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
-      if (packet instanceof FlyingEvent && (((FlyingEvent)packet).hasMoved() || ((FlyingEvent)packet).hasLooked()) && Math.abs(((FlyingEvent)packet).getPitch()) > 90.0F && !this.data.isPossiblyTeleporting()) {
-         this.fail("* Improper pitch\n §f* P: §b" + this.format(0, ((FlyingEvent)packet).getPitch()), this.getBanVL(), 110L);
+      if (packet instanceof FlyingEvent
+         && (((FlyingEvent)packet).hasMoved() || ((FlyingEvent)packet).hasLooked())
+         && Math.abs(((FlyingEvent)packet).getPitch()) > 90.0F
+         && !this.data.isPossiblyTeleporting()) {
+         this.fail("* Improper pitch\n §f* P: §b" + this.format(0, Float.valueOf(((FlyingEvent)packet).getPitch())), this.getBanVL(), 110L);
       }
-
    }
 }

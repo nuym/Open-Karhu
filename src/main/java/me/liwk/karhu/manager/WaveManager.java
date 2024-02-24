@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class WaveManager {
-   private final ArrayList playersToBan = new ArrayList();
+   private final ArrayList<String> playersToBan = new ArrayList<>();
    private boolean runningBanwave = false;
    private int bans = 0;
 
@@ -24,26 +24,21 @@ public class WaveManager {
 
             this.runningBanwave = true;
             ++this.bans;
-            String pre = (String)this.playersToBan.get(0);
+            String pre = this.playersToBan.get(0);
             String player = pre.contains("-") ? this.findName(pre) : pre;
             Bukkit.broadcastMessage(Karhu.getInstance().getConfigManager().getBanwaveCaught().replaceAll("%player%", player));
             this.removeFromWave(pre);
             String punish = Karhu.getInstance().getConfigManager().getBanwavePunish().replaceAll("%player%", player);
             if (!Karhu.getInstance().getConfigManager().isBungeeCommand()) {
-               Tasker.run(() -> {
-                  Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), punish);
-               });
+               Tasker.run(() -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), punish));
             } else {
-               Tasker.run(() -> {
-                  BungeeAPI.sendCommand(punish);
-               });
+               Tasker.run(() -> BungeeAPI.sendCommand(punish));
             }
 
             Tasker.runTaskLaterAsync(this::startBanwave, 20L);
          } else {
             this.completeBanWave();
          }
-
       });
    }
 
@@ -63,7 +58,6 @@ public class WaveManager {
          BanWaveX bwRequest = new BanWaveX(uuid, check, 1, System.currentTimeMillis());
          Karhu.getStorage().addToBanWave(bwRequest);
       }
-
    }
 
    public void removeFromWave(String uuid) {
@@ -81,7 +75,7 @@ public class WaveManager {
       return target != null ? target.getName() : Bukkit.getOfflinePlayer(UUID.fromString(arg)).getName();
    }
 
-   public ArrayList getPlayersToBan() {
+   public ArrayList<String> getPlayersToBan() {
       return this.playersToBan;
    }
 

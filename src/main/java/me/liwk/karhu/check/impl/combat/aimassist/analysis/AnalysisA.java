@@ -31,6 +31,7 @@ public final class AnalysisA extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof AttackEvent) {
          ++this.attacks;
@@ -39,14 +40,25 @@ public final class AnalysisA extends PacketCheck {
             double ratio = (double)this.attacks / (double)this.swings;
             double requiredAim = (double)this.attacks / 2.5;
             if (ratio >= 0.75 && this.nearCenterHits >= requiredAim) {
-               this.fail("* Combat analysis\n§f* ratio: §b" + this.format(3, ratio) + "\n§f* a/s: §b" + this.attacks + "/" + this.swings + "\n§f* nch: §b" + this.nearCenterHits, this.getBanVL(), 300L);
+               this.fail(
+                  "* Combat analysis\n§f* ratio: §b"
+                     + this.format(3, Double.valueOf(ratio))
+                     + "\n§f* a/s: §b"
+                     + this.attacks
+                     + "/"
+                     + this.swings
+                     + "\n§f* nch: §b"
+                     + this.nearCenterHits,
+                  this.getBanVL(),
+                  300L
+               );
             }
 
             this.attacks = this.swings = 0;
             this.nearCenterHits = 0.0;
          }
       } else if (packet instanceof FlyingEvent && this.data.getLastAttackTick() <= 1 && this.data.getLastTarget() != null) {
-         EntityData edata = (EntityData)this.data.getEntityData().get(this.data.getLastTarget().getEntityId());
+         EntityData edata = this.data.getEntityData().get(this.data.getLastTarget().getEntityId());
          if (edata == null) {
             return;
          }
@@ -58,7 +70,11 @@ public final class AnalysisA extends PacketCheck {
          double angleMDFix = MathUtil.getAngleDistance((double)this.data.getLocation().getYaw(), direction);
          double angle = Math.min(angleNormal, angleMDFix);
          double distance = this.data.getBoundingBox().distance(x, z);
-         boolean movement = this.data.deltas.deltaXZ >= 0.08 && this.data.deltas.deltaYaw >= 1.5F && this.data.elapsed(this.data.getLastVelocityTaken()) <= 500 && Math.abs(x - this.lastX) >= 0.0325 && Math.abs(z - this.lastZ) >= 0.0325;
+         boolean movement = this.data.deltas.deltaXZ >= 0.08
+            && this.data.deltas.deltaYaw >= 1.5F
+            && this.data.elapsed(this.data.getLastVelocityTaken()) <= 500
+            && Math.abs(x - this.lastX) >= 0.0325
+            && Math.abs(z - this.lastZ) >= 0.0325;
          if (angle <= 4.0 * Math.max(2.0, distance) && movement) {
             if (distance >= 0.4) {
                ++this.nearCenterHits;
@@ -70,6 +86,5 @@ public final class AnalysisA extends PacketCheck {
          this.lastX = x;
          this.lastZ = z;
       }
-
    }
 }

@@ -25,6 +25,7 @@ public final class BadPacketsF extends PacketCheck {
       super(data, karhu);
    }
 
+   @Override
    public void handle(Event packet) {
       if (packet instanceof SteerEvent && this.data.getTotalTicks() > 200) {
          this.sent = !((SteerEvent)packet).isUnmount();
@@ -45,6 +46,5 @@ public final class BadPacketsF extends PacketCheck {
             this.ticks = 0.0;
          }
       }
-
    }
 }

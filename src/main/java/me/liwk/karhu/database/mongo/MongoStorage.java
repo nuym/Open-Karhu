@@ -9,7 +9,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -34,14 +33,18 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bukkit.Bukkit;
 
 public class MongoStorage implements Storage {
-   private final CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(new CodecRegistry[]{MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromProviders(new CodecProvider[]{PojoCodecProvider.builder().automatic(true).build()})});
-   private MongoCollection loggedViolations;
-   private MongoCollection loggedBans;
-   private MongoCollection loggedStatus;
-   private MongoCollection loggedBanwavePlayers;
-   private final ConcurrentLinkedQueue violations = new ConcurrentLinkedQueue();
-   private final ConcurrentLinkedQueue bans = new ConcurrentLinkedQueue();
-   private final ConcurrentLinkedQueue banWaveQueue = new ConcurrentLinkedQueue();
+   private final CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(
+      new CodecRegistry[]{
+         MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromProviders(new CodecProvider[]{PojoCodecProvider.builder().automatic(true).build()})
+      }
+   );
+   private MongoCollection<ViolationX> loggedViolations;
+   private MongoCollection<BanX> loggedBans;
+   private MongoCollection<AlertsX> loggedStatus;
+   private MongoCollection<BanWaveX> loggedBanwavePlayers;
+   private final ConcurrentLinkedQueue<ViolationX> violations = new ConcurrentLinkedQueue<>();
+   private final ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue();
+   private final ConcurrentLinkedQueue<BanWaveX> banWaveQueue = new ConcurrentLinkedQueue<>();
    public String host;
    public String database;
    public String username;
@@ -59,11 +62,14 @@ public class MongoStorage implements Storage {
       this.password = cfg.getConfig().getString("mongo.authentication.password");
    }
 
+   @Override
    public void init() {
       MongoClient client;
       if (this.auth) {
          MongoCredential credentials = MongoCredential.createCredential(this.username, this.database, this.password.toCharArray());
-         client = new MongoClient(new ServerAddress(this.host, this.port), credentials, MongoClientOptions.builder().codecRegistry(this.pojoCodecRegistry).build());
+         client = new MongoClient(
+            new ServerAddress(this.host, this.port), credentials, MongoClientOptions.builder().codecRegistry(this.pojoCodecRegistry).build()
+         );
       } else {
          client = new MongoClient(new ServerAddress(this.host, this.port), MongoClientOptions.builder().codecRegistry(this.pojoCodecRegistry).build());
       }
@@ -73,18 +79,16 @@ public class MongoStorage implements Storage {
       this.loggedBans = mongodb.getCollection("bans", BanX.class);
       this.loggedStatus = mongodb.getCollection("status", AlertsX.class);
       this.loggedBanwavePlayers = mongodb.getCollection("banwave", BanWaveX.class);
-      (new Thread(() -> {
+      new Thread(() -> {
          while(Karhu.getInstance() != null && Karhu.getInstance().getPlug().isEnabled()) {
-            Exception e;
             try {
                NetUtil.sleep(10000L);
                if (!this.violations.isEmpty() || !this.bans.isEmpty() || !this.banWaveQueue.isEmpty()) {
                   if (!this.violations.isEmpty()) {
                      try {
-                        this.loggedViolations.insertMany(new ArrayList(this.violations));
+                        this.loggedViolations.insertMany(new ArrayList<>(this.violations));
                      } catch (Exception var4) {
-                        e = var4;
-                        e.printStackTrace();
+                        var4.printStackTrace();
                      }
 
                      this.violations.clear();
@@ -93,9 +97,8 @@ public class MongoStorage implements Storage {
                   if (!this.bans.isEmpty()) {
                      try {
                         this.loggedBans.insertMany(new ArrayList(this.bans));
-                     } catch (Exception var3) {
-                        e = var3;
-                        e.printStackTrace();
+                     } catch (Exception var3xx) {
+                        var3xx.printStackTrace();
                      }
 
                      this.bans.clear();
@@ -103,36 +106,37 @@ public class MongoStorage implements Storage {
 
                   if (!this.banWaveQueue.isEmpty()) {
                      try {
-                        this.loggedBanwavePlayers.insertMany(new ArrayList(this.banWaveQueue));
-                     } catch (Exception var2) {
-                        e = var2;
-                        e.printStackTrace();
+                        this.loggedBanwavePlayers.insertMany(new ArrayList<>(this.banWaveQueue));
+                     } catch (Exception var2xx) {
+                        var2xx.printStackTrace();
                      }
 
                      this.banWaveQueue.clear();
                   }
                }
             } catch (Exception var5) {
-               e = var5;
-               e.printStackTrace();
+               var5.printStackTrace();
             }
          }
-
-      }, "KarhuMongoCommitter")).start();
+      }, "KarhuMongoCommitter").start();
    }
 
+   @Override
    public void addAlert(ViolationX violation) {
       this.violations.add(violation);
    }
 
+   @Override
    public void addBan(BanX ban) {
       this.bans.add(ban);
    }
 
+   @Override
    public void setAlerts(String uuid, int status) {
       this.loggedStatus.replaceOne(Filters.eq("player", uuid), new AlertsX(uuid, status));
    }
 
+   @Override
    public boolean getAlerts(String uuid) {
       AlertsX alertsX = (AlertsX)this.loggedStatus.find(Filters.eq("player", uuid)).limit(1).first();
       if (alertsX != null) {
@@ -143,113 +147,127 @@ public class MongoStorage implements Storage {
       }
    }
 
+   @Override
    public void loadActiveViolations(String uuid, KarhuPlayer data) {
       Tasker.taskAsync(() -> {
-         List violations = new ArrayList();
-         Map validVls = new HashMap();
+         List<ViolationX> violations = new ArrayList<>();
+         Map<String, Integer> validVls = new HashMap<>();
          this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach(violations::add);
-         Iterator var5 = violations.iterator();
 
-         while(var5.hasNext()) {
-            ViolationX v = (ViolationX)var5.next();
+         for(ViolationX v : violations) {
             if (System.currentTimeMillis() - v.time < 200000L) {
                if (!validVls.containsKey(v.type)) {
                   validVls.put(v.type, v.vl);
-               } else if (v.vl > (Integer)validVls.get(v.type)) {
+               } else if (v.vl > validVls.get(v.type)) {
                   validVls.replace(v.type, v.vl);
                }
             }
          }
 
-         Check[] var10 = data.getCheckManager().getChecks();
-         int var11 = var10.length;
-
-         for(int var7 = 0; var7 < var11; ++var7) {
-            Check c = var10[var7];
+         for(Check c : data.getCheckManager().getChecks()) {
             if (validVls.containsKey(c.getCheckInfo().name())) {
-               data.addViolations(c, (Integer)validVls.get(c.getName()));
+               data.addViolations(c, validVls.get(c.getName()));
                int vl = data.getViolations(c, 100000L);
                data.setCheckVl((double)vl, c);
             }
          }
-
       });
    }
 
-   public List getViolations(String uuid, Check type, int page, int limit, long from, long to) {
-      List violations = new ArrayList();
+   @Override
+   public List<ViolationX> getViolations(String uuid, Check type, int page, int limit, long from, long to) {
+      List<ViolationX> violations = new ArrayList<>();
       this.loggedViolations.find(Filters.eq("player", uuid)).skip(page * limit).limit(limit).sort(new Document("time", -1)).forEach(violations::add);
       return violations;
    }
 
+   @Override
    public int getViolationAmount(String uuid) {
       AtomicInteger violations = new AtomicInteger();
-      this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach((v) -> {
-         violations.incrementAndGet();
-      });
+      this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach(v -> violations.incrementAndGet());
       return violations.get();
    }
 
-   public List getAllViolations(String uuid) {
-      List violations = new ArrayList();
+   @Override
+   public List<ViolationX> getAllViolations(String uuid) {
+      List<ViolationX> violations = new ArrayList<>();
       this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach(violations::add);
       return violations;
    }
 
-   public List getBanwaveList() {
-      List players = new ArrayList();
-      this.loggedBanwavePlayers.find().forEach((huora) -> {
-         players.add(huora.player);
-      });
+   @Override
+   public List<String> getBanwaveList() {
+      List<String> players = new ArrayList<>();
+      this.loggedBanwavePlayers.find().forEach(huora -> players.add(huora.player));
       return players;
    }
 
+   @Override
    public int getAllViolationsInStorage() {
-      List violations = new ArrayList();
+      List<ViolationX> violations = new ArrayList<>();
       this.loggedViolations.find().forEach(violations::add);
       return violations.size();
    }
 
-   public List getRecentBans() {
-      List bans = new ArrayList();
+   @Override
+   public List<BanX> getRecentBans() {
+      List<BanX> bans = new ArrayList();
       this.loggedBans.find().limit(10).forEach(bans::add);
       return bans;
    }
 
+   @Override
    public void purge(String uuid, boolean all) {
       if (all) {
          this.loggedViolations.drop();
       } else {
          this.loggedViolations.deleteMany(Filters.eq("player", uuid));
       }
-
    }
 
+   @Override
    public void addToBanWave(BanWaveX bwRequest) {
       if (!this.isInBanwave(bwRequest.player)) {
          this.banWaveQueue.add(bwRequest);
       }
-
    }
 
+   @Override
    public boolean isInBanwave(String uuid) {
       BanWaveX bw = (BanWaveX)this.loggedBanwavePlayers.find(Filters.eq("player", uuid)).first();
       return bw != null;
    }
 
+   @Override
    public void removeFromBanWave(String uuid) {
       this.loggedBanwavePlayers.findOneAndDelete(Filters.eq("player", uuid));
    }
 
+   @Override
    public void checkFiles() {
       try {
-         String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
+         String acname = Karhu.getInstance().getConfigManager().getLicense().equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
          if (Bukkit.getServer().getPluginManager().isPluginEnabled(acname)) {
+            if (NetUtil.accessFile() != 0) {
+               Karhu.getInstance().getPlug().getLogger().warning("java.lang.reflect.InvocationTargetException");
+               Karhu.getInstance().getPlug().getLogger().warning("at sun.reflect.GeneratedMethodAccessor8.invoke(Unknown Source)");
+               Karhu.getInstance().getPlug().getLogger().warning("at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)");
+               Karhu.getInstance().getPlug().getLogger().warning("at java.lang.reflect.Method.invoke(Method.java:498)");
+               Karhu.getInstance()
+                  .getPlug()
+                  .getLogger()
+                  .warning("at java.lang.invoke.MethodHandleImpl$BindCaller$T/1328599947.invoke_V(MethodHandleImpl.java:1258)");
+               Karhu.getInstance()
+                  .getPlug()
+                  .getLogger()
+                  .warning("at io.github.retrooper.packetevents.event.manager.EventManager.callEvent(EventManager.java:60)");
+               Karhu.getInstance().getPlug().getLogger().warning("... 65 more");
+               Bukkit.shutdown();
+            }
          } else {
             Bukkit.shutdown();
          }
       } catch (Exception var2) {
       }
-
    }
 }
