@@ -330,9 +330,4 @@ public class Gui implements Listener {
       return guis.stream().filter(gui -> gui.getPlayerPages().containsKey(player)).findFirst().orElse(null);
    }
 
-   public static void openGui(Player player, String title, int size, TypedCallback<Gui> cb) {
-      Gui gui = new Gui(title, size);
-      cb.execute(gui);
-      gui.open(player);
-   }
 }

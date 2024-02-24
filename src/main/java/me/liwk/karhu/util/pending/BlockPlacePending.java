@@ -9,7 +9,7 @@ public class BlockPlacePending implements Cloneable {
    public long serverTick;
    public Material item;
 
-   public BlockPlacePending clone() {
+   public BlockPlacePending clone() throws CloneNotSupportedException {
       try {
          return (BlockPlacePending)super.clone();
       } catch (Throwable var2) {

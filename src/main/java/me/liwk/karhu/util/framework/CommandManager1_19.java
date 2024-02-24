@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,10 +18,10 @@ public class CommandManager1_19 {
    private static final Field knownCommandsField;
    private static final CommandMap bukkitCommandMap;
    private static Method syncCommandsMethod;
-   protected final JavaPlugin plugin;
+   protected final Plugin plugin;
    private final Map<String, org.bukkit.command.Command> registered = new HashMap<>();
 
-   public CommandManager1_19(@NotNull JavaPlugin plugin) {
+   public CommandManager1_19(@NotNull Plugin plugin) {
       this.plugin = plugin;
    }
 

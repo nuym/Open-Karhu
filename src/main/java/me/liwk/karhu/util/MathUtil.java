@@ -30,13 +30,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import me.liwk.karhu.data.KarhuPlayer;
-import me.liwk.karhu.util.MathUtil.1;
 import me.liwk.karhu.util.evictinglist.EvictingList;
 import me.liwk.karhu.util.location.CustomLocation;
 import me.liwk.karhu.util.mc.MathHelper;
 import me.liwk.karhu.util.mc.axisalignedbb.AxisAlignedBB;
 import me.liwk.karhu.util.mc.vec.Vec3;
-import me.liwk.karhu.util.mc.vec.Vec3d;
 import me.liwk.karhu.util.player.BlockUtil;
 import me.liwk.karhu.util.tuple.Tuple;
 import org.apache.commons.lang.ArrayUtils;
@@ -155,7 +153,7 @@ public final class MathUtil {
       } else {
          int index = new Random().nextInt(collection.size());
          if (collection instanceof List) {
-            return ((List)collection).get(index);
+            return (E) ((List)collection).get(index);
          } else {
             Iterator<? extends E> iter = collection.iterator();
 
@@ -175,7 +173,6 @@ public final class MathUtil {
       } else {
          Map<Integer, Integer> map = new HashMap<>();
          values.stream().mapToInt(Number::intValue).forEach(value -> {
-            value;
             map.computeIfAbsent(value, k -> 0);
          });
          double entropy = map.values().stream().mapToDouble(freq -> (double)freq.intValue() / n).map(probability -> probability * log2(probability)).sum();
@@ -496,36 +493,6 @@ public final class MathUtil {
       return 3.0 * (mean - median) / variance;
    }
 
-   // $VF: Unable to simplify switch on enum
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   public static boolean isReallyPlacingBlock(Vector block, Vector player, BlockFace face) {
-      switch(1.$SwitchMap$com$github$retrooper$packetevents$protocol$world$BlockFace[face.ordinal()]) {
-         case 1:
-            return true;
-         case 2: {
-            double limit = block.getY() - 0.03;
-            return player.getY() < limit;
-         }
-         case 3: {
-            double limit = block.getX() + 0.03;
-            return limit > player.getX();
-         }
-         case 4: {
-            double limit = block.getX() - 0.03;
-            return player.getX() > limit;
-         }
-         case 5: {
-            double limit = block.getZ() + 0.03;
-            return player.getZ() < limit;
-         }
-         case 6: {
-            double limit = block.getZ() - 0.03;
-            return player.getZ() > limit;
-         }
-         default:
-            return true;
-      }
-   }
 
    public static double getKurtosis(Collection<? extends Number> data) {
       double sum = 0.0;
@@ -911,23 +878,6 @@ public final class MathUtil {
       }
    }
 
-   public static Vec3d getLook3d(float partialTicks, KarhuPlayer karhuPlayer) {
-      if (partialTicks == 1.0F) {
-         return getVectorForRotation3d(karhuPlayer.getLocation().getPitch(), karhuPlayer.getLocation().getYaw());
-      } else {
-         float f = karhuPlayer.getLastLocation().getPitch() + (karhuPlayer.getLocation().getPitch() - karhuPlayer.getLastLocation().getPitch()) * partialTicks;
-         float f1 = karhuPlayer.getLastLocation().getYaw() + (karhuPlayer.getLocation().getYaw() - karhuPlayer.getLastLocation().getYaw()) * partialTicks;
-         return getVectorForRotation3d(f, f1);
-      }
-   }
-
-   public static Vec3d getVectorForRotation3d(float pitch, float yaw) {
-      float f = MathHelper.cos(-yaw * (float) (Math.PI / 180.0) - (float) Math.PI);
-      float f1 = MathHelper.sin(-yaw * (float) (Math.PI / 180.0) - (float) Math.PI);
-      float f2 = -MathHelper.cos(-pitch * (float) (Math.PI / 180.0));
-      float f3 = MathHelper.sin(-pitch * (float) (Math.PI / 180.0));
-      return new Vec3d((double)(f1 * f2), (double)f3, (double)(f * f2));
-   }
 
    public static AxisAlignedBB getEntityBoundingBox(Location l) {
       return getEntityBoundingBox(l.getX(), l.getY(), l.getZ());

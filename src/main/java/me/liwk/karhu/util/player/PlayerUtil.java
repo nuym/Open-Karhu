@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.data.KarhuPlayer;
-import me.liwk.karhu.util.player.PlayerUtil.1;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 

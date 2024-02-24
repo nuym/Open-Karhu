@@ -3,7 +3,6 @@ package me.liwk.karhu;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.util.TimeStampMode;
-import dev.thomazz.pledge.api.Pledge;
 import io.github.retrooper.packetevents.adventure.serializer.legacy.LegacyComponentSerializer;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import java.io.BufferedReader;
@@ -15,8 +14,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-import me.kassq.client.Client;
-import me.kassq.client.ClientPlugin;
+
+import me.liwk.karhu.api.KarhuLogger;
+import org.bukkit.plugin.java.JavaPlugin;
 import me.liwk.karhu.api.check.CheckState;
 import me.liwk.karhu.command.CommandAPI;
 import me.liwk.karhu.command.sub.AlertsCommand;
@@ -57,9 +57,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public final class Karhu implements Client {
+public final class Karhu extends JavaPlugin {
    private IChunkManager chunkManager;
    private static Karhu instance;
    private final String version = "2.7.5";
@@ -91,18 +92,19 @@ public final class Karhu implements Client {
    public long lastPerformanceDrop;
    public long lastPerformanceAnnounce;
    private long serverTick;
-   private ClientPlugin plug;
+   private JavaPlugin plug;
+   private JavaPlugin plugin;
    private static Boolean apiAvailability = null;
    public static boolean crackedServer = false;
    public ThreadManager threadManager;
-   private Pledge pledge;
    public static double DIVISOR = 32.0;
    private TransactionHandler transactionHandler;
    private WaveManager waveManager;
    private String bungeeChannel = "karhu:proxy";
    private final LegacyComponentSerializer componentSerializer = LegacyComponentSerializer.builder().character('&').hexCharacter('#').build();
 
-   public void start(ClientPlugin plugin) {
+   @Override
+   public void onEnable() {
       long enable = System.nanoTime();
       instance = this;
       this.plug = plugin;
@@ -173,10 +175,8 @@ public final class Karhu implements Client {
             this.printCool("&b> &fCommands initialized");
             PING_PONG_MODE = SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_17);
             DIVISOR = SERVER_VERSION.getProtocolVersion() <= 47 ? 32.0 : 4098.0;
-            this.pledge = Pledge.build().events(false).range(-20000, -3000);
-            this.pledge.start(plugin);
-            String via = this.configManager.getConfig().getString("database").toLowerCase();
-            switch(via) {
+            String viabase = this.configManager.getConfig().getString("database").toLowerCase();
+            switch(viabase) {
                case "mongodb":
                case "mongo":
                   storage = new MongoStorage();
@@ -283,7 +283,8 @@ public final class Karhu implements Client {
       }
    }
 
-   public void shutdown(ClientPlugin plugin) {
+   @Override
+   public void onDisable() {
       Tasker.stop();
       PacketEvents.getAPI().terminate();
       KarhuThreadManager.shutdown();
@@ -293,7 +294,6 @@ public final class Karhu implements Client {
       this.checkState.getAutobanMap().clear();
       this.checkState.getEnabledMap().clear();
       this.checkState.getVlMap().clear();
-      this.pledge.destroy();
    }
 
    private void registerCommands() {
@@ -479,7 +479,7 @@ public final class Karhu implements Client {
       return this.serverTick;
    }
 
-   public ClientPlugin getPlug() {
+   public JavaPlugin getPlug() {
       return this.plug;
    }
 
@@ -491,9 +491,6 @@ public final class Karhu implements Client {
       return this.threadManager;
    }
 
-   public Pledge getPledge() {
-      return this.pledge;
-   }
 
    public TransactionHandler getTransactionHandler() {
       return this.transactionHandler;

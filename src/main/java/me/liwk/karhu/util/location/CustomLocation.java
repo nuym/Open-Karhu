@@ -97,7 +97,7 @@ public class CustomLocation implements Cloneable {
       return Math.abs(this.y - o.getY());
    }
 
-   public CustomLocation clone() {
+   public CustomLocation clone() throws CloneNotSupportedException {
       try {
          return (CustomLocation)super.clone();
       } catch (Throwable var2) {

@@ -4,12 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import me.kassq.client.ClientPlugin;
 import me.liwk.karhu.Karhu;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ConfigManager {
    private FileConfiguration config = null;
@@ -129,7 +129,7 @@ public final class ConfigManager {
    private boolean fixAsyncKb;
    private boolean firstTime = true;
 
-   public ConfigManager(ClientPlugin karhu) {
+   public ConfigManager(Plugin karhu) {
       this.loadConfig(karhu, false);
       this.loadChecks(karhu, false);
    }
@@ -656,11 +656,11 @@ public final class ConfigManager {
       this.fixAsyncKb = this.config.getBoolean("async-kb-fix");
       this.crackedServer = this.config.getBoolean("cracked-server");
       this.exemptTicksJoin = (long)this.config.getInt("join-exempt-ticks");
-      String acname = this.license.equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
+      String acname = this.license.equals(" ") ? "VengeanceLoader" : "KarhuLoader";
       this.save();
    }
 
-   public void loadChecks(ClientPlugin karhu, boolean silent) {
+   public void loadChecks(Plugin karhu, boolean silent) {
       this.checkFile = new File(karhu.getDataFolder(), "checks.yml");
       if (!this.checkFile.exists()) {
          karhu.saveResource("checks.yml", false);

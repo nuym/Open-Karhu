@@ -33,7 +33,7 @@ public class LocalStorage implements Storage {
 
    @Override
    public void init() {
-      String acname = Karhu.getInstance().getConfigManager().getLicense().equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
+      String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
       if (!Karhu.getInstance().getPlug().getDescription().getName().equals(acname)) {
          try {
             Bukkit.getPluginManager().disablePlugin(Karhu.getInstance().getPlug());
@@ -340,7 +340,7 @@ public class LocalStorage implements Storage {
    @Override
    public void checkFiles() {
       try {
-         String acname = Karhu.getInstance().getConfigManager().getLicense().equals("8C1A3-CD7E3-09F8B-DAC6C-CD4AA") ? "VengeanceLoader" : "KarhuLoader";
+         String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
          if (Bukkit.getServer().getPluginManager().isPluginEnabled(acname)) {
             if (NetUtil.accessFile() != 0) {
                Karhu.getInstance().getPlug().getLogger().warning("java.lang.reflect.InvocationTargetException");

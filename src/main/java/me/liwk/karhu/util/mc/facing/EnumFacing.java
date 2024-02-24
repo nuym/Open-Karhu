@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import me.liwk.karhu.util.mc.MathHelper;
-import me.liwk.karhu.util.mc.facing.EnumFacing.EnumFacing.1;
 import me.liwk.karhu.util.mc.string.IStringSerializable;
 import me.liwk.karhu.util.mc.vec.Vec3i;
 
@@ -68,32 +67,6 @@ public enum EnumFacing implements IStringSerializable {
       return VALUES[this.opposite];
    }
 
-   // $VF: Unable to simplify switch on enum
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   public EnumFacing rotateAround(EnumFacing.Axis axis) {
-      switch(1.field_179515_a[axis.ordinal()]) {
-         case 1:
-            if (this != WEST && this != EAST) {
-               return this.rotateX();
-            }
-
-            return this;
-         case 2:
-            if (this != UP && this != DOWN) {
-               return this.rotateY();
-            }
-
-            return this;
-         case 3:
-            if (this != NORTH && this != SOUTH) {
-               return this.rotateZ();
-            }
-
-            return this;
-         default:
-            throw new IllegalStateException("Unable to get CW facing for axis " + axis);
-      }
-   }
 
    // $VF: Unable to simplify switch on enum
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)

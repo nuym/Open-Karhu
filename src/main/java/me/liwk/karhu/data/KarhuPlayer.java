@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Consumer;
+
+import lombok.Setter;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.api.check.SubCategory;
 import me.liwk.karhu.check.api.Check;
@@ -301,7 +303,7 @@ public final class KarhuPlayer {
    public int addedTeleports;
    private List<Double> eyesFourteen = Arrays.asList(0.4, 1.27, 1.62);
    private List<Double> eyesNine = Arrays.asList(0.4, 1.54, 1.62);
-   private List<Double> eyesLegacy = Arrays.asList(1.54F, 1.62F);
+   private List<Float> eyesLegacy = Arrays.asList(1.54F, 1.62F);
    private boolean onGroundServer;
    private boolean onBoat;
    private boolean groundNearBox;
@@ -904,7 +906,8 @@ public final class KarhuPlayer {
       if (this.isNewerThan13) {
          return this.eyesFourteen;
       } else {
-         return this.isNewerThan8 ? this.eyesNine : this.eyesLegacy;
+         List<Double> doubles = this.isNewerThan8 ? this.eyesNine : this.eyesLegacy;
+         return doubles;
       }
    }
 
@@ -1130,10 +1133,6 @@ public final class KarhuPlayer {
 
    public MovementHandler getMovementHandler() {
       return this.movementHandler;
-   }
-
-   public AbstractPredictionHandler getPredictionHandler() {
-      return this.predictionHandler;
    }
 
    public NetHandler getNetHandler() {
@@ -1820,9 +1819,6 @@ public final class KarhuPlayer {
       return this.eyesNine;
    }
 
-   public List<Double> getEyesLegacy() {
-      return this.eyesLegacy;
-   }
 
    public boolean isOnGroundServer() {
       return this.onGroundServer;
@@ -2800,9 +2796,6 @@ public final class KarhuPlayer {
       this.movementHandler = movementHandler;
    }
 
-   public void setPredictionHandler(AbstractPredictionHandler predictionHandler) {
-      this.predictionHandler = predictionHandler;
-   }
 
    public void setNetHandler(NetHandler netHandler) {
       this.netHandler = netHandler;
@@ -3470,10 +3463,6 @@ public final class KarhuPlayer {
 
    public void setEyesNine(List<Double> eyesNine) {
       this.eyesNine = eyesNine;
-   }
-
-   public void setEyesLegacy(List<Double> eyesLegacy) {
-      this.eyesLegacy = eyesLegacy;
    }
 
    public void setOnGroundServer(boolean onGroundServer) {

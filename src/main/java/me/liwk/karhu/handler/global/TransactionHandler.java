@@ -215,8 +215,8 @@ public class TransactionHandler {
                break;
             case EXPLOSION:
                WrapperPlayServerExplosion explosion = new WrapperPlayServerExplosion(e);
-               Vector3f velocity = explosion.getPlayerMotion();
-               if (velocity.getX() == 0.0F && velocity.getY() == 0.0F && velocity.getZ() == 0.0F) {
+               Vector3f playerMotion = explosion.getPlayerMotion();
+               if (playerMotion.getX() == 0.0F && playerMotion.getY() == 0.0F && playerMotion.getZ() == 0.0F) {
                   return;
                }
 
@@ -224,16 +224,16 @@ public class TransactionHandler {
                   data.setLastVelocityTaken(data.getTotalTicks());
                   data.setVelocityXZTicks(0);
                   data.setVelocityYTicks(0);
-                  data.setVelocityX((double)velocity.getX());
-                  data.setVelocityY((double)velocity.getY());
-                  data.setVelocityZ((double)velocity.getZ());
-                  int velocityH = (int)Math.ceil((double)(Math.abs(velocity.getX()) + Math.abs(velocity.getZ())) / 2.0 + 2.0) * 4;
-                  int velocityV = (int)Math.ceil(FastMath.pow((double)(Math.abs(velocity.getY()) + 2.0F), 2)) * 2;
+                  data.setVelocityX((double)playerMotion.getX());
+                  data.setVelocityY((double)playerMotion.getY());
+                  data.setVelocityZ((double)playerMotion.getZ());
+                  int velocityH = (int)Math.ceil((double)(Math.abs(playerMotion.getX()) + Math.abs(playerMotion.getZ())) / 2.0 + 2.0) * 4;
+                  int velocityV = (int)Math.ceil(FastMath.pow((double)(Math.abs(playerMotion.getY()) + 2.0F), 2)) * 2;
                   data.setMaxVelocityXZTicks(velocityH + velocityV + 5);
                   data.setMaxVelocityYTicks(velocityV);
                   data.setTakingVertical(true);
                   data.setNeedExplosionAdditions(true);
-                  data.setVelocityHorizontal((double)MathUtil.hypot(velocity.getX(), velocity.getZ()));
+                  data.setVelocityHorizontal((double)MathUtil.hypot(playerMotion.getX(), playerMotion.getZ()));
                   data.setConfirmingVelocity(true);
                });
                data.queueToPostPing(uid -> data.setConfirmingVelocity(false));
@@ -407,9 +407,9 @@ public class TransactionHandler {
                   EntityData bedBlock = getIndex(packet.getEntityMetadata(), id);
                   if (bedBlock != null) {
                      data.queueToPrePing(task -> {
-                        Optional<Vector3i> bed = (Optional)bedBlock.getValue();
-                        if (bed.isPresent()) {
-                           Vector3i bedPos = (Vector3i)bed.get();
+                        Optional<Vector3i> bedBlockValue = (Optional)bedBlock.getValue();
+                        if (bedBlockValue.isPresent()) {
+                           Vector3i bedPos = (Vector3i)bedBlockValue.get();
                            data.setInBed(true);
                            data.setBedPos(new Vec3((double)bedPos.getX() + 0.5, (double)bedPos.getY(), (double)bedPos.getZ() + 0.5));
                         } else {

@@ -3,7 +3,7 @@ package me.liwk.karhu.antivpn;
 import java.net.InetAddress;
 import java.util.HashMap;
 import me.liwk.karhu.Karhu;
-import me.liwk.karhu.KarhuLogger;
+import me.liwk.karhu.api.KarhuLogger;
 import me.liwk.karhu.util.json.JsonReader;
 
 public class VPNCheck {

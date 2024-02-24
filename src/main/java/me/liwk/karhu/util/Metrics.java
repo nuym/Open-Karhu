@@ -36,7 +36,7 @@ public class Metrics {
    private final Plugin plugin;
    private final Metrics.MetricsBase metricsBase;
 
-   public Metrics(JavaPlugin plugin, int serviceId) {
+   public Metrics(Plugin plugin, int serviceId) {
       this.plugin = plugin;
       File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
       File configFile = new File(bStatsFolder, "config.yml");
@@ -263,7 +263,7 @@ public class Metrics {
       public static class JsonObject {
          private final String value;
 
-         private JsonObject(String value) {
+         private JsonObject(String string, String value) {
             this.value = value;
          }
 
