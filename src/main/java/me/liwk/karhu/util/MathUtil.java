@@ -30,11 +30,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import me.liwk.karhu.data.KarhuPlayer;
+import me.liwk.karhu.util.MathUtil;
 import me.liwk.karhu.util.evictinglist.EvictingList;
 import me.liwk.karhu.util.location.CustomLocation;
 import me.liwk.karhu.util.mc.MathHelper;
 import me.liwk.karhu.util.mc.axisalignedbb.AxisAlignedBB;
 import me.liwk.karhu.util.mc.vec.Vec3;
+//import me.liwk.karhu.util.mc.vec.Vec3d;
 import me.liwk.karhu.util.player.BlockUtil;
 import me.liwk.karhu.util.tuple.Tuple;
 import org.apache.commons.lang.ArrayUtils;
@@ -148,19 +150,17 @@ public final class MathUtil {
    }
 
    public static <E> E randomElement(Collection<? extends E> collection) {
-      if (collection.size() == 0) {
+      if (collection.isEmpty()) {
          return null;
       } else {
          int index = new Random().nextInt(collection.size());
          if (collection instanceof List) {
-            return (E) ((List)collection).get(index);
+            return ((List<? extends E>) collection).get(index);
          } else {
             Iterator<? extends E> iter = collection.iterator();
-
-            for(int i = 0; i < index; ++i) {
+            for (int i = 0; i < index; ++i) {
                iter.next();
             }
-
             return iter.next();
          }
       }
@@ -173,6 +173,7 @@ public final class MathUtil {
       } else {
          Map<Integer, Integer> map = new HashMap<>();
          values.stream().mapToInt(Number::intValue).forEach(value -> {
+            //value;
             map.computeIfAbsent(value, k -> 0);
          });
          double entropy = map.values().stream().mapToDouble(freq -> (double)freq.intValue() / n).map(probability -> probability * log2(probability)).sum();
@@ -491,6 +492,32 @@ public final class MathUtil {
       double median = count % 2 != 0 ? numbers.get(count / 2) : (numbers.get((count - 1) / 2) + numbers.get(count / 2)) / 2.0;
       double variance = getVariance(data);
       return 3.0 * (mean - median) / variance;
+   }
+
+   // $VF: Unable to simplify switch on enum
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public static boolean isReallyPlacingBlock(Vector block, Vector player, BlockFace face) {
+      switch (face) {
+         case UP:
+            return true;
+         case DOWN:
+            double limitDown = block.getY() - 0.03;
+            return player.getY() < limitDown;
+         case NORTH:
+            double limitNorth = block.getZ() + 0.03;
+            return player.getZ() < limitNorth;
+         case SOUTH:
+            double limitSouth = block.getZ() - 0.03;
+            return player.getZ() > limitSouth;
+         case EAST:
+            double limitEast = block.getX() + 0.03;
+            return player.getX() < limitEast;
+         case WEST:
+            double limitWest = block.getX() - 0.03;
+            return player.getX() > limitWest;
+         default:
+            return true;
+      }
    }
 
 
@@ -878,7 +905,27 @@ public final class MathUtil {
       }
    }
 
+   /*
+   public static Vec3d getLook3d(float partialTicks, KarhuPlayer karhuPlayer) {
+      if (partialTicks == 1.0F) {
+         return getVectorForRotation3d(karhuPlayer.getLocation().getPitch(), karhuPlayer.getLocation().getYaw());
+      } else {
+         float f = karhuPlayer.getLastLocation().getPitch() + (karhuPlayer.getLocation().getPitch() - karhuPlayer.getLastLocation().getPitch()) * partialTicks;
+         float f1 = karhuPlayer.getLastLocation().getYaw() + (karhuPlayer.getLocation().getYaw() - karhuPlayer.getLastLocation().getYaw()) * partialTicks;
+         return getVectorForRotation3d(f, f1);
+      }
+   }
 
+   public static Vec3d getVectorForRotation3d(float pitch, float yaw) {
+      float f = MathHelper.cos(-yaw * (float) (Math.PI / 180.0) - (float) Math.PI);
+      float f1 = MathHelper.sin(-yaw * (float) (Math.PI / 180.0) - (float) Math.PI);
+      float f2 = -MathHelper.cos(-pitch * (float) (Math.PI / 180.0));
+      float f3 = MathHelper.sin(-pitch * (float) (Math.PI / 180.0));
+      return new Vec3d((double)(f1 * f2), (double)f3, (double)(f * f2));
+   }
+
+
+    */
    public static AxisAlignedBB getEntityBoundingBox(Location l) {
       return getEntityBoundingBox(l.getX(), l.getY(), l.getZ());
    }

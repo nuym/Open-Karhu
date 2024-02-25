@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.data.KarhuPlayer;
+import me.liwk.karhu.util.player.PlayerUtil;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 
@@ -62,11 +63,12 @@ public final class PlayerUtil {
       return moveSpeed;
    }
 
-   private static List<PropertyModifier> getModifiers(PlayerUtil.Operation operation, List<PropertyModifier> modifiers) {
-      List<PropertyModifier> results = new ArrayList();
 
-      for(PropertyModifier modifier : modifiers) {
-         if (!modifier.getUUID().equals(SPRINTING_SPEED_BOOST) && getOperation(modifier.getOperation()) == operation) {
+   private static List<PropertyModifier> getModifiers(PlayerUtil.Operation operation, List<PropertyModifier> modifiers) {
+      List<PropertyModifier> results = new ArrayList<>();
+
+      for (PropertyModifier modifier : modifiers) {
+         if (!SPRINTING_SPEED_BOOST.equals(modifier.getUUID()) && getOperation(modifier.getOperation()) == operation) {
             results.add(modifier);
          }
       }
@@ -76,17 +78,13 @@ public final class PlayerUtil {
 
    // $VF: Unable to simplify switch on enum
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static PlayerUtil.Operation getOperation(
-      com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes.PropertyModifier.Operation operation
-   ) {
-      switch(1.$SwitchMap$com$github$retrooper$packetevents$wrapper$play$server$WrapperPlayServerUpdateAttributes$PropertyModifier$Operation[operation.ordinal(
-         
-      )]) {
-         case 1:
+   private static PlayerUtil.Operation getOperation(com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes.PropertyModifier.Operation operation) {
+      switch (operation) {
+         case ADDITION:
             return PlayerUtil.Operation.ADDITION;
-         case 2:
+         case MULTIPLY_BASE:
             return PlayerUtil.Operation.MULTIPLY_BASE;
-         case 3:
+         case MULTIPLY_TOTAL:
             return PlayerUtil.Operation.MULTIPLY_TOTAL;
          default:
             return null;

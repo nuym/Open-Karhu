@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.api.BanWaveX;
-import me.liwk.karhu.util.bungee.BungeeAPI;
 import me.liwk.karhu.util.task.Tasker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -32,7 +31,7 @@ public class WaveManager {
             if (!Karhu.getInstance().getConfigManager().isBungeeCommand()) {
                Tasker.run(() -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), punish));
             } else {
-               Tasker.run(() -> BungeeAPI.sendCommand(punish));
+               //Tasker.run(() -> BungeeAPI.sendCommand(punish));
             }
 
             Tasker.runTaskLaterAsync(this::startBanwave, 20L);

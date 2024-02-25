@@ -67,73 +67,74 @@ public enum EnumFacing implements IStringSerializable {
       return VALUES[this.opposite];
    }
 
+   public EnumFacing rotateAround(EnumFacing.Axis axis) {
+      switch (axis) {
+         case X:
+            return (this != EnumFacing.WEST && this != EnumFacing.EAST) ? this.rotateX() : this;
+         case Y:
+            return (this != EnumFacing.UP && this != EnumFacing.DOWN) ? this.rotateY() : this;
+         case Z:
+            return (this != EnumFacing.NORTH && this != EnumFacing.SOUTH) ? this.rotateZ() : this;
+         default:
+            throw new IllegalStateException("Unable to get CW facing for axis " + axis);
+      }
+   }
 
-   // $VF: Unable to simplify switch on enum
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public EnumFacing rotateY() {
-      switch(1.field_179513_b[this.ordinal()]) {
-         case 1:
-            return EAST;
-         case 2:
-            return SOUTH;
-         case 3:
-            return WEST;
-         case 4:
-            return NORTH;
+      switch (this) {
+         case EAST:
+            return EnumFacing.SOUTH;
+         case SOUTH:
+            return EnumFacing.WEST;
+         case WEST:
+            return EnumFacing.NORTH;
+         case NORTH:
+            return EnumFacing.EAST;
          default:
             throw new IllegalStateException("Unable to get Y-rotated facing of " + this);
       }
    }
 
-   // $VF: Unable to simplify switch on enum
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private EnumFacing rotateX() {
-      switch(1.field_179513_b[this.ordinal()]) {
-         case 1:
-            return DOWN;
-         case 2:
-         case 4:
+      switch (this) {
+         case UP:
+            return EnumFacing.NORTH;
+         case NORTH:
+            return EnumFacing.DOWN;
+         case DOWN:
+            return EnumFacing.SOUTH;
+         case SOUTH:
+            return EnumFacing.UP;
          default:
             throw new IllegalStateException("Unable to get X-rotated facing of " + this);
-         case 3:
-            return UP;
-         case 5:
-            return NORTH;
-         case 6:
-            return SOUTH;
       }
    }
 
-   // $VF: Unable to simplify switch on enum
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private EnumFacing rotateZ() {
-      switch(1.field_179513_b[this.ordinal()]) {
-         case 2:
-            return DOWN;
-         case 3:
+      switch (this) {
+         case UP:
+            return EnumFacing.EAST;
+         case EAST:
+            return EnumFacing.DOWN;
+         case DOWN:
+            return EnumFacing.WEST;
+         case WEST:
+            return EnumFacing.UP;
          default:
             throw new IllegalStateException("Unable to get Z-rotated facing of " + this);
-         case 4:
-            return UP;
-         case 5:
-            return EAST;
-         case 6:
-            return WEST;
       }
    }
 
-   // $VF: Unable to simplify switch on enum
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public EnumFacing rotateYCCW() {
-      switch(1.field_179513_b[this.ordinal()]) {
-         case 1:
-            return WEST;
-         case 2:
-            return NORTH;
-         case 3:
-            return EAST;
-         case 4:
-            return SOUTH;
+      switch (this) {
+         case EAST:
+            return EnumFacing.NORTH;
+         case NORTH:
+            return EnumFacing.WEST;
+         case WEST:
+            return EnumFacing.SOUTH;
+         case SOUTH:
+            return EnumFacing.EAST;
          default:
             throw new IllegalStateException("Unable to get CCW facing of " + this);
       }
@@ -325,19 +326,17 @@ public enum EnumFacing implements IStringSerializable {
 
       private Plane(String p_i16_3_, int p_i16_4_) {
       }
-
-      // $VF: Unable to simplify switch on enum
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public EnumFacing[] facings() {
-         switch(1.field_179514_c[this.ordinal()]) {
-            case 1:
+         switch (this) {
+            case HORIZONTAL:
                return new EnumFacing[]{EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH, EnumFacing.WEST};
-            case 2:
+            case VERTICAL:
                return new EnumFacing[]{EnumFacing.UP, EnumFacing.DOWN};
             default:
                throw new Error("Someone's been tampering with the universe!");
          }
       }
+
 
       public EnumFacing random(Random rand) {
          EnumFacing[] aenumfacing = this.facings();

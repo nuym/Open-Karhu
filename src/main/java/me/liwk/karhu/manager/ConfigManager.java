@@ -129,7 +129,7 @@ public final class ConfigManager {
    private boolean fixAsyncKb;
    private boolean firstTime = true;
 
-   public ConfigManager(Plugin karhu) {
+   public ConfigManager(JavaPlugin karhu) {
       this.loadConfig(karhu, false);
       this.loadChecks(karhu, false);
    }
@@ -660,7 +660,7 @@ public final class ConfigManager {
       this.save();
    }
 
-   public void loadChecks(Plugin karhu, boolean silent) {
+   public void loadChecks(JavaPlugin karhu, boolean silent) {
       this.checkFile = new File(karhu.getDataFolder(), "checks.yml");
       if (!this.checkFile.exists()) {
          karhu.saveResource("checks.yml", false);

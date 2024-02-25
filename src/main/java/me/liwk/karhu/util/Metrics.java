@@ -36,7 +36,7 @@ public class Metrics {
    private final Plugin plugin;
    private final Metrics.MetricsBase metricsBase;
 
-   public Metrics(Plugin plugin, int serviceId) {
+   public Metrics(JavaPlugin plugin, int serviceId) {
       this.plugin = plugin;
       File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
       File configFile = new File(bStatsFolder, "config.yml");

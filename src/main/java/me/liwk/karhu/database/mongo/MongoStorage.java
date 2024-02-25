@@ -43,7 +43,7 @@ public class MongoStorage implements Storage {
    private MongoCollection<AlertsX> loggedStatus;
    private MongoCollection<BanWaveX> loggedBanwavePlayers;
    private final ConcurrentLinkedQueue<ViolationX> violations = new ConcurrentLinkedQueue<>();
-   private final ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue();
+   private final ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue<>();
    private final ConcurrentLinkedQueue<BanWaveX> banWaveQueue = new ConcurrentLinkedQueue<>();
    public String host;
    public String database;
@@ -96,7 +96,7 @@ public class MongoStorage implements Storage {
 
                   if (!this.bans.isEmpty()) {
                      try {
-                        this.loggedBans.insertMany(new ArrayList(this.bans));
+                        this.loggedBans.insertMany(new ArrayList<>(this.bans));
                      } catch (Exception var3xx) {
                         var3xx.printStackTrace();
                      }
@@ -211,7 +211,7 @@ public class MongoStorage implements Storage {
 
    @Override
    public List<BanX> getRecentBans() {
-      List<BanX> bans = new ArrayList();
+      List<BanX> bans = new ArrayList<>();
       this.loggedBans.find().limit(10).forEach(bans::add);
       return bans;
    }

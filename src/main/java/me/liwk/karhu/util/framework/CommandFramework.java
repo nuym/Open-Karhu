@@ -24,7 +24,6 @@ import org.bukkit.help.GenericCommandHelpTopic;
 import org.bukkit.help.HelpTopic;
 import org.bukkit.help.HelpTopicComparator;
 import org.bukkit.help.IndexHelpTopic;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.spigotmc.SpigotConfig;
@@ -33,10 +32,10 @@ public class CommandFramework implements CommandExecutor {
    private Map<String, Entry<Method, Object>> commandMap = new HashMap<>();
    private CommandMap map;
    private String newAliases;
-   private Plugin plugin;
+   private JavaPlugin plugin;
    private List<File> files = new ArrayList<>();
 
-   public CommandFramework(Plugin plugin) {
+   public CommandFramework(JavaPlugin plugin) {
       this.plugin = plugin;
       if (plugin.getServer().getPluginManager() instanceof SimplePluginManager) {
          SimplePluginManager manager = (SimplePluginManager)plugin.getServer().getPluginManager();

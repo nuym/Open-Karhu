@@ -7,10 +7,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import me.liwk.karhu.util.map.IntObjectHashMap.2;
+import me.liwk.karhu.util.map.IntObjectHashMap;
 import me.liwk.karhu.util.map.IntObjectHashMap.MapIterator;
 import me.liwk.karhu.util.map.IntObjectHashMap.PrimitiveIterator;
-import me.liwk.karhu.util.map.IntObjectHashMap.KeySet.1;
+import me.liwk.karhu.util.map.IntObjectHashMap.KeySet;
 import me.liwk.karhu.util.map.IntObjectMap.PrimitiveEntry;
 
 public class IntObjectHashMap<V> implements IntObjectMap<V> {

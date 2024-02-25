@@ -1,6 +1,7 @@
 package me.liwk.karhu.database.mysql;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,11 +24,11 @@ import org.bukkit.Bukkit;
 
 public class MySQLStorage implements Storage {
    private ConcurrentLinkedQueue<ViolationX> violations = new ConcurrentLinkedQueue<>();
-   private ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue();
+   private ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue<>();
    private ConcurrentLinkedQueue<BanWaveX> banWaveQueue = new ConcurrentLinkedQueue<>();
 
    @Override
-   public void init() {
+   public void init() throws SQLException {
       MySQL.init();
       Query.prepare(
             "CREATE TABLE IF NOT EXISTS `ALERTS` (`UUID` TEXT NOT NULL,`MODULE` TEXT NOT NULL,`VL` SMALLINT NOT NULL,`TIME` LONG NOT NULL,`EXTRA` TEXT,`COORDS` TEXT,`WORLD` TEXT,`PING` LONG NOT NULL,`TPS` DOUBLE NOT NULL)"
@@ -252,7 +253,7 @@ public class MySQLStorage implements Storage {
 
    @Override
    public List<BanX> getRecentBans() {
-      List<BanX> bans = new ArrayList();
+      List<BanX> bans = new ArrayList<>();
       Query.prepare("SELECT `UUID`, `MODULE`, `TIME`, `EXTRA`, `COORDS`, `PING`, `TPS` FROM `BANS` ORDER BY `TIME`")
          .execute(rs -> bans.add(new BanX(rs.getString(1), rs.getString(2), rs.getLong(3), rs.getString(4), rs.getLong(5), rs.getDouble(6))));
       Collections.reverse(bans);

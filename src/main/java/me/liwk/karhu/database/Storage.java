@@ -1,5 +1,6 @@
 package me.liwk.karhu.database;
 
+import java.sql.SQLException;
 import java.util.List;
 import me.liwk.karhu.check.api.BanWaveX;
 import me.liwk.karhu.check.api.BanX;
@@ -8,7 +9,7 @@ import me.liwk.karhu.check.api.ViolationX;
 import me.liwk.karhu.data.KarhuPlayer;
 
 public interface Storage {
-   void init();
+   void init() throws SQLException;
 
    void addAlert(ViolationX var1);
 

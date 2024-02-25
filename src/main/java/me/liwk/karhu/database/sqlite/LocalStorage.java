@@ -27,8 +27,8 @@ import org.bukkit.Bukkit;
 
 public class LocalStorage implements Storage {
    private ConcurrentLinkedQueue<ViolationX> violations = new ConcurrentLinkedQueue<>();
-   private ConcurrentLinkedQueue<AlertsX> alerts = new ConcurrentLinkedQueue();
-   private ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue();
+   private ConcurrentLinkedQueue<AlertsX> alerts = new ConcurrentLinkedQueue<>();
+   private ConcurrentLinkedQueue<BanX> bans = new ConcurrentLinkedQueue<>();
    private ConcurrentLinkedQueue<BanWaveX> banWaveQueue = new ConcurrentLinkedQueue<>();
 
    @Override
@@ -286,7 +286,7 @@ public class LocalStorage implements Storage {
    @Override
    public List<BanX> getRecentBans() {
       SQLite.use();
-      List<BanX> bans = new ArrayList();
+      List<BanX> bans = new ArrayList<>();
       Query.prepare("SELECT `UUID`, `MODULE`, `TIME`, `EXTRA`, `PING`, `TPS` FROM `BANS` ORDER BY `TIME`")
          .execute(rs -> bans.add(new BanX(rs.getString(1), rs.getString(2), rs.getLong(3), rs.getString(4), rs.getLong(5), rs.getDouble(6))));
       Collections.reverse(bans);

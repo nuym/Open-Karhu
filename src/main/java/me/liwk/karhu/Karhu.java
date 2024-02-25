@@ -14,9 +14,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import me.liwk.karhu.api.KarhuLogger;
-import org.bukkit.plugin.java.JavaPlugin;
 import me.liwk.karhu.api.check.CheckState;
 import me.liwk.karhu.command.CommandAPI;
 import me.liwk.karhu.command.sub.AlertsCommand;
@@ -92,7 +90,6 @@ public final class Karhu extends JavaPlugin {
    public long lastPerformanceDrop;
    public long lastPerformanceAnnounce;
    private long serverTick;
-   private JavaPlugin plug;
    private JavaPlugin plugin;
    private static Boolean apiAvailability = null;
    public static boolean crackedServer = false;
@@ -107,7 +104,9 @@ public final class Karhu extends JavaPlugin {
    public void onEnable() {
       long enable = System.nanoTime();
       instance = this;
-      this.plug = plugin;
+
+      this.plugin = this;
+
       List<String> no = new ArrayList<>();
       no.add(" ___  __    ________  ________  ___  ___  ___  ___     ");
       no.add("|\\  \\|\\  \\ |\\   __  \\|\\   __  \\|\\  \\|\\  \\|\\  \\|\\  \\    ");
@@ -175,8 +174,8 @@ public final class Karhu extends JavaPlugin {
             this.printCool("&b> &fCommands initialized");
             PING_PONG_MODE = SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_17);
             DIVISOR = SERVER_VERSION.getProtocolVersion() <= 47 ? 32.0 : 4098.0;
-            String viabase = this.configManager.getConfig().getString("database").toLowerCase();
-            switch(viabase) {
+            String via = this.configManager.getConfig().getString("database").toLowerCase();
+            switch(via) {
                case "mongodb":
                case "mongo":
                   storage = new MongoStorage();
@@ -231,10 +230,10 @@ public final class Karhu extends JavaPlugin {
             this.printCool("&b> &fTPS counter & Tick handler initialized");
             this.nmsWorldProvider = new NMSWorldProvider(this);
             this.printCool("&b> &fChunkManager initialized");
-            Plugin via = Bukkit.getPluginManager().getPlugin("ViaVersion");
+            Plugin viaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion");
             this.isFloodgate = Bukkit.getPluginManager().getPlugin("floodgate") != null;
             this.isViaRewind = Bukkit.getPluginManager().getPlugin("ViaRewind") != null;
-            this.isViaVersion = via != null;
+            this.isViaVersion = viaVersion != null;
             this.isProtocolSupport = Bukkit.getPluginManager().getPlugin("ProtocolSupport") != null;
             long loadMs = System.currentTimeMillis() - start;
             if (!this.isFloodgate && this.configManager.isGeyserSupport()) {
@@ -272,7 +271,7 @@ public final class Karhu extends JavaPlugin {
             new Metrics(plugin, 11204);
             Tasker.taskAsync(() -> this.waveManager.importFromDb());
             Plugin plib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
-            if (plib != null && via != null && !plib.getDescription().getVersion().startsWith("5")) {
+            if (plib != null && viaVersion != null && !plib.getDescription().getVersion().startsWith("5")) {
                this.printCool(
                   "&b> &cThis version of ProtocolLib doesn't support Karhu, download latest from: https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar)"
                );
@@ -329,7 +328,7 @@ public final class Karhu extends JavaPlugin {
 
             Karhu.this.lastTick = timeStamp;
          }
-      }).runTaskTimer(this.plug, 0L, 1L);
+      }).runTaskTimer(this.plugin, 0L, 1L);
    }
 
    public static boolean isAPIAvailable() {
@@ -480,7 +479,7 @@ public final class Karhu extends JavaPlugin {
    }
 
    public JavaPlugin getPlug() {
-      return this.plug;
+      return this.plugin;
    }
 
    public static boolean isCrackedServer() {

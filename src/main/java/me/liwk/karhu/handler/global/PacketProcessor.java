@@ -30,7 +30,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayJavaPluginMessage;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSteerVehicle;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVehicleMove;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus.Action;
@@ -141,7 +141,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                }
             } else if (type == Client.PLUGIN_MESSAGE) {
                cloned = e.clone();
-               WrapperPlayJavaPluginMessage packet = new WrapperPlayJavaPluginMessage(e);
+               WrapperPlayClientPluginMessage packet = new WrapperPlayClientPluginMessage(e);
                Object channelObject = packet.getChannelName();
                String channelName;
                if (channelObject != null) {

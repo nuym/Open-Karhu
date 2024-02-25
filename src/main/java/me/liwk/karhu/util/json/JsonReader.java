@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import javax.net.ssl.HttpsURLConnection;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.api.ViolationX;
+import me.liwk.karhu.util.BanData;
 import me.liwk.karhu.util.haste.Hastebin;
 import me.liwk.karhu.util.text.TextUtils;
 import org.bukkit.Bukkit;
@@ -36,6 +37,56 @@ public class JsonReader {
       return root.getAsJsonObject();
    }
 
+   public static JsonObject sendBan(BanData ban) throws IOException {
+      String sURL = "https://karhu.cc/api/bandata";
+      HttpsURLConnection request = (HttpsURLConnection)new URL(sURL).openConnection();
+      request.setDoOutput(true);
+      request.setRequestMethod("POST");
+      request.addRequestProperty("User-Agent", "KarhuAC");
+      request.addRequestProperty("content-type", "application/json");
+      request.addRequestProperty("Authorization", "gdY2P44WZtacyQQ4xmefvZxhUX6YcZEhmv6XEkA6");
+      request.setReadTimeout(10000);
+      request.connect();
+      JsonObject json = new JsonObject();
+      json.addProperty("license", ban.license);
+      json.addProperty("karhu_version", ban.karhuVer);
+      json.addProperty("server_version", ban.serverVer);
+      json.addProperty("tps", ban.tps);
+      json.addProperty("player", ban.player);
+      json.addProperty("banned_for", ban.type);
+      json.addProperty("client", ban.client);
+      json.addProperty("time_played", ban.sessionTime);
+      json.addProperty("coordinates", ban.coordinates);
+      json.addProperty("ping", ban.ping);
+      String[] paska = getHaste(ban);
+      if (paska[0].length() > 1) {
+         try {
+            String hasteURL = Hastebin.uploadPaste(paska[0]);
+            if (hasteURL != null) {
+               json.addProperty("logs", hasteURL);
+            } else {
+               json.addProperty("logs", "Couldn't paste logs, maybe the file is too big?");
+            }
+         } catch (Exception var19) {
+            json.addProperty("logs", "Couldn't paste logs, maybe the file is too big? (" + var19.getMessage() + ")");
+         }
+      } else {
+         json.addProperty("logs", paska[1]);
+      }
+
+      byte[] out = json.toString().getBytes(StandardCharsets.UTF_8);
+
+      try (OutputStream os = request.getOutputStream()) {
+         os.write(out);
+         os.flush();
+      } catch (Exception var21) {
+         var21.printStackTrace();
+      }
+
+      Gson gson = new Gson();
+      return (JsonObject)gson.fromJson(new InputStreamReader(request.getInputStream(), Charsets.UTF_8), JsonObject.class);
+   }
+
    public static String[] getData(String address) throws IOException {
       JsonObject object = readIp(address);
       if (object.entrySet() != null) {
@@ -53,5 +104,53 @@ public class JsonReader {
       }
 
       return new String[]{null, null, null};
+   }
+
+   private static String[] getHaste(BanData data) {
+      String uuid;
+      if (Karhu.getInstance().getConfigManager().isCrackedServer()) {
+         Player target = data.playerObj;
+         if (target != null) {
+            uuid = target.getName();
+         } else {
+            uuid = data.player;
+         }
+      } else {
+         Player target = data.playerObj;
+         if (target != null) {
+            uuid = target.getUniqueId().toString();
+         } else {
+            uuid = Bukkit.getOfflinePlayer(data.player).getUniqueId().toString();
+         }
+      }
+
+      List<ViolationX> vls = Karhu.storage.getAllViolations(uuid);
+      if (vls.isEmpty()) {
+         return new String[]{"", "Player has no logs!"};
+      } else {
+         StringBuilder end = new StringBuilder(
+            "Anticheat logs for player "
+               + data.player
+               + " pasted with "
+               + Karhu.getInstance().getConfigManager().getName()
+               + " "
+               + Karhu.getInstance().getVersion()
+         );
+
+         try {
+            for(ViolationX v : vls) {
+               String logline = TextUtils.formatMillis(System.currentTimeMillis() - v.time)
+                  + " ago | "
+                  + ChatColor.stripColor(v.type).replaceAll("\n", " ")
+                  + " ["
+                  + ChatColor.stripColor(v.data.replaceAll("\n", " ") + "] [" + v.ping + "ms]/[" + v.TPS + " TPS] (x" + v.vl + ")");
+               end.append("\n").append(logline);
+            }
+
+            return new String[]{end.toString(), "Pasted logs to: "};
+         } catch (Exception var7) {
+            return new String[]{"", "Couldn't paste logs, maybe the file is too big? (" + var7.getMessage() + ")"};
+         }
+      }
    }
 }

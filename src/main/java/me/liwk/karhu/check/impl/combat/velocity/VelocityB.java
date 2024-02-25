@@ -19,7 +19,6 @@ import me.liwk.karhu.util.pair.VelocityData5;
 import me.liwk.karhu.world.nms.NMSValueParser;
 import org.bukkit.util.Vector;
 
-
 @CheckInfo(
    name = "Velocity (B)",
    category = Category.COMBAT,

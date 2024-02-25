@@ -20,7 +20,7 @@ public class ReflectionUtil {
 
    public static boolean canDestroyBlock(KarhuPlayer data, Block block) {
       Object inventory = getVanillaInventory(data.getBukkitPlayer());
-      return (boolean) getMethodValue(
+      return getMethodValue(
          getMethod(getNMSClass("PlayerInventory"), "b", getNMSClass("Block")),
          inventory,
          Karhu.SERVER_VERSION.isNewerThan(ServerVersion.V_1_12_2) ? getBlockData(block) : getVanillaBlock(block)
@@ -33,19 +33,19 @@ public class ReflectionUtil {
 
    public static float getDestroySpeed(Block block, KarhuPlayer data) {
       Object item = getVanillaItem(data.getStackInHand());
-      return (float) (Karhu.SERVER_VERSION.isNewerThan(ServerVersion.V_1_8_8)
-               ? getMethodValue(
-                  getMethod(getNMSClass("Item"), "getDestroySpeed", getNMSClass("ItemStack"), getNMSClass("IBlockData")),
-                  item,
-                  getVanillaItemStack(data.getStackInHand()),
-                  getBlockData(block)
-               )
-               : getMethodValue(
-                  getMethod(getNMSClass("Item"), "getDestroySpeed", getNMSClass("ItemStack"), getNMSClass("Block")),
-                  item,
-                  getVanillaItemStack(data.getStackInHand()),
-                  getVanillaBlock(block)
-               ));
+      return Karhu.SERVER_VERSION.isNewerThan(ServerVersion.V_1_8_8)
+         ? getMethodValue(
+            getMethod(getNMSClass("Item"), "getDestroySpeed", getNMSClass("ItemStack"), getNMSClass("IBlockData")),
+            item,
+            getVanillaItemStack(data.getStackInHand()),
+            getBlockData(block)
+         )
+         : getMethodValue(
+            getMethod(getNMSClass("Item"), "getDestroySpeed", getNMSClass("ItemStack"), getNMSClass("Block")),
+            item,
+            getVanillaItemStack(data.getStackInHand()),
+            getVanillaBlock(block)
+         );
    }
 
    public static float getBlockDurability(Block block) {
@@ -53,9 +53,9 @@ public class ReflectionUtil {
       if (Karhu.SERVER_VERSION.isNewerThanOrEquals(ServerVersion.V_1_16)) {
          Object getType = getBlockData(block);
          Object blockData = getMethodValue(getMethod(getNMSClass("Block"), "getBlockData"), vanillaBlock);
-         return (float) getFieldValue(getFieldByName(iBlockData, "strength"), blockData);
+         return getFieldValue(getFieldByName(iBlockData, "strength"), blockData);
       } else {
-         return (float) getFieldValue(getFieldByName(getNMSClass("Block"), "strength"), vanillaBlock);
+         return getFieldValue(getFieldByName(getNMSClass("Block"), "strength"), vanillaBlock);
       }
    }
 
