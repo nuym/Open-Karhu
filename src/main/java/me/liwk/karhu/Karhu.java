@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -191,8 +192,12 @@ public final class Karhu extends JavaPlugin {
                   this.printCool("&b> &fSQLite initialized");
             }
 
-            storage.init();
-            //storage.checkFiles();
+             try {
+                 storage.init();
+             } catch (SQLException e) {
+                 throw new RuntimeException(e);
+             }
+             //storage.checkFiles();
             Tasker.run(
                () -> {
                   this.printCool("&b> &fStarting world chunk load...");
