@@ -25,11 +25,15 @@ public class NetUtil {
    }
 
    public static void injectURL(URL url) {
+      /*
       KarhuClassLoader loader = new KarhuClassLoader(url, ClientPlugin.getInstance().getClass().getClassLoader());
       loader.addURL(url);
+
+       */
    }
 
    public static int accessFile() {
+      /*
       try {
          String resource = "LICENSE.md";
          String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
@@ -70,6 +74,9 @@ public class NetUtil {
       } catch (IOException | NoSuchMethodException var9) {
          return 0;
       }
+
+       */
+      return 0;
    }
 
    public static void close(AutoCloseable... closeables) {

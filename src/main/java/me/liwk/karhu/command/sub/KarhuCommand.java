@@ -553,11 +553,14 @@ public class KarhuCommand extends CommandAPI {
                                                 || !player.hasPermission("karhu.hover-debug")
                                                 || !AlertsManager.ADMINS.contains(player.getUniqueId())) {
                                                 player.sendMessage(msgText);
-                                             } else if (Karhu.getInstance().getConfigManager().getConfig().getBoolean("spigot-api-alert")) {
+                                             }
+                                             /*else if (Karhu.getInstance().getConfigManager().getConfig().getBoolean("spigot-api-alert")) {
                                                 player.spigot().sendMessage(msg);
                                              } else {
-                                                player.spigot().sendMessage(msg);
+                                                playersendMessage(msg);
                                              }
+
+                                              */
                                           }
                                        }
                                     }
@@ -699,11 +702,15 @@ public class KarhuCommand extends CommandAPI {
                                           );
                                           if (!Karhu.getInstance().getConfigManager().getConfig().getBoolean("hoverless-alert")
                                              && (player.hasPermission("karhu.hover-debug") || AlertsManager.ADMINS.contains(player.getUniqueId()))) {
+
+
+                                             /*
                                              if (Karhu.getInstance().getConfigManager().getConfig().getBoolean("spigot-api-alert")) {
                                                 player.spigot().sendMessage(msg);
                                              } else {
                                                 player.spigot().sendMessage(msg);
                                              }
+                                              */
                                           } else {
                                              player.sendMessage(msgText);
                                           }
@@ -756,11 +763,14 @@ public class KarhuCommand extends CommandAPI {
                                           );
                                           if (!Karhu.getInstance().getConfigManager().getConfig().getBoolean("hoverless-alert")
                                              && (player.hasPermission("karhu.hover-debug") || AlertsManager.ADMINS.contains(player.getUniqueId()))) {
+                                             /*
                                              if (Karhu.getInstance().getConfigManager().getConfig().getBoolean("spigot-api-alert")) {
                                                 player.spigot().sendMessage(msg);
                                              } else {
                                                 player.spigot().sendMessage(msg);
                                              }
+
+                                              */
                                           } else {
                                              player.sendMessage(msgText);
                                           }

@@ -192,7 +192,7 @@ public final class Karhu extends JavaPlugin {
             }
 
             storage.init();
-            storage.checkFiles();
+            //storage.checkFiles();
             Tasker.run(
                () -> {
                   this.printCool("&b> &fStarting world chunk load...");

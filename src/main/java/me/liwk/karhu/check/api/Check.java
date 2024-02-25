@@ -18,6 +18,7 @@ import me.liwk.karhu.manager.alert.AlertsManager;
 import me.liwk.karhu.manager.alert.MiscellaneousAlertPoster;
 import me.liwk.karhu.util.APICaller;
 import me.liwk.karhu.util.MathUtil;
+
 import me.liwk.karhu.util.bungee.BungeeAPI;
 import me.liwk.karhu.util.discord.Webhook;
 import me.liwk.karhu.util.location.CustomLocation;
@@ -116,12 +117,12 @@ public abstract class Check<T> {
                               .filter(ServerOperator::isOp)
                               .forEach(
                                  staff -> {
-                                    String msg = this.karhu
+                                    String string = this.karhu
                                        .getConfigManager()
                                        .getLagWarnMsg()
                                        .replaceAll("%prefix%", this.karhu.getConfigManager().getPrefix())
                                        .replaceAll("%player%", player.getName());
-                                    staff.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
+                                    staff.sendMessage(ChatColor.translateAlternateColorCodes('&', string));
                                  }
                               );
                         case "NONE":
@@ -353,11 +354,14 @@ public abstract class Check<T> {
                      if (this.karhu.getConfigManager().isSpigotApiAlert() && staff != null) {
                         if (!staff.hasPermission("karhu.hover-debug") && !AlertsManager.ADMINS.contains(staff.getUniqueId())) {
                            staff.sendMessage(text);
-                        } else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
-                           staff.spigot().sendMessage(hover);
-                        } else {
-                           staff.spigot().sendMessage(hover);
                         }
+                        /*else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
+                           staff.sendMessage(hover);
+                        } else {
+                           staff.sendMessage(hover);
+                        }
+
+                         */
                      }
                   }
                }

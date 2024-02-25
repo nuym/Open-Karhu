@@ -208,8 +208,12 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
                if (!data.isRemovingObject()) {
                   PacketPlayReceiveEvent finalCloned = cloned == null ? e.clone() : cloned;
                   data.getThread().getExecutorService().execute(() -> {
-                     this.handlePlayReceive(finalCloned, data, nano, nowTimeMillis);
-                     finalCloned.cleanUp();
+                      try {
+                          this.handlePlayReceive(finalCloned, data, nano, nowTimeMillis);
+                      } catch (CloneNotSupportedException ex) {
+                          throw new RuntimeException(ex);
+                      }
+                      finalCloned.cleanUp();
                   });
                } else if (cloned != null) {
                   cloned.cleanUp();
@@ -285,7 +289,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
       }
    }
 
-   public void handlePostPlayReceive(WrapperPlayClientPlayerFlying packet, KarhuPlayer data) {
+   public void handlePostPlayReceive(WrapperPlayClientPlayerFlying packet, KarhuPlayer data) throws CloneNotSupportedException {
       long now = System.currentTimeMillis();
       if (!packet.hasPositionChanged()
          && !packet.hasRotationChanged()
@@ -373,7 +377,7 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
       data.setDidFlagMovement(false);
    }
 
-   public void handlePlayReceive(PacketPlayReceiveEvent e, KarhuPlayer data, long nanoTime, long timeMillis) {
+   public void handlePlayReceive(PacketPlayReceiveEvent e, KarhuPlayer data, long nanoTime, long timeMillis) throws CloneNotSupportedException {
       Client type = e.getPacketType();
       if (data != null) {
          boolean isFlying = WrapperPlayClientPlayerFlying.isFlying(type);
