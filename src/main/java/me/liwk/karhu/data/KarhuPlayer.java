@@ -301,7 +301,7 @@ public final class KarhuPlayer {
    public int addedTeleports;
    private List<Double> eyesFourteen = Arrays.asList(0.4, 1.27, 1.62);
    private List<Double> eyesNine = Arrays.asList(0.4, 1.54, 1.62);
-   private List<Double> eyesLegacy = Arrays.asList(1.54F, 1.62F);
+   private List<Double> eyesLegacy = Arrays.asList(1.54, 1.62);
    private boolean onGroundServer;
    private boolean onBoat;
    private boolean groundNearBox;

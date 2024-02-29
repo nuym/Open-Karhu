@@ -1,0 +1,5 @@
+name: KarhuLoader
+version: 1.2
+main: me.kassq.client.ClientPlugin
+load: POSTWORLD
+api-version: 1.13

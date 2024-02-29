@@ -274,7 +274,7 @@ public final class CheckManager {
       this.rotationChecks = this.getAllOfType(RotationCheck.class);
    }
 
-   public void runChecks(List<?> paskat, Object e, Object packet) {
+   public void runChecks(List<? extends Check>  paskat, Object e, Object packet) {
       long start = System.nanoTime();
 
       for(Check c : paskat) {
@@ -309,7 +309,7 @@ public final class CheckManager {
    }
 
    private <T> List<T> getAllOfType(Class<T> clazz) {
-      return Arrays.stream(this.checks).filter(clazz::isInstance).collect(Collectors.toList());
+      return (List<T>) Arrays.stream(this.checks).filter(clazz::isInstance).collect(Collectors.toList());
    }
 
    public List<RotationCheck> getRotationChecks() {

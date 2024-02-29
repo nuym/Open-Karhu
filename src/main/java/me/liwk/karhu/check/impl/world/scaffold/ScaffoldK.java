@@ -1,5 +1,6 @@
 package me.liwk.karhu.check.impl.world.scaffold;
 
+import lombok.SneakyThrows;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.api.check.Category;
 import me.liwk.karhu.api.check.CheckInfo;
@@ -112,7 +113,7 @@ public final class ScaffoldK extends PacketCheck {
          }
       }
    }
-
+   @SneakyThrows
    public boolean isNotGroundBridging(Vector blockLoc) {
       Block block = Karhu.getInstance()
          .getChunkManager()

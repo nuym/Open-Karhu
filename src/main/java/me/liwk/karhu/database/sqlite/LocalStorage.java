@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import lombok.SneakyThrows;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.api.AlertsX;
 import me.liwk.karhu.check.api.BanWaveX;
@@ -56,8 +58,8 @@ public class LocalStorage implements Storage {
             .execute();
 
          try {
-            Query.prepare("ALTER TABLE ALERTS ADD COLUMN COORDS TEXT").execute();
-            Query.prepare("ALTER TABLE ALERTS ADD COLUMN WORLD TEXT").execute();
+            Query.prepare("ALTER TABLE `ALERTS` ADD COLUMN COORDS TEXT").execute();
+            Query.prepare("ALTER TABLE `ALERTS` ADD COLUMN WORLD TEXT").execute();
          } catch (Exception var3) {
             Karhu.getInstance().printCool("&b> &fSQLite table already has COORDS and WORLD columns");
          }
@@ -166,12 +168,13 @@ public class LocalStorage implements Storage {
       this.bans.add(ban);
    }
 
+   @SneakyThrows
    @Override
    public void setAlerts(String uuid, int status) {
       SQLite.use();
       Query.prepare("REPLACE INTO `ALERTSTATUS` (`UUID`, `STATUS`) VALUES (?,?)").append(uuid).append(status).execute();
    }
-
+   @SneakyThrows
    @Override
    public boolean getAlerts(String uuid) {
       try {
@@ -189,7 +192,7 @@ public class LocalStorage implements Storage {
          return true;
       }
    }
-
+   @SneakyThrows
    @Override
    public void loadActiveViolations(String uuid, KarhuPlayer data) {
       SQLite.use();
@@ -223,7 +226,7 @@ public class LocalStorage implements Storage {
          }
       }
    }
-
+   @SneakyThrows
    @Override
    public List<ViolationX> getViolations(String uuid, Check type, int page, int limit, long from, long to) {
       SQLite.use();
@@ -243,6 +246,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public List<ViolationX> getAllViolations(String uuid) {
       SQLite.use();
       List<ViolationX> violations = new ArrayList<>();
@@ -259,6 +263,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public int getViolationAmount(String uuid) {
       SQLite.use();
       AtomicInteger violations = new AtomicInteger();
@@ -269,6 +274,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public int getAllViolationsInStorage() {
       SQLite.use();
       List<ViolationX> violations = new ArrayList<>();
@@ -284,6 +290,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public List<BanX> getRecentBans() {
       SQLite.use();
       List<BanX> bans = new ArrayList<>();
@@ -294,6 +301,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public void purge(String uuid, boolean all) {
       SQLite.use();
       Query.prepare("DELETE FROM `ALERTS` WHERE UUID = ?").append(uuid).execute();
@@ -301,6 +309,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public List<String> getBanwaveList() {
       SQLite.use();
       List<String> players = new ArrayList<>();
@@ -309,6 +318,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public boolean isInBanwave(String uuid) {
       SQLite.use();
 
@@ -330,6 +340,7 @@ public class LocalStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public void removeFromBanWave(String uuid) {
       SQLite.use();
       Optional<BanWaveX> bwx = this.banWaveQueue.stream().filter(bw -> bw.player.equals(uuid)).findFirst();

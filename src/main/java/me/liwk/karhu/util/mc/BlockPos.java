@@ -1,7 +1,7 @@
 package me.liwk.karhu.util.mc;
 
-import me.liwk.karhu.util.mc.BlockPos.1;
-import me.liwk.karhu.util.mc.BlockPos.2;
+import me.liwk.karhu.util.mc.BlockPos;
+import me.liwk.karhu.util.mc.BlockPos;
 import me.liwk.karhu.util.mc.facing.EnumFacing;
 import me.liwk.karhu.util.mc.vec.Vec3;
 import me.liwk.karhu.util.mc.vec.Vec3i;
@@ -130,6 +130,7 @@ public class BlockPos extends Vec3i {
       return new BlockPos(i, j, k);
    }
 
+   /*
    public static Iterable<BlockPos> getAllInBox(BlockPos from, BlockPos to) {
       BlockPos blockpos = new BlockPos(Math.min(from.getX(), to.getX()), Math.min(from.getY(), to.getY()), Math.min(from.getZ(), to.getZ()));
       BlockPos blockpos1 = new BlockPos(Math.max(from.getX(), to.getX()), Math.max(from.getY(), to.getY()), Math.max(from.getZ(), to.getZ()));
@@ -142,6 +143,8 @@ public class BlockPos extends Vec3i {
       return new 2(blockpos, blockpos1);
    }
 
+
+    */
    public static final class MutableBlockPos extends BlockPos {
       private int x;
       private int y;

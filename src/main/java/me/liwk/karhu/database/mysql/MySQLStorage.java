@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import lombok.SneakyThrows;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.check.api.BanWaveX;
 import me.liwk.karhu.check.api.BanX;
@@ -133,6 +135,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public void setAlerts(String uuid, int status) {
       MySQL.use();
       Query.prepare("INSERT INTO `ALERTSTATUS` (`UUID`, `STATUS`) VALUES (?,?) ON DUPLICATE KEY UPDATE STATUS=" + status)
@@ -142,6 +145,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public boolean getAlerts(String uuid) {
       try {
          MySQL.use();
@@ -160,6 +164,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public void loadActiveViolations(String uuid, KarhuPlayer data) {
       MySQL.use();
       List<ViolationX> violations = new ArrayList<>();
@@ -194,6 +199,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public List<ViolationX> getViolations(String uuid, Check type, int page, int limit, long from, long to) {
       MySQL.use();
       List<ViolationX> violations = new ArrayList<>();
@@ -212,6 +218,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public int getViolationAmount(String uuid) {
       MySQL.use();
       AtomicInteger violations = new AtomicInteger();
@@ -222,6 +229,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public List<ViolationX> getAllViolations(String uuid) {
       MySQL.use();
       List<ViolationX> violations = new ArrayList<>();
@@ -238,6 +246,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public int getAllViolationsInStorage() {
       List<ViolationX> violations = new ArrayList<>();
       Query.prepare("SELECT `MODULE`, `VL`, `TIME`, `EXTRA`, `COORDS`, `WORLD`, `PING`, `TPS` FROM `ALERTS` ORDER BY `TIME`")
@@ -252,6 +261,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public List<BanX> getRecentBans() {
       List<BanX> bans = new ArrayList<>();
       Query.prepare("SELECT `UUID`, `MODULE`, `TIME`, `EXTRA`, `COORDS`, `PING`, `TPS` FROM `BANS` ORDER BY `TIME`")
@@ -261,12 +271,14 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public void purge(String uuid, boolean all) {
       Query.prepare("DELETE FROM `ALERTS` WHERE UUID = ?").append(uuid).execute();
       Query.prepare("DELETE FROM `BANS` WHERE UUID = ?").append(uuid).execute();
    }
 
    @Override
+   @SneakyThrows
    public List<String> getBanwaveList() {
       MySQL.use();
       List<String> players = new ArrayList<>();
@@ -275,6 +287,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public boolean isInBanwave(String uuid) {
       try {
          ResultSet rs = Query.prepare("SELECT `MODULE`, `TIME`, `TOTALLOGS` FROM `BANWAVE` WHERE `UUID` = ? ORDER BY `TIME` DESC LIMIT ?,?")
@@ -294,6 +307,7 @@ public class MySQLStorage implements Storage {
    }
 
    @Override
+   @SneakyThrows
    public void removeFromBanWave(String uuid) {
       Optional<BanWaveX> bwx = this.banWaveQueue.stream().filter(bw -> bw.player.equals(uuid)).findFirst();
       bwx.ifPresent(banWaveX -> this.banWaveQueue.remove(banWaveX));

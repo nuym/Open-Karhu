@@ -3,6 +3,8 @@ package me.liwk.karhu.check.impl.world.scaffold;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction.Action;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import lombok.SneakyThrows;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.api.check.Category;
 import me.liwk.karhu.api.check.CheckInfo;
@@ -65,6 +67,7 @@ public final class ScaffoldO extends PacketCheck {
       }
    }
 
+      @SneakyThrows
    public boolean isNotGroundBridging() {
       Block block = Karhu.getInstance()
          .getChunkManager()

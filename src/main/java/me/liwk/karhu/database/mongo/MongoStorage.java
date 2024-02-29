@@ -1,9 +1,6 @@
 package me.liwk.karhu.database.mongo;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -198,7 +195,7 @@ public class MongoStorage implements Storage {
    @Override
    public List<String> getBanwaveList() {
       List<String> players = new ArrayList<>();
-      this.loggedBanwavePlayers.find().forEach(huora -> players.add(huora.player));
+      this.loggedBanwavePlayers.find().forEach((Block<? super BanWaveX>) huora -> players.add(huora.player));
       return players;
    }
 

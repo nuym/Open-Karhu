@@ -100,16 +100,16 @@ public final class FastBreakC extends PacketCheck {
                   break;
                case RELEASE_USE_ITEM:
                   if (this.digStarted) {
-                     boolean canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
-                     this.simulateDig(canBreak);
-                     this.curBlockDamage += Math.abs(this.toolDigEfficiency / this.blockHardness / (!canBreak ? 100.0F : 30.0F));
+                     boolean canDestroyBlock = ReflectionUtil.canDestroyBlock(this.data, block);
+                     this.simulateDig(canDestroyBlock);
+                     this.curBlockDamage += Math.abs(this.toolDigEfficiency / this.blockHardness / (!canDestroyBlock ? 100.0F : 30.0F));
                   }
                   break;
                default:
                   if (this.digStarted) {
-                     boolean canBreak = ReflectionUtil.canDestroyBlock(this.data, block);
-                     this.simulateDig(canBreak);
-                     this.curBlockDamage += Math.abs(this.toolDigEfficiency / this.blockHardness / (!canBreak ? 100.0F : 30.0F));
+                     boolean destroyBlock = ReflectionUtil.canDestroyBlock(this.data, block);
+                     this.simulateDig(destroyBlock);
+                     this.curBlockDamage += Math.abs(this.toolDigEfficiency / this.blockHardness / (!destroyBlock ? 100.0F : 30.0F));
                   }
             }
          } else if (packet instanceof RespawnEvent) {

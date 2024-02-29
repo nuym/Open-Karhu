@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+
+import lombok.SneakyThrows;
 import me.liwk.karhu.Karhu;
 import me.liwk.karhu.data.EntityData;
 import me.liwk.karhu.data.KarhuPlayer;
@@ -405,7 +407,7 @@ public final class BoundingBox implements Cloneable {
 
       return blocks;
    }
-
+/*
    public boolean checkBlocks(Predicate<Material> p) {
       List<Block> blocks = new ArrayList();
       int xFloor = (int)Math.floor(this.minX);
@@ -429,7 +431,7 @@ public final class BoundingBox implements Cloneable {
 
       return new KarhuStream(blocks).any(t -> p.test(t.getType()));
    }
-
+*/
    public boolean intersectsWith(AxisAlignedBB other, int floorX, int floorY, int floorZ, int ceilX, int ceilY, int ceilZ) {
       return other.minX < (double)ceilX
          && other.maxX > (double)floorX
@@ -466,6 +468,7 @@ public final class BoundingBox implements Cloneable {
       return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + " -> " + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
    }
 
+   @SneakyThrows
    public BoundingBox clone() {
       try {
          return (BoundingBox)super.clone();

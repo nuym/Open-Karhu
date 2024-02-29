@@ -141,7 +141,6 @@ public final class Karhu extends JavaPlugin {
       this.transactionHandler = new TransactionHandler();
       KarhuBenchmarker.registerProfiles();
       Tasker.load(plugin);
-      if (System.getProperty("java.net.preferIPv6") != null) {
          this.printCool("&b> &fTasker initialized");
          this.packetThread = KarhuThreadManager.createNewNormalExecutor("karhu-packet-thread");
          this.alertsThread = KarhuThreadManager.createNewNormalExecutor("karhu-alert-thread");
@@ -166,7 +165,6 @@ public final class Karhu extends JavaPlugin {
          plugin.getServer().getPluginManager().registerEvents(new ChunkListeners(), plugin);
          plugin.getServer().getPluginManager().registerEvents(new PlayerVelocityHandler(), plugin);
          this.printCool("&b> &fEvents initialized");
-         if (System.getProperty("java.net.preferIPv6").equals("on")) {
             this.framework = new CommandFramework(plugin);
             this.commandManager = new CommandManager1_19(plugin);
             this.alertsManager = new AlertsManager();
@@ -283,9 +281,7 @@ public final class Karhu extends JavaPlugin {
                Bukkit.getServer().getScheduler().cancelTasks(plugin);
                Bukkit.getPluginManager().disablePlugin(plugin);
             }
-         }
       }
-   }
 
    @Override
    public void onDisable() {
