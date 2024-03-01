@@ -88,6 +88,9 @@ public abstract class Check<T> {
    public final void fail(String debug, int maxvl, long time) {
       if (Karhu.getInstance().getConfigManager().isPullback()) {
          this.flagLocation = this.data.getLastLocation().toLocation(this.data.getWorld());
+//         System.out.println("Pullback: " + this.name);
+//         System.out.println("Debug: " + debug);
+//         System.out.println("Flagged at: " + this.flagLocation.getX());
       }
 
       if ((long)this.data.getPositionPackets() >= Math.min(800L, Karhu.getInstance().getConfigManager().getExemptTicksJoin())) {
@@ -364,6 +367,7 @@ public abstract class Check<T> {
                          */
                      }
                   }
+                  Bukkit.getConsoleSender().sendMessage(text);
                }
             } else {
                this.karhu
@@ -763,7 +767,7 @@ public abstract class Check<T> {
    public void pullback() {
       if (!this.data.isDidFlagMovement()) {
          Player player = this.data.getBukkitPlayer();
-         CustomLocation setback = Setbacks.forgeToRotatedLocation(this.data.getSafeSetback(), this.data);
+        CustomLocation setback = Setbacks.forgeToRotatedLocation(this.data.getSafeSetback(), this.data);
          if (this.canSetback()) {
             if (Karhu.isAPIAvailable()) {
                if (APICaller.callPullback(player, this.getCheckInfo(), this, setback.toLocation(this.data.getWorld()))) {
