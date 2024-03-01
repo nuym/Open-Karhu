@@ -10,14 +10,14 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import me.kassq.client.ClientPlugin;
+//import me.kassq.client.ClientPlugin;
 import me.liwk.karhu.Karhu;
-import me.liwk.karhu.util.file.KarhuClassLoader;
+//import me.liwk.karhu.util.file.KarhuClassLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class NetUtil {
-   public static ClassLoader injectorClassLoader = ClientPlugin.class.getClassLoader();
+//   public static ClassLoader injectorClassLoader = ClientPlugin.class.getClassLoader();
 
    public static void download(File file, String from) throws Exception {
       FileOutputStream out = new FileOutputStream(file);

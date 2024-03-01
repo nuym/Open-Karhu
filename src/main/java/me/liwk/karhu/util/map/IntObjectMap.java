@@ -1,9 +1,14 @@
 package me.liwk.karhu.util.map;
 
 import java.util.Map;
-import me.liwk.karhu.util.map.IntObjectMap.PrimitiveEntry;
 
 public interface IntObjectMap<V> extends Map<Integer, V> {
+   interface PrimitiveEntry<V> {
+      int key();
+      V value();
+      void setValue(V value);
+   }
+
    V get(int var1);
 
    V put(int var1, V var2);

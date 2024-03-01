@@ -7,8 +7,8 @@ import me.liwk.karhu.data.task.IAbstractTickTask;
 import me.liwk.karhu.util.KarhuStream;
 
 public final class TaskManager<T> {
-   private final Set<IAbstractTickTask<T>> activeTasks = new HashSet();
-   private final Set<IAbstractTickTask<T>> pendingTasks = new HashSet();
+   private final Set<IAbstractTickTask<T>> activeTasks = new HashSet<>();
+   private final Set<IAbstractTickTask<T>> pendingTasks = new HashSet<>();
 
    public void queueNewTask(IAbstractTickTask<T> task) {
       if (this.isAlreadyActive(task)) {
@@ -28,7 +28,7 @@ public final class TaskManager<T> {
       int pos = 0;
       if (!this.activeTasks.isEmpty()) {
          for(Iterator<IAbstractTickTask<T>> iterator = this.activeTasks.iterator(); iterator.hasNext(); ++pos) {
-            IAbstractTickTask<T> abstractTickTask = (IAbstractTickTask)iterator.next();
+            IAbstractTickTask<T> abstractTickTask = iterator.next();
 
             try {
                if (!abstractTickTask.conditionUntil().test()) {
@@ -49,8 +49,8 @@ public final class TaskManager<T> {
       if (!this.activeTasks.isEmpty()) {
          Iterator<IAbstractTickTask<T>> iterator = this.pendingTasks.iterator();
 
-         while(iterator.hasNext()) {
-            IAbstractTickTask<T> abstractTickTask = (IAbstractTickTask)iterator.next();
+         while (iterator.hasNext()) {
+            IAbstractTickTask<T> abstractTickTask = iterator.next();
             if (!this.isAlreadyActive(abstractTickTask)) {
                this.activeTasks.add(abstractTickTask);
                iterator.remove();
@@ -60,6 +60,6 @@ public final class TaskManager<T> {
    }
 
    private boolean isAlreadyActive(IAbstractTickTask<T> task) {
-      return new KarhuStream(this.activeTasks).any(t -> t.getId().equals(task.getId()));
+      return new KarhuStream<>(this.activeTasks).any(t -> t.getId().equals(task.getId()));
    }
 }

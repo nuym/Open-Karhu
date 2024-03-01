@@ -12,32 +12,23 @@ public final class KarhuStream<T> {
    }
 
    public boolean any(Predicate<T> p) {
-      for(T t : this.c) {
-         if (p.test(t)) {
-            return true;
-         }
+      for (T t : this.c) {
+         if (p.test(t)) return true;
       }
-
       return false;
    }
 
    public boolean all(Predicate<T> p) {
-      for(T t : this.c) {
-         if (!p.test(t)) {
-            return false;
-         }
+      for (T t : this.c) {
+         if (!p.test(t)) return false;
       }
-
       return true;
    }
 
    public T find(Predicate<T> p) {
-      for(T t : this.c) {
-         if (p.test(t)) {
-            return t;
-         }
+      for (T t : this.c) {
+         if (p.test(t)) return t;
       }
-
       return null;
    }
 

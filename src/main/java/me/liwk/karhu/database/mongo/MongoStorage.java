@@ -30,11 +30,10 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bukkit.Bukkit;
 
 public class MongoStorage implements Storage {
-   private final CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(
-      new CodecRegistry[]{
-         MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromProviders(new CodecProvider[]{PojoCodecProvider.builder().automatic(true).build()})
-      }
-   );
+   private final CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(new CodecRegistry[] {
+         MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromProviders(new CodecProvider[] {
+             PojoCodecProvider.builder().automatic(true).build()})
+   });
    private MongoCollection<ViolationX> loggedViolations;
    private MongoCollection<BanX> loggedBans;
    private MongoCollection<AlertsX> loggedStatus;
@@ -149,7 +148,9 @@ public class MongoStorage implements Storage {
       Tasker.taskAsync(() -> {
          List<ViolationX> violations = new ArrayList<>();
          Map<String, Integer> validVls = new HashMap<>();
-         this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach(violations::add);
+         this.loggedViolations.find(Filters.eq("player", uuid))
+             .sort(new Document("time", -1))
+             .forEach((Block<? super ViolationX>) v -> violations.add(v));
 
          for(ViolationX v : violations) {
             if (System.currentTimeMillis() - v.time < 200000L) {
@@ -174,21 +175,29 @@ public class MongoStorage implements Storage {
    @Override
    public List<ViolationX> getViolations(String uuid, Check type, int page, int limit, long from, long to) {
       List<ViolationX> violations = new ArrayList<>();
-      this.loggedViolations.find(Filters.eq("player", uuid)).skip(page * limit).limit(limit).sort(new Document("time", -1)).forEach(violations::add);
+      this.loggedViolations.find(Filters.eq("player", uuid))
+          .skip(page * limit)
+          .limit(limit)
+          .sort(new Document("time", -1))
+          .forEach((Block<? super ViolationX>) v -> violations.add(v));
       return violations;
    }
 
    @Override
    public int getViolationAmount(String uuid) {
       AtomicInteger violations = new AtomicInteger();
-      this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach(v -> violations.incrementAndGet());
+      this.loggedViolations.find(Filters.eq("player", uuid))
+          .sort(new Document("time", -1))
+          .forEach((Block<? super ViolationX>) v -> violations.incrementAndGet());
       return violations.get();
    }
 
    @Override
    public List<ViolationX> getAllViolations(String uuid) {
       List<ViolationX> violations = new ArrayList<>();
-      this.loggedViolations.find(Filters.eq("player", uuid)).sort(new Document("time", -1)).forEach(violations::add);
+      this.loggedViolations.find(Filters.eq("player", uuid))
+          .sort(new Document("time", -1))
+          .forEach((Block<? super ViolationX>) v -> violations.add(v));
       return violations;
    }
 
@@ -202,14 +211,14 @@ public class MongoStorage implements Storage {
    @Override
    public int getAllViolationsInStorage() {
       List<ViolationX> violations = new ArrayList<>();
-      this.loggedViolations.find().forEach(violations::add);
+      this.loggedViolations.find().forEach((Block<? super ViolationX>) v -> violations.add(v));
       return violations.size();
    }
 
    @Override
    public List<BanX> getRecentBans() {
       List<BanX> bans = new ArrayList<>();
-      this.loggedBans.find().limit(10).forEach(bans::add);
+      this.loggedBans.find().limit(10).forEach((Block<? super BanX>) b -> bans.add(b));
       return bans;
    }
 

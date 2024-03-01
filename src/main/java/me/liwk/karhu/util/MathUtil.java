@@ -37,6 +37,7 @@ import me.liwk.karhu.util.mc.MathHelper;
 import me.liwk.karhu.util.mc.axisalignedbb.AxisAlignedBB;
 import me.liwk.karhu.util.mc.vec.Vec3;
 //import me.liwk.karhu.util.mc.vec.Vec3d;
+import me.liwk.karhu.util.mc.vec.Vec3d;
 import me.liwk.karhu.util.player.BlockUtil;
 import me.liwk.karhu.util.tuple.Tuple;
 import org.apache.commons.lang.ArrayUtils;
@@ -905,7 +906,6 @@ public final class MathUtil {
       }
    }
 
-   /*
    public static Vec3d getLook3d(float partialTicks, KarhuPlayer karhuPlayer) {
       if (partialTicks == 1.0F) {
          return getVectorForRotation3d(karhuPlayer.getLocation().getPitch(), karhuPlayer.getLocation().getYaw());
@@ -924,8 +924,6 @@ public final class MathUtil {
       return new Vec3d((double)(f1 * f2), (double)f3, (double)(f * f2));
    }
 
-
-    */
    public static AxisAlignedBB getEntityBoundingBox(Location l) {
       return getEntityBoundingBox(l.getX(), l.getY(), l.getZ());
    }

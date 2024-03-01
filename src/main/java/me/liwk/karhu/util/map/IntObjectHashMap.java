@@ -1,17 +1,6 @@
 package me.liwk.karhu.util.map;
 
-import java.util.AbstractSet;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import me.liwk.karhu.util.map.IntObjectHashMap;
-import me.liwk.karhu.util.map.IntObjectHashMap.MapIterator;
-import me.liwk.karhu.util.map.IntObjectHashMap.PrimitiveIterator;
-import me.liwk.karhu.util.map.IntObjectHashMap.KeySet;
-import me.liwk.karhu.util.map.IntObjectMap.PrimitiveEntry;
+import java.util.*;
 
 public class IntObjectHashMap<V> implements IntObjectMap<V> {
    public static final int DEFAULT_CAPACITY = 8;
@@ -28,7 +17,7 @@ public class IntObjectHashMap<V> implements IntObjectMap<V> {
    private final Iterable<PrimitiveEntry<V>> entries = new Iterable<PrimitiveEntry<V>>() {
       @Override
       public Iterator<PrimitiveEntry<V>> iterator() {
-         return new PrimitiveIterator(IntObjectHashMap.this);
+         return new PrimitiveIterator();
       }
    };
 
@@ -165,7 +154,34 @@ public class IntObjectHashMap<V> implements IntObjectMap<V> {
 
    @Override
    public Collection<V> values() {
-      return new 2(this);
+      return new AbstractCollection<V>() {
+         @Override
+         public Iterator<V> iterator() {
+            return new Iterator<V>() {
+               final PrimitiveIterator iter = new PrimitiveIterator();
+
+               @Override
+               public boolean hasNext() {
+                  return iter.hasNext();
+               }
+
+               @Override
+               public V next() {
+                  return iter.next().value();
+               }
+
+               @Override
+               public void remove() {
+                  throw new UnsupportedOperationException();
+               }
+            };
+         }
+
+         @Override
+         public int size() {
+            return size;
+         }
+      };
    }
 
    @Override
@@ -370,7 +386,7 @@ public class IntObjectHashMap<V> implements IntObjectMap<V> {
 
       @Override
       public Iterator<Entry<Integer, V>> iterator() {
-         return new MapIterator(IntObjectHashMap.this);
+         return new MapIterator();
       }
 
       @Override
@@ -379,10 +395,10 @@ public class IntObjectHashMap<V> implements IntObjectMap<V> {
       }
    }
 
+   /**
+    * Set implementation for iterating over the keys.
+    */
    private final class KeySet extends AbstractSet<Integer> {
-      private KeySet() {
-      }
-
       @Override
       public int size() {
          return IntObjectHashMap.this.size();
@@ -401,16 +417,13 @@ public class IntObjectHashMap<V> implements IntObjectMap<V> {
       @Override
       public boolean retainAll(Collection<?> retainedKeys) {
          boolean changed = false;
-         Iterator<PrimitiveEntry<V>> iter = IntObjectHashMap.this.entries().iterator();
-
-         while(iter.hasNext()) {
-            PrimitiveEntry<V> entry = (PrimitiveEntry)iter.next();
+         for (Iterator<PrimitiveEntry<V>> iter = entries().iterator(); iter.hasNext();) {
+            PrimitiveEntry<V> entry = iter.next();
             if (!retainedKeys.contains(entry.key())) {
                changed = true;
                iter.remove();
             }
          }
-
          return changed;
       }
 
@@ -421,7 +434,158 @@ public class IntObjectHashMap<V> implements IntObjectMap<V> {
 
       @Override
       public Iterator<Integer> iterator() {
-         return new 1(this);
+         return new Iterator<Integer>() {
+            private final Iterator<Entry<Integer, V>> iter = entrySet.iterator();
+
+            @Override
+            public boolean hasNext() {
+               return iter.hasNext();
+            }
+
+            @Override
+            public Integer next() {
+               return iter.next().getKey();
+            }
+
+            @Override
+            public void remove() {
+               iter.remove();
+            }
+         };
+      }
+   }
+
+   /**
+    * Iterator over primitive entries. Entry key/values are overwritten by each call to {@link #next()}.
+    */
+   private final class PrimitiveIterator implements Iterator<PrimitiveEntry<V>>, PrimitiveEntry<V> {
+      private int prevIndex = -1;
+      private int nextIndex = -1;
+      private int entryIndex = -1;
+
+      private void scanNext() {
+         while (++nextIndex != values.length && values[nextIndex] == null) {
+         }
+      }
+
+      @Override
+      public boolean hasNext() {
+         if (nextIndex == -1) {
+            scanNext();
+         }
+         return nextIndex != values.length;
+      }
+
+      @Override
+      public PrimitiveEntry<V> next() {
+         if (!hasNext()) {
+            throw new NoSuchElementException();
+         }
+
+         prevIndex = nextIndex;
+         scanNext();
+
+         // Always return the same Entry object, just change its index each time.
+         entryIndex = prevIndex;
+         return this;
+      }
+
+      @Override
+      public void remove() {
+         if (prevIndex == -1) {
+            throw new IllegalStateException("next must be called before each remove.");
+         }
+         if (removeAt(prevIndex)) {
+            // removeAt may move elements "back" in the array if they have been displaced because their spot in the
+            // array was occupied when they were inserted. If this occurs then the nextIndex is now invalid and
+            // should instead point to the prevIndex which now holds an element which was "moved back".
+            nextIndex = prevIndex;
+         }
+         prevIndex = -1;
+      }
+
+      // Entry implementation. Since this implementation uses a single Entry, we coalesce that
+      // into the Iterator object (potentially making loop optimization much easier).
+
+      @Override
+      public int key() {
+         return keys[entryIndex];
+      }
+
+      @Override
+      public V value() {
+         return toExternal(values[entryIndex]);
+      }
+
+      @Override
+      public void setValue(V value) {
+         values[entryIndex] = toInternal(value);
+      }
+   }
+
+
+   /**
+    * Iterator used by the {@link Map} interface.
+    */
+   private final class MapIterator implements Iterator<Entry<Integer, V>> {
+      private final PrimitiveIterator iter = new PrimitiveIterator();
+
+      @Override
+      public boolean hasNext() {
+         return iter.hasNext();
+      }
+
+      @Override
+      public Entry<Integer, V> next() {
+         if (!hasNext()) {
+            throw new NoSuchElementException();
+         }
+
+         iter.next();
+
+         return new MapEntry(iter.entryIndex);
+      }
+
+      @Override
+      public void remove() {
+         iter.remove();
+      }
+   }
+
+   /**
+    * A single entry in the map.
+    */
+   final class MapEntry implements Entry<Integer, V> {
+      private final int entryIndex;
+
+      MapEntry(int entryIndex) {
+         this.entryIndex = entryIndex;
+      }
+
+      @Override
+      public Integer getKey() {
+         verifyExists();
+         return keys[entryIndex];
+      }
+
+      @Override
+      public V getValue() {
+         verifyExists();
+         return toExternal(values[entryIndex]);
+      }
+
+      @Override
+      public V setValue(V value) {
+         verifyExists();
+         V prevValue = toExternal(values[entryIndex]);
+         values[entryIndex] = toInternal(value);
+         return prevValue;
+      }
+
+      private void verifyExists() {
+         if (values[entryIndex] == null) {
+            throw new IllegalStateException("The map entry has been removed");
+         }
       }
    }
 }
