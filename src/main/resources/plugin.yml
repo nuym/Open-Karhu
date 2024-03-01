@@ -1,8 +1,9 @@
-name: KarhuLoader
-version: 1.2
+name: KarhuAC
+version: 2.0-PRE
 main: me.liwk.karhu.Karhu
-load: POSTWORLD
 api-version: 1.13
+softdepend: [Viaversion, ProtocolLib, ProtocolSupport]
+load: POSTWORLD
 permissions:
   karhu.staff:
     default: op
