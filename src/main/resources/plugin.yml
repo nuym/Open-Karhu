@@ -1,5 +1,10 @@
 name: KarhuLoader
 version: 1.2
-main: me.kassq.client.ClientPlugin
+main: me.liwk.karhu.Karhu
 load: POSTWORLD
 api-version: 1.13
+permissions:
+  karhu.staff:
+    default: op
+  karhu.bypass:
+    default: op
