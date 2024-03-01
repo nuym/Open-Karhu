@@ -17,14 +17,14 @@ public final class BlockCollisionHandler {
             return;
         }
         switch (type) {
-            case LANDED -> {
+            case LANDED: {
                 if (!MaterialChecks.SLIME.contains(b.getType()) || !(Math.abs(data.motY) < 0.1) || data.getData().isSneaking())
                     break;
                 double d0 = 0.4 + Math.abs(data.motY) * 0.2;
                 data.motX *= d0;
                 data.motZ *= d0;
             }
-            case WALKING -> {
+            case WALKING: {
                 if (MaterialChecks.SLIME.contains(b.getType())) {
                     if (data.getData().isSneaking()) {
                         data.motY = 0.0;
