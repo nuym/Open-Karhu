@@ -462,18 +462,18 @@ public final class PacketProcessor extends SimplePacketListenerAbstract {
 
             if (position) {
                data.setPositionPackets(data.getPositionPackets() + 1);
-               if (data.getPositionPackets() == 1) {
+               if (data.getPositionPackets() % 10 == 1) {
                   if (data.getSafeGroundSetback() == null) {
                      data.setSafeGroundSetback(data.getLocation().clone());
                   }
 
-                  if (data.getSafeSetback() == null) {
+                  //if (data.getSafeSetback() == null) {
                      data.setSafeSetback(data.getLocation().clone());
-                  }
+                  //}
 
-                  if (data.getFlyCancel() == null) {
+                  //if (data.getFlyCancel() == null) {
                      data.setFlyCancel(data.getLocation().clone());
-                  }
+                  //}
                }
             }
 
