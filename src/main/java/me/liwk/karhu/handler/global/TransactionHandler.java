@@ -532,19 +532,20 @@ public class TransactionHandler {
          ++data.sentConfirms;
       }
 
-      if (number >= -20000 && number <= -3000) {
-         if (!data.hasSentTickFirst) {
+      if (number >= -20000 && number <= -3000 || !data.sentPingRequest && number == -32767) {
+         data.sentPingRequest = true;
+         if (data.hasSentTickFirst) {
+            data.hasSentTickFirst = false;
+         } else {
             data.hasSentTickFirst = true;
             data.transactionTime.put(number, nanoTime);
             data.useOldTransaction(uid -> data.setServerTick(data.getServerTick() + 1L), number);
-         } else {
-            data.hasSentTickFirst = false;
          }
-
          data.sendingPledgePackets = true;
       } else if (!data.sendingPledgePackets && data.getTotalTicks() > 300) {
          Tasker.run(
             () -> data.getBukkitPlayer()
+                    // FIXME
                   .kickPlayer(ChatColor.translateAlternateColorCodes('&', Karhu.getInstance().getConfigManager().getUninjectedKick()) + " (Time out)")
          );
       }

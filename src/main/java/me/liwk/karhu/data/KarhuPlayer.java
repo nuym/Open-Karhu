@@ -149,6 +149,7 @@ public final class KarhuPlayer {
    private int lastTickSecondConfirmationUid = -2;
    public boolean hasSentTickFirst = false;
    public boolean sendingPledgePackets;
+   public boolean sentPingRequest = false;
    public boolean hasSentFirst;
    public boolean brokenVelocityVerify;
    private final TaskManager<KarhuPlayer> tasksManager = new TaskManager<>();
