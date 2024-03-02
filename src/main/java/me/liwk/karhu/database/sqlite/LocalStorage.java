@@ -35,14 +35,6 @@ public class LocalStorage implements Storage {
 
    @Override
    public void init() {
-      String acname = Karhu.getInstance().getConfigManager().getLicense().equals(" ") ? "VengeanceLoader" : "KarhuLoader";
-      if (!Karhu.getInstance().getPlug().getDescription().getName().equals(acname)) {
-         try {
-            Bukkit.getPluginManager().disablePlugin(Karhu.getInstance().getPlug());
-         } catch (Exception var5) {
-         }
-      }
-
       try {
          SQLite.init();
          Query.prepare(
