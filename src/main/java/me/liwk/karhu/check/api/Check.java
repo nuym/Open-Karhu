@@ -358,13 +358,13 @@ public abstract class Check<T> {
                         if (!staff.hasPermission("karhu.hover-debug") && !AlertsManager.ADMINS.contains(staff.getUniqueId())) {
                            staff.sendMessage(text);
                         }
-                        /*else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
-                           staff.sendMessage(hover);
+                        else if (this.karhu.getConfigManager().isSpigotApiAlert()) {
+                           staff.spigot().sendMessage(hover);
                         } else {
-                           staff.sendMessage(hover);
+                           staff.spigot().sendMessage(hover);
                         }
 
-                         */
+
                      }
                   }
                   Bukkit.getConsoleSender().sendMessage(text);

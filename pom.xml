@@ -29,30 +29,41 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
-                            <goal>single</goal>
+                            <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <finalName>Karhu</finalName>
+                            <minimizeJar>false</minimizeJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.github.retrooper</pattern>
+                                    <shadedPattern>me.liwk.karhu.lib
+                                    </shadedPattern> <!--relocate packetevents package. choose something unique!-->
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.github.retrooper</pattern>
+                                    <shadedPattern>me.liwk.karhu.lib
+                                    </shadedPattern> <!--relocate packetevents package. choose something unique!-->
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.kyori</pattern>
+                                    <shadedPattern>me.liwk.karhu.lib
+                                    </shadedPattern> <!--relocate packetevents package. choose something unique!-->
+                                </relocation>
+
+
+                            </relocations>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <descriptorRefs>
-                        <!-- 将依赖一起打包到 JAR -->
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <!-- 配置主程序 java -jar 默认Class -->
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <!--Main程序入口-->
-                            <mainClass>me.liwk.karhu.Karhu</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
             </plugin>
         </plugins>
 
@@ -107,8 +118,9 @@
             <groupId>com.github.retrooper.packetevents</groupId>
             <artifactId>spigot</artifactId>
             <version>2.2.1</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
+
 
         <dependency>
             <groupId>org.geysermc.geyser</groupId>

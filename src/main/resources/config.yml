@@ -19,7 +19,7 @@ version-to-download: 'autoupdate'
 Prefix: '&7[&b&l❀&7] '
 MiscPrefix: '&7[&e⚠&7] '
 experimental-alert-symbol: '&aΔ'
-AlertsMessage: '&f%player% &7failed &b%check% &7[x&b%vl%&7]'
+AlertsMessage: '&f%player% &7failed to &b%check% &7[x&b%vl%&7]'
 ClientCheckMessage: '&f%player% &7joined using &7[&e%brand%&7]'
 AntiCrashMessage: '&e%player% &fwas kicked for &esuspicious activity &7(&e%debug%&7)'
 NetHandlerMessage: '&e%player% &fwas kicked for &esuspicious network activity &7(&6%debug%&7)'
@@ -110,10 +110,6 @@ bypass-permission: false
 
 #Rename anticheat >_<
 anticheat-name: 'Karhu'
-
-high-ping-kick:
-    enabled: false
-    kick-message: 'Your ping constantly too high, do something!'
 
 anti-vpn:
     enabled: true
