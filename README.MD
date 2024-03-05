@@ -5,6 +5,7 @@ Initially I didn't intend to open source the project directly, I invited the fri
 
 ## Special Thanks
 - [Karhu](https://www.karhu.ac/) developed this anti cheat
+- [nuym](https://github.com/nuym) dumped this project
 - [NaerQAQ](https://github.com/NaerQAQ) provided karhu license
 - [ts](https://github.com/uniformization) helped me dump the classes and compile
 - [huzpsb](https://github.com/huzpsb) fix some errors
