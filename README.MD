@@ -1,7 +1,9 @@
 # Open-Karhu
 - version: 2.7.3 | 226
 # Why I decided to open this project
-Initially I didn't intend to open source the project directly, I invited the friend who provided me with the license to the repository, he sent the source code to his friend to build and dropped it on the server, but I feel sad that the project was completely decompiled by my friend and I and took 5 days to do so, only to be lost by He took it and leaked it, so I decided to open source the project so they don't make money. I am sorry to the author of Karhu, this project was leaked because of me, and I will do my best to make up for my mistake by supporting and sponsoring your project.
+
+Our main purpose for open sourcing this project is to help people deeply understand the unique checks and measures Karhu takes against cheaters. We do not intend to sell, reuse or profit in any way from Karhu’s code.
+
 
 ## Special Thanks
 - [Karhu](https://www.karhu.ac/) developed this anti cheat
